@@ -108,23 +108,73 @@
       box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
     }
 
-    /* 侧边栏折叠态样式 */
+    /* 侧边栏折叠态样式与悬浮详情气泡 (Collapsed Sidebar + Floating Detail Popover) */
     #app-sidebar {
-      transition: width 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+      transition: width 0.25s cubic-bezier(0.22, 1, 0.36, 1);
     }
     #app-sidebar.sidebar-collapsed {
-      width: 4.5rem !important;
+      width: 4.25rem !important;
     }
     #app-sidebar.sidebar-collapsed .sidebar-label,
     #app-sidebar.sidebar-collapsed .sidebar-section-title,
-    #app-sidebar.sidebar-collapsed .sidebar-step-badge {
+    #app-sidebar.sidebar-collapsed .sidebar-step-badge,
+    #app-sidebar.sidebar-collapsed .sidebar-brand-wrap {
       display: none !important;
+    }
+    #app-sidebar.sidebar-collapsed .sidebar-header-row {
+      justify-content: center !important;
+      padding-left: 0.5rem !important;
+      padding-right: 0.5rem !important;
     }
     #app-sidebar.sidebar-collapsed .tab-btn,
     #app-sidebar.sidebar-collapsed .sidebar-action-btn {
       justify-content: center !important;
       padding-left: 0 !important;
       padding-right: 0 !important;
+      padding-top: 0.625rem !important;
+      padding-bottom: 0.625rem !important;
+      border-radius: 0.75rem !important;
+    }
+    #app-sidebar.sidebar-collapsed .tab-btn i,
+    #app-sidebar.sidebar-collapsed .sidebar-action-btn i {
+      font-size: 0.95rem !important;
+    }
+
+    /* 折叠态右侧悬浮详情气泡卡片 */
+    #sidebar-hover-tooltip {
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateY(-50%) translateX(-6px) scale(0.97);
+      transition: opacity 0.14s cubic-bezier(0.16, 1, 0.3, 1),
+                  transform 0.14s cubic-bezier(0.16, 1, 0.3, 1);
+      max-width: 19rem;
+    }
+    #sidebar-hover-tooltip.tooltip-visible {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0) scale(1);
+    }
+    #sidebar-hover-tooltip .tooltip-arrow {
+      position: absolute;
+      left: -5px;
+      top: 50%;
+      width: 10px;
+      height: 10px;
+      transform: translateY(-50%) rotate(45deg);
+      background: #0f172a;
+      border-left: 1px solid rgba(56, 189, 248, 0.45);
+      border-bottom: 1px solid rgba(56, 189, 248, 0.45);
+    }
+    html:not(.dark) #sidebar-hover-tooltip .tooltip-card {
+      background: rgba(255, 255, 255, 0.98) !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 12px 28px -4px rgba(15, 23, 42, 0.16) !important;
+    }
+    html:not(.dark) #sidebar-hover-tooltip .tooltip-arrow {
+      background: #ffffff !important;
+      border-left-color: #cbd5e1 !important;
+      border-bottom-color: #cbd5e1 !important;
     }
 
     /* 浅色模式 (Light Mode) 全面高对比度适配 */
@@ -425,8 +475,8 @@
   <aside id="app-sidebar" class="w-64 border-r border-slate-800/90 bg-slate-900/95 backdrop-blur-xl h-full overflow-y-auto flex flex-col justify-between z-40 shrink-0 select-none">
     <!-- 1. 顶部品牌 Logo 与折叠开关 -->
     <div>
-      <div class="px-4 py-3 border-b border-slate-800/80 flex items-center justify-between gap-2">
-        <div class="flex items-center gap-2 overflow-hidden">
+      <div class="sidebar-header-row px-4 py-3 border-b border-slate-800/80 flex items-center justify-between gap-2">
+        <div class="sidebar-brand-wrap flex items-center gap-2 overflow-hidden">
           <div class="truncate">
             <div class="flex items-center gap-1">
               <span class="px-1.5 py-0.5 rounded-md bg-gradient-to-tr from-sky-500 via-indigo-500 to-emerald-400 text-white text-xs font-black tracking-tight shadow-sm shrink-0">XterAI</span>
@@ -436,7 +486,7 @@
             <p class="sidebar-label text-[10px] text-slate-400 truncate mt-0.5">VS Code Workbench · 软硬件协同</p>
           </div>
         </div>
-        <button onclick="toggleSidebar()" id="sidebar-collapse-btn" class="w-7 h-7 rounded-lg hover:bg-sky-500/10 text-slate-400 hover:text-sky-400 flex items-center justify-center transition shrink-0" title="收起/展开侧边栏 (Ctrl+B)">
+        <button onclick="toggleSidebar()" id="sidebar-collapse-btn" data-tip-title="展开 / 收起侧边栏" data-tip-badge="Ctrl+B" data-tip-desc="切换左侧导航栏为完整文字展开模式或极简图标折叠模式" class="w-7 h-7 rounded-lg hover:bg-sky-500/10 text-slate-400 hover:text-sky-400 flex items-center justify-center transition shrink-0" title="收起/展开侧边栏 (Ctrl+B)">
           <i id="sidebar-collapse-icon" class="fa-solid fa-angles-left text-xs"></i>
         </button>
       </div>
@@ -448,7 +498,7 @@
           <span class="text-[9px] font-mono text-sky-400">①→④</span>
         </div>
         <nav class="space-y-1">
-          <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn active w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5" title="① 项目工作台与环境总览">
+          <button onclick="switchTab('dashboard')" id="tab-dashboard" data-tip-title="① 项目工作台" data-tip-badge="HOME" data-tip-desc="多工程切换、新建软硬件协同项目、工具链健康探针与交付指标总览" class="tab-btn active w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5" title="① 项目工作台与环境总览">
             <div class="flex items-center gap-2.5 truncate">
               <i class="fa-solid fa-gauge-high text-sm w-4 text-center text-sky-400"></i>
               <span class="sidebar-label truncate">① 项目工作台</span>
@@ -456,7 +506,7 @@
             <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">HOME</span>
           </button>
 
-          <button onclick="switchTab('intake')" id="tab-intake" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="② 规格与引脚中枢 (SSOT: spec.json ⇄ bsp_pinout.h)">
+          <button onclick="switchTab('intake')" id="tab-intake" data-tip-title="② 规格与引脚 (SSOT)" data-tip-badge="SSOT" data-tip-desc="软硬件单一事实源：在线编辑 spec.json 与引脚映射表，双向生成 bsp_pinout.h" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="② 规格与引脚中枢 (SSOT: spec.json ⇄ bsp_pinout.h)">
             <div class="flex items-center gap-2.5 truncate">
               <i class="fa-solid fa-network-wired text-sm w-4 text-center text-amber-400"></i>
               <span class="sidebar-label truncate">② 规格与引脚 (SSOT)</span>
@@ -464,7 +514,7 @@
             <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">SSOT</span>
           </button>
 
-          <button onclick="switchTab('pcb')" id="tab-pcb" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="③ PCB 硬件设计工坊 (KiCad / 嘉立创 JLC)">
+          <button onclick="switchTab('pcb')" id="tab-pcb" data-tip-title="③ PCB 硬件工坊" data-tip-badge="PCB" data-tip-desc="KiCad 原生版图与嘉立创 JLC 贴片模式 · 3D/2D/原理图/立创 BOM 零滚动切换与 DRC 自愈" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="③ PCB 硬件设计工坊 (KiCad / 嘉立创 JLC)">
             <div class="flex items-center gap-2.5 truncate">
               <i class="fa-solid fa-compass-drafting text-sm w-4 text-center text-emerald-400"></i>
               <span class="sidebar-label truncate">③ PCB 硬件工坊</span>
@@ -472,7 +522,7 @@
             <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono">PCB</span>
           </button>
 
-          <button onclick="switchTab('firmware')" id="tab-firmware" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="④ 嵌入式 C99 固件工坊 (Monaco / ARM-GCC)">
+          <button onclick="switchTab('firmware')" id="tab-firmware" data-tip-title="④ C99 固件工坊" data-tip-badge="C99" data-tip-desc="VS Code Monaco 内核 C99 编辑器 · 绑定 bsp_pinout.h 引脚宏、ARM-GCC 编译与状态机仿真" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="④ 嵌入式 C99 固件工坊 (Monaco / ARM-GCC)">
             <div class="flex items-center gap-2.5 truncate">
               <i class="fa-solid fa-file-code text-sm w-4 text-center text-sky-400"></i>
               <span class="sidebar-label truncate">④ C99 固件工坊</span>
@@ -484,7 +534,7 @@
             AI 自动化与插件生态
           </div>
 
-          <button onclick="switchTab('agents')" id="tab-agents" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="⚡ 5阶段全自动协同流水线">
+          <button onclick="switchTab('agents')" id="tab-agents" data-tip-title="全自动协同流水线" data-tip-badge="FLOW" data-tip-desc="5 阶段多智能体全自动闭环：架构分配 → PCB 布局 → C99 固件 → DRC/GCC 双验证" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="⚡ 5阶段全自动协同流水线">
             <div class="flex items-center gap-2.5 truncate">
               <i class="fa-solid fa-diagram-project text-sm w-4 text-center text-teal-400"></i>
               <span class="sidebar-label truncate">全自动协同流水线</span>
@@ -492,7 +542,7 @@
             <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">FLOW</span>
           </button>
 
-          <button onclick="switchTab('distiller')" id="tab-distiller" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="🧩 Skill 插件市场与知识蒸馏工坊">
+          <button onclick="switchTab('distiller')" id="tab-distiller" data-tip-title="Skill 知识蒸馏市场" data-tip-badge="SKILL" data-tip-desc="从主流社区一键安装硬件与嵌入式规范插件，或上传 PDF 数据手册蒸馏专属 Skill" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="🧩 Skill 插件市场与知识蒸馏工坊">
             <div class="flex items-center gap-2.5 truncate">
               <i class="fa-solid fa-puzzle-piece text-sm w-4 text-center text-indigo-400"></i>
               <span class="sidebar-label truncate">Skill 知识蒸馏市场</span>
@@ -500,7 +550,7 @@
             <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">SKILL</span>
           </button>
 
-          <button onclick="switchTab('config')" id="tab-config" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="⚙️ 模型与系统配置">
+          <button onclick="switchTab('config')" id="tab-config" data-tip-title="引擎与模型配置" data-tip-badge="CFG" data-tip-desc="配置 OpenAI / Anthropic / DeepSeek / 本地 Ollama 模型与 Coding CLI Agent 路由" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="⚙️ 模型与系统配置">
             <div class="flex items-center gap-2.5 truncate">
               <i class="fa-solid fa-sliders text-sm w-4 text-center text-slate-400"></i>
               <span class="sidebar-label truncate">引擎与模型配置</span>
@@ -536,28 +586,28 @@
         <div class="sidebar-section-title px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
           本地桌面工具桥接
         </div>
-        <button onclick="openLocalTool('kicad')" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="调用桌面 KiCad 打开当前工程的 .kicad_pcb">
+        <button onclick="openLocalTool('kicad')" data-tip-title="用 KiCad 打开 PCB" data-tip-badge="EDA" data-tip-desc="直接唤起本机桌面端 KiCad 10 打开当前工程的 .kicad_pcb 电路板文件" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="调用桌面 KiCad 打开当前工程的 .kicad_pcb">
           <div class="flex items-center gap-2.5 truncate">
             <i class="fa-solid fa-compass-drafting text-xs w-4 text-center text-slate-400"></i>
             <span class="sidebar-label truncate">用 KiCad 打开 PCB</span>
           </div>
           <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">EDA</span>
         </button>
-        <button onclick="openLocalTool('vscode')" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="调用 VS Code 打开当前工程源码">
+        <button onclick="openLocalTool('vscode')" data-tip-title="用 VS Code 打开工程" data-tip-badge="IDE" data-tip-desc="唤起本机桌面 VS Code 打开当前工程的嵌入式 C99 固件与硬件目录" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="调用 VS Code 打开当前工程源码">
           <div class="flex items-center gap-2.5 truncate">
             <i class="fa-solid fa-laptop-code text-xs w-4 text-center text-slate-400"></i>
             <span class="sidebar-label truncate">用 VS Code 打开工程</span>
           </div>
           <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">IDE</span>
         </button>
-        <button onclick="openLocalTool('finder')" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="在 Finder 中打开当前工程文件夹">
+        <button onclick="openLocalTool('finder')" data-tip-title="打开本地工程目录" data-tip-badge="DIR" data-tip-desc="在 macOS Finder 中定位并打开当前工程的本地物理文件夹" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="在 Finder 中打开当前工程文件夹">
           <div class="flex items-center gap-2.5 truncate">
             <i class="fa-regular fa-folder-open text-xs w-4 text-center text-slate-400"></i>
             <span class="sidebar-label truncate">打开本地工程目录</span>
           </div>
           <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">DIR</span>
         </button>
-        <button onclick="exportAllInOneBundle()" id="btn-top-bundle" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="一键导出 Gerber + BOM + KiCad + .hex/.bin/.elf + 验收报告">
+        <button onclick="exportAllInOneBundle()" id="btn-top-bundle" data-tip-title="导出全套交付包 ZIP" data-tip-badge="ZIP" data-tip-desc="一键打包导出 Gerber 制板包 + BOM/CPL 贴片表 + KiCad 工程 + C99 固件 (.elf/.hex/.bin)" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="一键导出 Gerber + BOM + KiCad + .hex/.bin/.elf + 验收报告">
           <div class="flex items-center gap-2.5 truncate">
             <i class="fa-solid fa-box-archive text-xs w-4 text-center text-slate-400"></i>
             <span class="sidebar-label truncate">导出全套交付包 ZIP</span>
@@ -569,7 +619,7 @@
 
     <!-- 4. 侧边栏底部：环境探针状态与深浅色主题切换 -->
     <div class="p-2.5 border-t border-slate-800/80 space-y-1">
-      <button onclick="switchTab('config')" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="点击进入模型与 Agent 配置中心">
+      <button onclick="switchTab('config')" data-tip-title="工具链与模型状态就绪" data-tip-badge="OK" data-tip-desc="KiCad CLI · arm-none-eabi-gcc · LLM / Coding Agent 探针在线，点击进入配置" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="点击进入模型与 Agent 配置中心">
         <div class="flex items-center gap-2.5 truncate">
           <span class="w-4 flex items-center justify-center shrink-0">
             <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
@@ -578,7 +628,7 @@
         </div>
         <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono">OK</span>
       </button>
-      <button id="theme-toggle" onclick="toggleTheme()" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="切换深色 / 浅色外观主题">
+      <button id="theme-toggle" onclick="toggleTheme()" data-tip-title="切换深色 / 浅色模式" data-tip-badge="UI" data-tip-desc="在极客暗黑主题 (Dark) 与高对比浅色主题 (Light) 之间即时切换" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="切换深色 / 浅色外观主题">
         <div class="flex items-center gap-2.5 truncate">
           <i id="theme-icon" class="fa-solid fa-sun text-xs w-4 text-center text-slate-400"></i>
           <span id="theme-text" class="sidebar-label truncate">浅色模式</span>
@@ -2580,6 +2630,18 @@
           <i class="fa-solid fa-rocket"></i> 立即创建并初始化软硬件工程
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- 侧边栏折叠态悬浮文字详情气泡 (Collapsed Sidebar Floating Detail Tooltip) -->
+  <div id="sidebar-hover-tooltip" role="tooltip" aria-hidden="true">
+    <div class="tooltip-arrow"></div>
+    <div class="tooltip-card rounded-xl bg-slate-950/95 backdrop-blur-xl border border-sky-500/40 px-3.5 py-2.5 shadow-2xl shadow-black/70 space-y-1">
+      <div class="flex items-center justify-between gap-2.5">
+        <span id="sidebar-tip-title" class="text-xs font-extrabold text-slate-100 tracking-tight"></span>
+        <span id="sidebar-tip-badge" class="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30 font-mono font-bold shrink-0"></span>
+      </div>
+      <p id="sidebar-tip-desc" class="text-[11px] text-slate-400 leading-relaxed"></p>
     </div>
   </div>
 

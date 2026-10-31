@@ -666,3 +666,113 @@ if (typeof switchTab === 'function') {
   };
 }
 
+// ============================================================================
+// 侧边栏折叠态 (Collapsed Sidebar) 鼠标悬停文字详情气泡引擎
+// ============================================================================
+function showSidebarCollapsedTooltip(btn) {
+  const sb = document.getElementById('app-sidebar');
+  const tip = document.getElementById('sidebar-hover-tooltip');
+  if (!sb || !tip || !btn) return;
+
+  // 仅当侧边栏处于折叠态 (.sidebar-collapsed) 时弹出右侧悬浮文字详情卡片
+  if (!sb.classList.contains('sidebar-collapsed')) {
+    tip.classList.remove('tooltip-visible');
+    return;
+  }
+
+  // 缓存并移除原生 title，防止浏览器默认慢速黄底/黑底小提示遮挡高颜值详情气泡
+  const rawTitle = btn.getAttribute('title');
+  if (rawTitle) {
+    btn.dataset.nativeTitle = rawTitle;
+    btn.removeAttribute('title');
+  }
+
+  const labelEl = btn.querySelector('.sidebar-label');
+  const badgeEl = btn.querySelector('.sidebar-step-badge');
+
+  const titleText = btn.dataset.tipTitle || (labelEl ? labelEl.textContent.trim() : '') || btn.dataset.nativeTitle || '功能详情';
+  const badgeText = btn.dataset.tipBadge || (badgeEl ? badgeEl.textContent.trim() : '');
+  const descText = btn.dataset.tipDesc || btn.dataset.nativeTitle || '';
+
+  const titleNode = document.getElementById('sidebar-tip-title');
+  const badgeNode = document.getElementById('sidebar-tip-badge');
+  const descNode = document.getElementById('sidebar-tip-desc');
+
+  if (titleNode) titleNode.textContent = titleText;
+  if (badgeNode) {
+    badgeNode.textContent = badgeText;
+    badgeNode.classList.toggle('hidden', !badgeText);
+  }
+  if (descNode) {
+    descNode.textContent = descText;
+    descNode.classList.toggle('hidden', !descText || descText === titleText);
+  }
+
+  const rect = btn.getBoundingClientRect();
+  const leftPos = Math.round(rect.right + 12);
+  const centerY = Math.min(Math.max(Math.round(rect.top + rect.height / 2), 36), window.innerHeight - 36);
+
+  tip.style.left = `${leftPos}px`;
+  tip.style.top = `${centerY}px`;
+  tip.setAttribute('aria-hidden', 'false');
+  tip.classList.add('tooltip-visible');
+}
+
+function hideSidebarCollapsedTooltip(btn) {
+  const tip = document.getElementById('sidebar-hover-tooltip');
+  if (tip) {
+    tip.classList.remove('tooltip-visible');
+    tip.setAttribute('aria-hidden', 'true');
+  }
+  if (btn && btn.dataset && btn.dataset.nativeTitle && !btn.getAttribute('title')) {
+    btn.setAttribute('title', btn.dataset.nativeTitle);
+  }
+}
+
+function initSidebarCollapsedTooltips() {
+  const sb = document.getElementById('app-sidebar');
+  if (!sb) return;
+
+  const buttons = sb.querySelectorAll('button');
+  buttons.forEach(btn => {
+    if (btn.dataset.tipBound === '1') return;
+    btn.dataset.tipBound = '1';
+    btn.addEventListener('mouseenter', () => showSidebarCollapsedTooltip(btn));
+    btn.addEventListener('mouseleave', () => hideSidebarCollapsedTooltip(btn));
+    btn.addEventListener('focus', () => showSidebarCollapsedTooltip(btn));
+    btn.addEventListener('blur', () => hideSidebarCollapsedTooltip(btn));
+    btn.addEventListener('click', () => {
+      // 若点击了展开/收起按钮，延时隐藏气泡
+      if (btn.id === 'sidebar-collapse-btn') {
+        setTimeout(() => hideSidebarCollapsedTooltip(btn), 80);
+      }
+    });
+  });
+
+  sb.addEventListener('scroll', () => hideSidebarCollapsedTooltip(), { passive: true });
+}
+
+if (typeof toggleSidebar === 'function') {
+  const _origToggleSidebar = toggleSidebar;
+  window.toggleSidebar = function () {
+    hideSidebarCollapsedTooltip();
+    _origToggleSidebar();
+    const sb = document.getElementById('app-sidebar');
+    const collapseBtn = document.getElementById('sidebar-collapse-btn');
+    if (sb && collapseBtn) {
+      const isCollapsed = sb.classList.contains('sidebar-collapsed');
+      collapseBtn.dataset.tipTitle = isCollapsed ? '展开侧边栏导航' : '收起侧边栏导航';
+    }
+    if (typeof monacoFwEditor !== 'undefined' && monacoFwEditor) {
+      setTimeout(() => monacoFwEditor.layout(), 270);
+    }
+  };
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initSidebarCollapsedTooltips);
+} else {
+  initSidebarCollapsedTooltips();
+}
+
+
