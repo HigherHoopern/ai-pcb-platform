@@ -1,0 +1,25 @@
+﻿位号 (Ref),器件名称,推荐型号 (Part Number),封装规格 (Package),电气参数与规格,建议厂商 (Manufacturer),用量 (Qty),设计选型依据与作用说明
+U1,主控芯片 MCU,STM32G030F6P6TR,TSSOP-20,"ARM Cortex-M0+ 64MHz, 32KB Flash, 8KB RAM",STMicroelectronics,1,高性价比主流微控制器，支持 SWD 与 I2C/ADC
+U2,低压差稳压器 LDO,ME6211C33M5G-N,SOT-23-5,"3.3V, 500mA, 压差100mV, 纹波<30uV",MicrOne (微盟),1,低噪声为传感器和 MCU 提供稳定 3.3V
+U3,防反接 P-MOSFET,SSM3J328R,SOT-23,"-20V, -4.2A, Rds(on)=50mΩ, Vgs(th)=-0.6V",Toshiba (东芝),1,高边防反接保护，低阈值彻底避免死锁
+U4,数字温湿度传感器,SHT30-DIS-B,DFN-8 (2.5x2.5mm),"I2C, ±0.3℃, ±2%RH, 2.4~5.5V",Sensirion (盛思锐),1,工业级高精度温湿度传感器，地址 0x44
+U5,烟雾可燃气体传感器,MQ-2 / MQ-2B,直插 Ø19.0mm / 4-Pin,"加热电压 5.0V, 敏感电阻 2~20kΩ, 响应<10s",Winsen (炜盛),1,双输出(AO模拟浓度+DO数字比较阈值)
+U6,USB ESD静电保护,USBLC6-2SC6,SOT-23-6,"双路低电容 TVS, 4.5A (8/20us), 3.5pF",STMicroelectronics,1,USB Type-C VBUS 与 D+/D- 浪涌防护
+DISP1,0.96寸单色OLED屏,OLED-0.96-I2C-12864,4-Pin 2.54mm 排母 / 焊接,"128x64 分辨率, SSD1306 驱动, I2C 接口",中景园 / 兼容屏,1,默认 I2C 地址 0x3C，直观显示温湿度与烟雾 PPM
+BZ1,有源/无源电磁蜂鸣器,MLT-8530 / TMB12A05,SMD 8.5x8.5mm / 直插 12mm,"3.3V/5V, 2.7kHz, 85dB @ 10cm",常州华威 / 汇科,1,由 N-MOS/三极管低端开关驱动
+Q1,蜂鸣器驱动 N-MOS,SI2302CDS,SOT-23,"20V, 2.8A, Rds(on)=55mΩ, Vgs(th)=0.7V",Vishay / 长电,1,MCU 3.3V GPIO 直接饱和驱动
+J1,USB Type-C 接口,TYPE-C-16P-SMD,TYPE-C 16-Pin 四脚插板,"5A, 5.1kΩ CC下拉, 翻转即插",JAE / 拓普联科,1,系统主供电输入端
+J2,SWD 调试接口,HDR-1x4P-2.54,1x4P 2.54mm 排针,"3.3V, SWDIO, SWCLK, GND",通用规格,1,用于 ST-Link / J-Link 烧录与在线调试
+F1,自恢复保险丝 PPTC,SMD1812P050TF,1812,"Hold=500mA, Trip=1.0A, Vmax=15V",Polytronics,1,USB 5V 输入过流保护
+D1,续流保护二极管,1N4148W,SOD-123,"100V, 150mA, 开关时间 4ns",ON Semi,1,蜂鸣器感性线圈反向电动势泄放
+D2,运行指示灯 (绿),LED-0603-GREEN,0603,"Vf=2.0V, If=5mA, 高亮绿",Everlight,1,系统正常工作时每 2 秒慢闪
+D3,报警指示灯 (红),LED-0603-RED,0603,"Vf=1.8V, If=10mA, 极亮红",Everlight,1,烟雾或温度超限时 5Hz 快闪
+"SW1,SW2",贴片轻触按键,TS-1088-3.0x4.0,SMD 3.0x4.0x2.0mm,"12V 50mA, 寿命 10万次",韩荣 / C&K,2,"SW1: 消音/校准, SW2: 翻页/自检"
+"C1,C3,C5",滤波陶瓷电容,GRM21BR61C106KE15L,0805,"10µF, 16V, X5R, ±10%",Murata,3,电源输入、LDO输出及 5V 电源储能
+"C2,C4,C6,C7,C8",去耦陶瓷电容,CC0402KRX7R9BB104,0402,"100nF (0.1µF), 50V, X7R",Yageo,5,MCU、SHT30、复位及按键高频滤波
+"R1,R2",I2C 总线上拉电阻,RC0402FR-074K7L,0402,"4.7kΩ, 1/16W, ±1%",Yageo,2,SCL/SDA 总线标准上拉
+"R3,R4",Type-C CC下拉电阻,RC0402FR-075K1L,0402,"5.1kΩ, 1/16W, ±1%",Yageo,2,Type-C CC1/CC2 握手下拉
+"R5,R6",LED 限流电阻,RC0402FR-071KL,0402,"1kΩ, 1/16W, ±1%",Yageo,2,绿灯/红灯驱动限流
+R7,BOOT0 下拉电阻,RC0402FR-0710KL,0402,"10kΩ, 1/16W, ±1%",Yageo,1,MCU BOOT0 启动模式固定下拉
+R8,MOS 栅极下拉电阻,RC0402FR-0710KL,0402,"10kΩ, 1/16W, ±1%",Yageo,1,SI2302 栅极下拉防浮空误开通
+VR1,MQ-2 负载精密电位器,3362P-1-103,直插 6.8x6.8mm,"10kΩ, 0.5W, 线性可调",Bourns,1,调节烟雾传感器灵敏度与模拟输出基准

@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LAB7 双筒夜视仪主板 · PCB元器件选型与详细物料清单 (BOM)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (savedTheme === 'light' || (!savedTheme && !systemDark)) {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+      }
+    })();
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* 深色模式默认样式 */
+    html.dark body {
+      background-color: #0b0f17;
+      color: #e2e8f0;
+    }
+    html.dark .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(51, 65, 85, 0.6);
+    }
+    html.dark .badge-u  { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.3); }
+    html.dark .badge-q  { background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+    html.dark .badge-c  { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
+    html.dark .badge-r  { background: rgba(245, 158, 11, 0.15); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.3); }
+    html.dark .badge-l  { background: rgba(249, 115, 22, 0.15); color: #fdba74; border: 1px solid rgba(249, 115, 22, 0.3); }
+    html.dark .badge-d  { background: rgba(236, 72, 153, 0.15); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.3); }
+    html.dark .badge-p  { background: rgba(14, 165, 233, 0.15); color: #7dd3fc; border: 1px solid rgba(14, 165, 233, 0.3); }
+    html.dark .badge-tp { background: rgba(244, 63, 94, 0.15); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.3); }
+    html.dark .badge-rs { background: rgba(20, 184, 166, 0.15); color: #5eead4; border: 1px solid rgba(20, 184, 166, 0.3); }
+    html.dark tr:hover td {
+      background-color: rgba(30, 41, 59, 0.5);
+    }
+
+    /* 浅色模式系统样式 (Light Mode Theme) */
+    html:not(.dark) body {
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    html:not(.dark) .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.05);
+    }
+    html:not(.dark) .text-slate-100,
+    html:not(.dark) .text-slate-200 {
+      color: #0f172a !important;
+    }
+    html:not(.dark) .text-slate-300 {
+      color: #334155 !important;
+    }
+    html:not(.dark) .text-slate-400 {
+      color: #475569 !important;
+    }
+    html:not(.dark) .text-slate-500 {
+      color: #64748b !important;
+    }
+    html:not(.dark) .bg-slate-900,
+    html:not(.dark) .bg-slate-950 {
+      background-color: #ffffff !important;
+      border-color: #e2e8f0 !important;
+    }
+    html:not(.dark) .bg-slate-800 {
+      background-color: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #1e293b !important;
+    }
+    html:not(.dark) .hover\:bg-slate-700:hover {
+      background-color: #e2e8f0 !important;
+    }
+    html:not(.dark) .border-slate-800,
+    html:not(.dark) .border-slate-700 {
+      border-color: #e2e8f0 !important;
+    }
+    html:not(.dark) tr:hover td {
+      background-color: #f1f5f9 !important;
+    }
+    html:not(.dark) table thead {
+      background-color: #f1f5f9 !important;
+    }
+    html:not(.dark) table thead th {
+      color: #475569 !important;
+      border-color: #e2e8f0 !important;
+    }
+    html:not(.dark) table tbody td {
+      border-color: #e2e8f0 !important;
+    }
+    html:not(.dark) .badge-u  { background: #faf5ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+    html:not(.dark) .badge-q  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    html:not(.dark) .badge-c  { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+    html:not(.dark) .badge-r  { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+    html:not(.dark) .badge-l  { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+    html:not(.dark) .badge-d  { background: #fdf2f8; color: #be185d; border: 1px solid #fbcfe8; }
+    html:not(.dark) .badge-p  { background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; }
+    html:not(.dark) .badge-tp { background: #fff1f2; color: #be123c; border: 1px solid #fecdd3; }
+    html:not(.dark) .badge-rs { background: #f0fdfa; color: #0f766e; border: 1px solid #99f6e4; }
+
+    @media print {
+      body { background-color: #fff; color: #000; }
+      .glass-card { background: #fff; border: 1px solid #ccc; box-shadow: none; }
+      .no-print { display: none !important; }
+      table { border-collapse: collapse; width: 100%; font-size: 10px; }
+      th, td { border: 1px solid #ddd; padding: 4px; color: #000 !important; }
+      .badge-u, .badge-q, .badge-c, .badge-r, .badge-l, .badge-d, .badge-p, .badge-tp, .badge-rs {
+        background: none !important; color: #000 !important; border: 1px solid #666 !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+  <!-- 顶部标题与板卡工程概要 -->
+  <header class="max-w-7xl mx-auto mb-6">
+    <div class="glass-card rounded-2xl p-6 relative overflow-hidden border-t-4 border-t-sky-500">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <span class="px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-300 font-mono text-xs font-semibold border border-sky-500/30">
+              BOARD: LAB7-DL-01
+            </span>
+            <span class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 font-mono text-xs font-semibold border border-emerald-500/30">
+              <i class="fa-solid fa-check-double mr-1"></i> KiCad 10 官方 DRC 0 违规 / 0 未连接
+            </span>
+            <span class="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 font-mono text-xs font-semibold border border-amber-500/30">
+              4层沉金 ENIG 1.0mm
+            </span>
+          </div>
+          <h1 class="text-2xl md:text-3xl font-bold text-slate-100 tracking-tight flex items-center gap-3">
+            <i class="fa-solid fa-microchip text-sky-400"></i>
+            LAB7 双筒微光夜视仪主板 · 元器件选型与物料规格详情清单
+          </h1>
+          <p class="text-xs md:text-sm text-slate-400 mt-2 leading-relaxed max-w-4xl">
+            本清单涵盖主板全部 <strong>65 个器件与物理焊盘</strong>（含 46 颗核心 SMT 贴片元器件、15 组飞线接口焊盘及 4 组调试测试点）。
+            规格包含器件精确型号、芯片厂商、封装公制尺寸 (L×W×H)、布局安装面、限高等级及深度设计选型依据。
+          </p>
+        </div>
+
+        <!-- 快捷操作区 -->
+        <div class="flex items-center gap-2.5 no-print flex-wrap lg:flex-nowrap">
+          <button id="theme-toggle" onclick="toggleTheme()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition flex items-center gap-1.5 shadow-sm" title="切换深色/浅色模式">
+            <i id="theme-icon" class="fa-solid fa-sun text-amber-400"></i> <span id="theme-text">浅色模式</span>
+          </button>
+          <button onclick="exportToCsv()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-file-csv text-emerald-400"></i> 导出标准 CSV
+          </button>
+          <button onclick="window.print()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-print text-sky-400"></i> 打印 / 存为 PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- 核心指标统计卡片 -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mt-6 pt-6 border-t border-slate-800">
+        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+          <div class="text-[11px] text-slate-400 font-medium">PCB 几何尺寸</div>
+          <div class="text-base font-bold text-slate-100 font-mono mt-0.5">59.0 × 26.0 mm</div>
+          <div class="text-[10px] text-slate-500">板厚 1.0mm 沉金</div>
+        </div>
+        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+          <div class="text-[11px] text-slate-400 font-medium">贴片位号总数</div>
+          <div class="text-base font-bold text-sky-400 font-mono mt-0.5">46 颗 SMD</div>
+          <div class="text-[10px] text-slate-500">电阻17 / 电容19 / IC3</div>
+        </div>
+        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+          <div class="text-[11px] text-slate-400 font-medium">微型晶体管/MOS</div>
+          <div class="text-base font-bold text-blue-400 font-mono mt-0.5">3 颗 SOT-23</div>
+          <div class="text-[10px] text-slate-500">超低阈值 P/N MOS</div>
+        </div>
+        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+          <div class="text-[11px] text-slate-400 font-medium">输入/输出焊盘</div>
+          <div class="text-base font-bold text-indigo-400 font-mono mt-0.5">15 组无插头焊盘</div>
+          <div class="text-[10px] text-slate-500">大电流2x3 / 信号1.5x2.5</div>
+        </div>
+        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+          <div class="text-[11px] text-slate-400 font-medium">产测探针测试点</div>
+          <div class="text-base font-bold text-rose-400 font-mono mt-0.5">4 组 Ø1.0mm</div>
+          <div class="text-[10px] text-slate-500">SWD 烧录与现场标定</div>
+        </div>
+        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+          <div class="text-[11px] text-slate-400 font-medium">背面严苛限高</div>
+          <div class="text-base font-bold text-amber-400 font-mono mt-0.5">≤ 1.3 mm</div>
+          <div class="text-[10px] text-slate-500">SOT-23 必须全部放正面</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 封装尺寸快速参考卡片 (Footprint Dimension Quick Reference) -->
+  <section class="max-w-7xl mx-auto mb-6 no-print">
+    <div class="glass-card rounded-2xl p-5">
+      <div class="flex items-center justify-between mb-3 border-b border-slate-800 pb-2.5">
+        <h2 class="text-xs md:text-sm font-bold text-slate-200 flex items-center gap-2">
+          <i class="fa-solid fa-ruler-combined text-sky-400"></i>
+          PCB 封装公制尺寸速查手册 (Footprint Dimensions Reference)
+        </h2>
+        <span class="text-[11px] text-slate-500 font-mono">严格遵循 IPC-7351B 规范</span>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 text-xs">
+        <div class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
+          <div class="text-[10px] text-slate-400 font-bold uppercase">0402 (1005)</div>
+          <div class="text-slate-200 font-mono mt-1 font-semibold">1.0 × 0.5 × 0.35 mm</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">焊盘: 0.5×0.5mm 距:0.5mm</div>
+        </div>
+        <div class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
+          <div class="text-[10px] text-slate-400 font-bold uppercase">0603 (1608)</div>
+          <div class="text-slate-200 font-mono mt-1 font-semibold">1.6 × 0.8 × 0.80 mm</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">焊盘: 0.8×0.8mm 距:0.8mm</div>
+        </div>
+        <div class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
+          <div class="text-[10px] text-slate-400 font-bold uppercase">0805 (2012)</div>
+          <div class="text-slate-200 font-mono mt-1 font-semibold">2.0 × 1.25 × 1.25 mm</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">焊盘: 1.25×1.0mm 距:1.0mm</div>
+        </div>
+        <div class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
+          <div class="text-[10px] text-slate-400 font-bold uppercase">1206 (3216)</div>
+          <div class="text-slate-200 font-mono mt-1 font-semibold">3.2 × 1.6 × 1.60 mm</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">焊盘: 1.6×1.1mm 距:1.8mm</div>
+        </div>
+        <div class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
+          <div class="text-[10px] text-slate-400 font-bold uppercase">SOT-23 / 5 / 6</div>
+          <div class="text-slate-200 font-mono mt-1 font-semibold">2.9 × 1.6 × 1.25 mm</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">引脚间距 0.95mm</div>
+        </div>
+        <div class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
+          <div class="text-[10px] text-slate-400 font-bold uppercase">UFQFPN-20 (QFN)</div>
+          <div class="text-slate-200 font-mono mt-1 font-semibold">3.0 × 3.0 × 0.55 mm</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">超薄座高 / 间距 0.5mm</div>
+        </div>
+        <div class="bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
+          <div class="text-[10px] text-slate-400 font-bold uppercase">3x3 屏蔽功率电感</div>
+          <div class="text-slate-200 font-mono mt-1 font-semibold">3.0 × 3.0 × 1.50 mm</div>
+          <div class="text-[10px] text-slate-500 mt-0.5">限制高度 ≤ 1.50mm</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 交互筛选与过滤控制栏 -->
+  <section class="max-w-7xl mx-auto mb-4 no-print">
+    <div class="glass-card rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-3">
+      <!-- 搜索框 -->
+      <div class="relative w-full md:w-80">
+        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+        <input type="text" id="bom-search" oninput="filterBom()" placeholder="搜索位号 (如 Q1)、型号、阻值或功能..." 
+               class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-sky-500 transition font-mono">
+      </div>
+
+      <!-- 分组过滤器胶囊 -->
+      <div class="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 text-xs">
+        <button onclick="setModuleFilter('ALL')" class="filter-btn active px-3 py-1.5 rounded-xl border border-sky-500 bg-sky-500/20 text-sky-300 font-medium whitespace-nowrap transition">全部 (65)</button>
+        <button onclick="setModuleFilter('POWER')" class="filter-btn px-3 py-1.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-medium whitespace-nowrap hover:border-slate-700 transition">电源与升压</button>
+        <button onclick="setModuleFilter('LDO')" class="filter-btn px-3 py-1.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-medium whitespace-nowrap hover:border-slate-700 transition">LDO与像管开关</button>
+        <button onclick="setModuleFilter('MCU')" class="filter-btn px-3 py-1.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-medium whitespace-nowrap hover:border-slate-700 transition">MCU最小系统</button>
+        <button onclick="setModuleFilter('SENSOR')" class="filter-btn px-3 py-1.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-medium whitespace-nowrap hover:border-slate-700 transition">传感器与驱动</button>
+        <button onclick="setModuleFilter('PAD')" class="filter-btn px-3 py-1.5 rounded-xl border border-slate-800 bg-slate-900 text-slate-400 font-medium whitespace-nowrap hover:border-slate-700 transition">接线焊盘/测试点</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOM 详细表格 -->
+  <main class="max-w-7xl mx-auto">
+    <div class="glass-card rounded-2xl overflow-hidden shadow-2xl">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse" id="bom-table">
+          <thead>
+            <tr class="border-b border-slate-800 bg-slate-900/90 text-slate-400 text-[11px] font-semibold tracking-wider uppercase">
+              <th class="py-3.5 px-3">序号</th>
+              <th class="py-3.5 px-3">位号 (Ref)</th>
+              <th class="py-3.5 px-3">功能子系统</th>
+              <th class="py-3.5 px-3">元件名称与推荐型号</th>
+              <th class="py-3.5 px-3">核心参数与容差耐压</th>
+              <th class="py-3.5 px-3">KiCad 封装</th>
+              <th class="py-3.5 px-3">实体尺寸 (L×W×H)</th>
+              <th class="py-3.5 px-2.5 text-center">安装面/限高</th>
+              <th class="py-3.5 px-2 text-center">用量</th>
+              <th class="py-3.5 px-4 min-w-[280px]">选型工程理由与设计规范</th>
+            </tr>
+          </thead>
+          <tbody id="bom-tbody" class="text-xs divide-y divide-slate-800/60 font-mono">
+            <!-- 动态通过 JavaScript 渲染全部 65 项 -->
+          </tbody>
+        </table>
+      </div>
+      <!-- 底部汇总提示 -->
+      <div class="p-4 bg-slate-950/80 border-t border-slate-800 text-xs text-slate-400 flex flex-col sm:flex-row justify-between items-center gap-2">
+        <div id="bom-counter">显示 65 / 65 个元器件与引线焊盘</div>
+        <div class="flex items-center gap-2 text-slate-500 text-[11px]">
+          <span>单板总净重估计: 4.8g</span> · 
+          <span>最大元器件高度: 1.60mm (C9/C10 1206 MLCC)</span> · 
+          <span>可制造性等级: JLCPCB 沉金 4-Layer Class A</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const BOM_DATA = [
+      // --- 1. 电源输入与反接保护 ---
+      {
+        id: 1, ref: "Q1", type: "Q", module: "POWER", moduleName: "电源输入反接保护",
+        name: "P-MOSFET (超低阈值)", mfr: "SSM3J328R (东芝 TOSHIBA)",
+        spec: "Vds=-12V, Id=-4.2A, Vgs(th)max=-0.6V, Rds(on)=43mΩ@Vgs=-2.5V",
+        footprint: "Package_TO_SOT_SMD:SOT-23",
+        dimensions: "2.92 × 1.30 × 1.12 mm",
+        layer: "正面 (Top)", heightLimit: "≤ 3.0mm", qty: 1,
+        notes: "高边反接保护关键选型！在单节电池低至0.9V下依然稳定导通。严禁用AO3401A（AO3401A的Vgs(th)最高达-1.5V，在电池欠压时会退化为体二极管导通产生0.4V压降损失44%能量）。"
+      },
+      {
+        id: 2, ref: "R1", type: "R", module: "POWER", moduleName: "电源输入反接保护",
+        name: "贴片厚膜电阻", mfr: "国巨 YAGEO / 厚声 UniOhm",
+        spec: "100kΩ ±1%, 1/16W, 50V",
+        footprint: "Resistor_SMD:R_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "Q1栅极下拉到GND，防止栅极漂移，确保电池反接时Vgs=0V使Q1迅速可靠截止断开电路。"
+      },
+      {
+        id: 3, ref: "C1", type: "C", module: "POWER", moduleName: "电源输入反接保护",
+        name: "多层陶瓷贴片电容 MLCC", mfr: "村田 MURATA / 太阳诱电 TDK",
+        spec: "47µF / 10V ±20% X5R",
+        footprint: "Capacitor_SMD:C_0805_2012Metric",
+        dimensions: "2.00 × 1.25 × 1.25 mm",
+        layer: "正面 (Top)", heightLimit: "≤ 3.0mm", qty: 1,
+        notes: "电池输入端体储能电容。必须选10V耐压！因为最高锂电池电压4.2V下，若选用6.3V电容其有效电容量受DC偏压效应衰减将超过55%。"
+      },
+      {
+        id: 4, ref: "C2", type: "C", module: "POWER", moduleName: "电源输入反接保护",
+        name: "高频陶瓷贴片电容", mfr: "村田 GRM155R71C104KA88D",
+        spec: "100nF (0.1µF) / 16V ±10% X7R",
+        footprint: "Capacitor_SMD:C_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "输入端高频去耦电容，紧靠Q1漏极输入侧，吸收电池引线电感带来的高频感应尖峰脉冲。"
+      },
+      {
+        id: 5, ref: "D1", type: "D", module: "POWER", moduleName: "电源输入反接保护",
+        name: "双向瞬态抑制二极管 TVS", mfr: "SMF6.8CA (槟城电子 / 强茂)",
+        spec: "Vbr=6.8V, Vc=10.5V, Ipp=19A (200W, 8/20µs)",
+        footprint: "Diode_SMD:D_SOD-123F",
+        dimensions: "2.70 × 1.60 × 1.15 mm",
+        layer: "正面 (Top)", heightLimit: "≤ 3.0mm", qty: 1,
+        notes: "ESD与浪涌防护预留位。采用超薄SOD-123F扁平引脚封装，常规打样默认不贴装。"
+      },
+      {
+        id: 6, ref: "R17", type: "R", module: "POWER", moduleName: "电源输入反接保护",
+        name: "跨接跳线贴片电阻", mfr: "国巨 RC0603FR-070RL",
+        spec: "0Ω 跳线, 最大电流 1A",
+        footprint: "Resistor_SMD:R_0603_1608Metric",
+        dimensions: "1.60 × 0.80 × 0.80 mm",
+        layer: "正面 (Top)", heightLimit: "≤ 3.0mm", qty: 1,
+        notes: "跨接P3-P4旋转总开关触点。采用方案(a)物理旋钮时不贴；若改用脉冲按钮副板方案则贴装，实现单板硬件兼容两种整机结构。"
+      },
+
+      // --- 2. 同步升压系统 ---
+      {
+        id: 7, ref: "U1", type: "U", module: "POWER", moduleName: "同步升压拓扑",
+        name: "微功率同步升压转换器", mfr: "MCP16251T-I/CH (Microchip 微芯)",
+        spec: "启动电压≤0.82V, Iq=12µA, Iout≥250mA, 500kHz, 允许Vin>Vout",
+        footprint: "Package_TO_SOT_SMD:SOT-23-6",
+        dimensions: "2.90 × 1.60 × 1.25 mm",
+        layer: "正面 (Top)", heightLimit: "≤ 3.0mm", qty: 1,
+        notes: "升压核心芯片。具备True Output Disconnect真关断与Vin>Vout直通特性，保证无论是1.5V干电池末期还是4.2V锂电池全生命周期均能稳定提供3.3V系统轨。"
+      },
+      {
+        id: 8, ref: "L1", type: "L", module: "POWER", moduleName: "同步升压拓扑",
+        name: "贴片屏蔽功率电感", mfr: "顺络 SWPA3015S4R7MT / 伍尔特",
+        spec: "4.7µH ±20%, Isat=0.95A, Irms=0.85A, DCR≤160mΩ",
+        footprint: "LAB7:LAB7_L_3x3mm",
+        dimensions: "3.00 × 3.00 × 1.50 mm (max)",
+        layer: "正面中部 (Top)", heightLimit: "≤ 5.4mm区", qty: 1,
+        notes: "高度严苛受限≤1.50mm！闭磁路铁氧体屏蔽结构，防止开关大电流纹波辐射干扰后级微光倍增像管探测环境。"
+      },
+      {
+        id: 9, ref: "C3", type: "C", module: "POWER", moduleName: "同步升压拓扑",
+        name: "输入陶瓷滤波电容", mfr: "村田 GRM188R61A106KE69D",
+        spec: "10µF / 10V ±20% X5R",
+        footprint: "Capacitor_SMD:C_0603_1608Metric",
+        dimensions: "1.60 × 0.80 × 0.80 mm",
+        layer: "正面 (Top)", heightLimit: "≤ 3.0mm", qty: 1,
+        notes: "升压芯片输入侧去耦储能，紧贴U1的VIN引脚与电感输入端放置，走线宽度≥0.4mm。"
+      },
+      {
+        id: 10, ref: "C4", type: "C", module: "POWER", moduleName: "同步升压拓扑",
+        name: "输出储能陶瓷电容", mfr: "村田 GRM21BR60J226ME39L",
+        spec: "22µF / 6.3V ±20% X5R",
+        footprint: "Capacitor_SMD:C_0805_2012Metric",
+        dimensions: "2.00 × 1.25 × 1.25 mm",
+        layer: "正面 (Top)", heightLimit: "≤ 3.0mm", qty: 1,
+        notes: "与C5紧密并联构成44µF升压输出滤波阵列，极大降低500kHz开关纹波至12mV以下。"
+      },
+      {
+        id: 11, ref: "C5", type: "C", module: "POWER", moduleName: "同步升压拓扑",
+        name: "输出储能陶瓷电容", mfr: "村田 GRM21BR60J226ME39L",
+        spec: "22µF / 6.3V ±20% X5R",
+        footprint: "Capacitor_SMD:C_0805_2012Metric",
+        dimensions: "2.00 × 1.25 × 1.25 mm",
+        layer: "正面 (Top)", heightLimit: "≤ 3.0mm", qty: 1,
+        notes: "与C4并联，保证像管点火瞬态与高频负载变化时VSYS电压跌落不超过50mV。"
+      },
+      {
+        id: 12, ref: "R2", type: "R", module: "POWER", moduleName: "同步升压拓扑",
+        name: "精密分压贴片电阻", mfr: "国巨 RT0402FRE071ML",
+        spec: "1MΩ ±1%, 1/16W, TK25",
+        footprint: "Resistor_SMD:R_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "升压反馈分压上臂。配合MCP16251的Vfb=1.23V基准电平计算设定Vout=3.30V，高阻抗降低空载漏电流。"
+      },
+      {
+        id: 13, ref: "R3", type: "R", module: "POWER", moduleName: "同步升压拓扑",
+        name: "精密分压贴片电阻", mfr: "国巨 RT0402FRE07576KL",
+        spec: "576kΩ ±1%, 1/16W, TK25",
+        footprint: "Resistor_SMD:R_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "升压反馈分压下臂。E96标准高精度1%电阻阻值：Vout = 1.23V × (1 + 1M / 576k) = 3.36V。"
+      },
+      {
+        id: 14, ref: "C6", type: "C", module: "POWER", moduleName: "同步升压拓扑",
+        name: "高频前馈相位补偿电容", mfr: "村田 GJM1555C1H220JB01D",
+        spec: "22pF / 50V ±5% C0G/NPO",
+        footprint: "Capacitor_SMD:C_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "并联跨接在R2反馈电阻两端，引入高频零点，补偿高阻分压网络引起的相移，极大提升环路稳定性。"
+      },
+
+      // --- 3. LDO 与像管供电 ---
+      {
+        id: 15, ref: "U2", type: "U", module: "LDO", moduleName: "高PSRR LDO稳压",
+        name: "高PSRR超低压差线性稳压器", mfr: "ME6211C30M5G-N / TPS7A0230PDBVR",
+        spec: "固定3.0V, Iout=300mA, Vdo≤130mV@150mA, PSRR=65dB@1kHz",
+        footprint: "Package_TO_SOT_SMD:SOT-23-5",
+        dimensions: "2.90 × 1.60 × 1.20 mm",
+        layer: "正面 (Top)", heightLimit: "≤ 3.0mm", qty: 1,
+        notes: "关键器件！提供超低噪声3.0V纯净电源给像管与MCU模拟部分。严禁用XC6206（XC6206压差高达250mV，在3.3V转3.0V仅300mV压差裕度下极易进入Dropout失稳）。"
+      },
+      {
+        id: 16, ref: "C7", type: "C", module: "LDO", moduleName: "高PSRR LDO稳压",
+        name: "LDO 输入去耦电容", mfr: "村田 GRM155R61A105KE15D",
+        spec: "1µF / 10V ±10% X5R",
+        footprint: "Capacitor_SMD:C_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "LDO输入滤波，紧邻U2第1引脚布局，走线直通完整地平面过孔。"
+      },
+      {
+        id: 17, ref: "C8", type: "C", module: "LDO", moduleName: "高PSRR LDO稳压",
+        name: "LDO 输出去耦电容", mfr: "村田 GRM188R60J225KE19D",
+        spec: "2.2µF / 6.3V ±10% X5R",
+        footprint: "Capacitor_SMD:C_0603_1608Metric",
+        dimensions: "1.60 × 0.80 × 0.80 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "LDO输出基准滤波，提供闭环控制极点补偿，消除高频振荡。"
+      },
+      {
+        id: 18, ref: "C9", type: "C", module: "LDO", moduleName: "像管高能缓冲",
+        name: "超大容量多层陶瓷电容 MLCC", mfr: "村田 GRM31CR60J107ME39L",
+        spec: "100µF / 6.3V ±20% X5R",
+        footprint: "Capacitor_SMD:C_1206_3216Metric",
+        dimensions: "3.20 × 1.60 × 1.60 mm",
+        layer: "正面 (Top)", heightLimit: "≤ 3.0mm区", qty: 1,
+        notes: "像管大电容缓冲！由于0805无可靠100µF/6.3V成熟量产料，改为1206封装（厚度1.6mm），因背面限高1.3mm，C9必须强制放置于正面！"
+      },
+      {
+        id: 19, ref: "C10", type: "C", module: "LDO", moduleName: "像管高能缓冲",
+        name: "超大容量多层陶瓷电容 MLCC", mfr: "村田 GRM31CR60J107ME39L",
+        spec: "100µF / 6.3V ±20% X5R",
+        footprint: "Capacitor_SMD:C_1206_3216Metric",
+        dimensions: "3.20 × 1.60 × 1.60 mm",
+        layer: "正面 (Top)", heightLimit: "≤ 3.0mm区", qty: 1,
+        notes: "与C9紧密并联，总储能容量达200µF。紧贴Q2源极侧，彻底消除微光像增强管启动瞬态闪烁。"
+      },
+
+      // --- 4. MCU 最小系统 ---
+      {
+        id: 20, ref: "U3", type: "U", module: "MCU", moduleName: "MCU主控核心",
+        name: "32位超低功耗微控制器", mfr: "STM32L011F4U6TR (ST意法半导体)",
+        spec: "ARM Cortex-M0+ 32MHz, 16KB Flash, 2KB RAM, 512B EEPROM",
+        footprint: "Package_DFN_QFN:ST_UFQFPN-20_3x3mm_P0.5mm",
+        dimensions: "3.00 × 3.00 × 0.55 mm",
+        layer: "正面中心 (Top)", heightLimit: "极低 0.55mm", qty: 1,
+        notes: "超薄UFQFPN-20封装，底板带有1.6x1.6mm散热接地暴露焊盘。严禁用TSSOP-20封装（TSSOP高度1.2mm且引脚外扩占据大量宝贵布线通道）。"
+      },
+      {
+        id: 21, ref: "C11", type: "C", module: "MCU", moduleName: "MCU最小系统",
+        name: "数字电源去耦电容", mfr: "村田 GRM155R71C104KA88D",
+        spec: "100nF / 16V ±10% X7R",
+        footprint: "Capacitor_SMD:C_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "正面 (Top)", heightLimit: "≤ 3.0mm", qty: 1,
+        notes: "紧贴MCU Pin13 (VDD) 放置，距离引脚焊盘小于0.8mm，走线无弯折直接入孔。"
+      },
+      {
+        id: 22, ref: "C12", type: "C", module: "MCU", moduleName: "MCU最小系统",
+        name: "数字电源体电容", mfr: "村田 GRM155R61A105KE15D",
+        spec: "1µF / 10V ±10% X5R",
+        footprint: "Capacitor_SMD:C_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "MCU供电能量储备，提供低频纹波平滑。"
+      },
+      {
+        id: 23, ref: "FB1", type: "L", module: "MCU", moduleName: "MCU模拟电源隔离",
+        name: "贴片铁氧体磁珠", mfr: "顺络 UPB201209T-601Y-N / TDK",
+        spec: "600Ω @100MHz, DCR≤0.35Ω, Idc≥200mA",
+        footprint: "Inductor_SMD:L_0805_2012Metric",
+        dimensions: "2.00 × 1.25 × 0.90 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "串联在V3P0与VDDA之间，形成LC低通滤波，阻断数字CPU内核数字高频噪声污染高精度ADC基准。"
+      },
+      {
+        id: 24, ref: "C13", type: "C", module: "MCU", moduleName: "MCU模拟电源隔离",
+        name: "模拟电源去耦电容", mfr: "村田 GRM155R71C104KA88D",
+        spec: "100nF / 16V ±10% X7R",
+        footprint: "Capacitor_SMD:C_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "正面 (Top)", heightLimit: "≤ 3.0mm", qty: 1,
+        notes: "紧贴MCU Pin4 (VDDA) 引脚放置，吸收ADC采样瞬间的开关电荷脉冲。"
+      },
+      {
+        id: 25, ref: "R4", type: "R", module: "MCU", moduleName: "MCU复位与启动",
+        name: "复位上拉电阻", mfr: "国巨 RC0402FR-0710KL",
+        spec: "10kΩ ±1%, 1/16W",
+        footprint: "Resistor_SMD:R_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "NRST复位端外部上拉至V3P0，保证MCU不会因空间电磁辐射引起意外复位。"
+      },
+      {
+        id: 26, ref: "C14", type: "C", module: "MCU", moduleName: "MCU复位与启动",
+        name: "复位滤波电容", mfr: "村田 GRM155R71C104KA88D",
+        spec: "100nF / 16V ±10% X7R",
+        footprint: "Capacitor_SMD:C_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "NRST对地低通滤波，消抖时间常数约1ms。"
+      },
+      {
+        id: 27, ref: "R5", type: "R", module: "MCU", moduleName: "MCU复位与启动",
+        name: "BOOT0 下拉电阻", mfr: "国巨 RC0402FR-0710KL",
+        spec: "10kΩ ±1%, 1/16W",
+        footprint: "Resistor_SMD:R_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "BOOT0引脚必须可靠下拉接地，严禁悬空！确保上电总是从片上Flash主存启动。"
+      },
+
+      // --- 5. 像管高边开关 ---
+      {
+        id: 28, ref: "Q2", type: "Q", module: "LDO", moduleName: "像管高边控制",
+        name: "P-MOSFET 高边开关", mfr: "AO3401A (AOS 万代) / DMG2305UX",
+        spec: "Vds=-30V, Id=-4.0A, Vgs(th)=-1.0V, Rds(on)=55mΩ@Vgs=-2.5V",
+        footprint: "Package_TO_SOT_SMD:SOT-23",
+        dimensions: "2.92 × 1.30 × 1.12 mm",
+        layer: "正面 (Top)", heightLimit: "≤ 3.0mm", qty: 1,
+        notes: "像增强管高边通断开关。由MCU GPIO Pin9 (TUBE_EN) 直驱，在3.0V下Vgs=-2.7V，导通饱和内阻仅55mΩ，导通压降<3mV。"
+      },
+      {
+        id: 29, ref: "R6", type: "R", module: "LDO", moduleName: "像管高边控制",
+        name: "栅源极关断上拉电阻", mfr: "国巨 RC0402FR-071ML",
+        spec: "1MΩ ±1%, 1/16W",
+        footprint: "Resistor_SMD:R_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "跨接在Q2的栅极与源极（V3P0）之间，确保MCU在复位、休眠浮空时Q2默认处于深度关断状态。"
+      },
+      {
+        id: 30, ref: "R7", type: "R", module: "LDO", moduleName: "像管高边控制",
+        name: "缓启动定时电阻", mfr: "国巨 RC0402FR-07100KL",
+        spec: "100kΩ ±1%, 1/16W",
+        footprint: "Resistor_SMD:R_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "串联在MCU GPIO与Q2栅极之间，与C15共同设定约10ms的斜坡缓启动时间，防止像管冷态大电容浪涌。"
+      },
+      {
+        id: 31, ref: "C15", type: "C", module: "LDO", moduleName: "像管高边控制",
+        name: "缓启动定时电容", mfr: "村田 GRM155R71C104KA88D",
+        spec: "100nF / 16V ±10% X7R",
+        footprint: "Capacitor_SMD:C_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "跨接在Q2栅源极的密勒积分电容，实现像管上电微秒级平滑上升。"
+      },
+
+      // --- 6. IR 驱动与指示灯 ---
+      {
+        id: 32, ref: "Q3", type: "Q", module: "SENSOR", moduleName: "红外补光驱动",
+        name: "N-MOSFET 逻辑电平开关", mfr: "BSS138 (ON Semi 安森美 / 2N7002)",
+        spec: "Vds=50V, Id=220mA, Vgs(th)=1.3V, Rds(on)=3.5Ω@Vgs=2.7V",
+        footprint: "Package_TO_SOT_SMD:SOT-23",
+        dimensions: "2.92 × 1.30 × 1.12 mm",
+        layer: "正面 (Top)", heightLimit: "≤ 3.0mm", qty: 1,
+        notes: "红外LED低边通断与调光开关。由MCU Pin10输出PWM信号驱动，实现5%~100%脉宽无级连续调光。"
+      },
+      {
+        id: 33, ref: "R8", type: "R", module: "SENSOR", moduleName: "红外补光驱动",
+        name: "栅极防漂移下拉电阻", mfr: "国巨 RC0402FR-07100KL",
+        spec: "100kΩ ±1%, 1/16W",
+        footprint: "Resistor_SMD:R_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "Q3栅极下拉至GND，防止MCU引脚高阻态时红外灯微光误开启。"
+      },
+      {
+        id: 34, ref: "R9", type: "R", module: "SENSOR", moduleName: "红外补光驱动",
+        name: "IR 限流功率电阻", mfr: "国巨 RC0603FR-0775RL",
+        spec: "75Ω ±1%, 1/10W",
+        footprint: "Resistor_SMD:R_0603_1608Metric",
+        dimensions: "1.60 × 0.80 × 0.80 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "限流计算公式：(3.0V - 1.5V_Vf) / 20mA = 75Ω。选用0603封装分散连续工作发热。"
+      },
+      {
+        id: 35, ref: "R10", type: "R", module: "SENSOR", moduleName: "状态指示灯",
+        name: "红光LED限流电阻", mfr: "国巨 RC0402FR-07680RL",
+        spec: "680Ω ±1%, 1/16W",
+        footprint: "Resistor_SMD:R_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "红色低电量报警指示限流。限制驱动电流约1.5mA，符合夜视微光目视暗环境要求，防止过亮致盲目镜。"
+      },
+      {
+        id: 36, ref: "R11", type: "R", module: "SENSOR", moduleName: "状态指示灯",
+        name: "黄光LED限流电阻", mfr: "国巨 RC0402FR-07680RL",
+        spec: "680Ω ±1%, 1/16W",
+        footprint: "Resistor_SMD:R_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "黄色状态指示灯限流，控制电流在1.5mA微亮状态。"
+      },
+
+      // --- 7. 传感器与电池采样 ---
+      {
+        id: 37, ref: "RS1", type: "RS", module: "SENSOR", moduleName: "头盔翻起检测",
+        name: "微型常开干簧管", mfr: "MKA-14103 / COMUS 2x14mm",
+        spec: "常开型, 玻璃体Ø2.3×14.2mm, 灵敏度 10~15 AT",
+        footprint: "LAB7:LAB7_REED_2x14",
+        dimensions: "Ø2.3 × 14.2 mm (安装跨距 19.5mm)",
+        layer: "正面中部斜带", heightLimit: "≤ 5.4mm区", qty: 1,
+        notes: "头盔翻转自动断电传感器！水平卧式贴装在正面宽裕区域。玻璃壳体两端严禁超出PCB板边，防止受力破裂。"
+      },
+      {
+        id: 38, ref: "R12", type: "R", module: "SENSOR", moduleName: "头盔翻起检测",
+        name: "干簧管高阻上拉电阻", mfr: "国巨 RC0402FR-071ML",
+        spec: "1MΩ ±1%, 1/16W",
+        footprint: "Resistor_SMD:R_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "微功耗上拉，干簧管闭合吸合时回路静态漏电流仅3µA。"
+      },
+      {
+        id: 39, ref: "C16", type: "C", module: "SENSOR", moduleName: "头盔翻起检测",
+        name: "干簧管硬件消抖电容", mfr: "村田 GRM155R71E103KA01D",
+        spec: "10nF / 25V ±10% X7R",
+        footprint: "Capacitor_SMD:C_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "与R12组成约10ms的硬件消抖积分低通滤波，消除干簧管磁吸瞬间的机械接触弹跳。"
+      },
+      {
+        id: 40, ref: "R13", type: "R", module: "SENSOR", moduleName: "环境光敏检测",
+        name: "光敏分压参考电阻", mfr: "国巨 RC0402FR-07100KL",
+        spec: "100kΩ ±1%, 1/16W",
+        footprint: "Resistor_SMD:R_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "与外部光敏电阻组成电桥分压，供MCU Pin8 ADC采样计算环境照度。"
+      },
+      {
+        id: 41, ref: "C17", type: "C", module: "SENSOR", moduleName: "环境光敏检测",
+        name: "光敏ADC输入滤波电容", mfr: "村田 GRM155R71E103KA01D",
+        spec: "10nF / 25V ±10% X7R",
+        footprint: "Capacitor_SMD:C_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "滤除前置光敏长飞线拾取的高频工频干扰，为MCU ADC提供低阻抗瞬态采样电荷。"
+      },
+      {
+        id: 42, ref: "R14", type: "R", module: "SENSOR", moduleName: "档位按键输入",
+        name: "档位触点上拉电阻", mfr: "国巨 RC0402FR-071ML",
+        spec: "1MΩ ±1%, 1/16W",
+        footprint: "Resistor_SMD:R_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "二档开关SW2输入上拉，MCU Pin5中断触发。"
+      },
+      {
+        id: 43, ref: "C18", type: "C", module: "SENSOR", moduleName: "档位按键输入",
+        name: "按键消抖电容", mfr: "村田 GRM155R71C104KA88D",
+        spec: "100nF / 16V ±10% X7R",
+        footprint: "Capacitor_SMD:C_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "旋钮机械触点硬件消抖。"
+      },
+      {
+        id: 44, ref: "R15", type: "R", module: "SENSOR", moduleName: "高阻电池电压采样",
+        name: "高精密分压上臂电阻", mfr: "国巨 RT0402FRE071ML",
+        spec: "1MΩ ±1%, 1/16W, 低温漂 TK25",
+        footprint: "Resistor_SMD:R_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "与R16精确1:2分压，将最高4.2V锂电池衰减至2.1V以适配MCU ADC采样范围。1MΩ极大降低静态常开待机电流。"
+      },
+      {
+        id: 45, ref: "R16", type: "R", module: "SENSOR", moduleName: "高阻电池电压采样",
+        name: "高精密分压下臂电阻", mfr: "国巨 RT0402FRE071ML",
+        spec: "1MΩ ±1%, 1/16W, 低温漂 TK25",
+        footprint: "Resistor_SMD:R_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "精密低温漂分压下臂，保证-20℃~+60℃全温区电池电压检测误差<15mV。"
+      },
+      {
+        id: 46, ref: "C19", type: "C", module: "SENSOR", moduleName: "高阻电池电压采样",
+        name: "ADC 采样保持滤波电容", mfr: "村田 GRM155R71C104KA88D",
+        spec: "100nF / 16V ±10% X7R",
+        footprint: "Capacitor_SMD:C_0402_1005Metric",
+        dimensions: "1.00 × 0.50 × 0.35 mm",
+        layer: "任意面", heightLimit: "≤ 1.3mm", qty: 1,
+        notes: "配合MCU内部ADC最长160.5个时钟周期的采样保持窗口，消除高阻分压建立误差。"
+      },
+
+      // --- 8. 外部接线焊盘 ---
+      { id: 47, ref: "P1", type: "P", module: "PAD", moduleName: "大电流电源连接", name: "电池仓正极 (BAT+)", mfr: "实心沉金铜皮焊盘", spec: "大电流走线 ≥ 0.6mm, 镀金厚度 1u\"", footprint: "LAB7:LAB7_PAD_PWR_2x3", dimensions: "2.00 × 3.00 mm", layer: "正面 (Top)", heightLimit: "平齐 0.035mm", qty: 1, notes: "电池正极飞线焊接专用大焊盘。" },
+      { id: 48, ref: "P2", type: "P", module: "PAD", moduleName: "大电流电源连接", name: "电池仓负极 (BAT-)", mfr: "多过孔接地强化焊盘", spec: "内嵌4个接地通孔直接连通地平面", footprint: "LAB7:LAB7_PAD_PWR_2x3", dimensions: "2.00 × 3.00 mm", layer: "正面 (Top)", heightLimit: "平齐 0.035mm", qty: 1, notes: "电池负极主地回路焊盘。" },
+      { id: 49, ref: "P3", type: "P", module: "PAD", moduleName: "机械开关触点", name: "旋钮主开关A触点 (SW1-A)", mfr: "大焊盘", spec: "耐焊接拉扯应力", footprint: "LAB7:LAB7_PAD_PWR_2x3", dimensions: "2.00 × 3.00 mm", layer: "正面 (Top)", heightLimit: "平齐 0.035mm", qty: 1, notes: "提拉旋钮旋转总开关触点A。" },
+      { id: 50, ref: "P4", type: "P", module: "PAD", moduleName: "机械开关触点", name: "旋钮主开关B触点 (SW1-B)", mfr: "大焊盘", spec: "耐焊接拉扯应力", footprint: "LAB7:LAB7_PAD_PWR_2x3", dimensions: "2.00 × 3.00 mm", layer: "正面 (Top)", heightLimit: "平齐 0.035mm", qty: 1, notes: "提拉旋钮旋转总开关触点B。" },
+      { id: 51, ref: "P5", type: "P", module: "PAD", moduleName: "按键信号触点", name: "二档IR触点 (SW2)", mfr: "信号焊盘", spec: "间隙 0.3mm", footprint: "LAB7:LAB7_PAD_SIG_1.5x2.5", dimensions: "1.50 × 2.50 mm", layer: "正面 (Top)", heightLimit: "平齐 0.035mm", qty: 1, notes: "旋至红外补光二档机械信号。" },
+      { id: 52, ref: "P6", type: "P", module: "PAD", moduleName: "像管高压模块电源", name: "像管正极 (TUBE+)", mfr: "低阻抗沉金焊盘", spec: "3.0V高洁净纯净电源", footprint: "LAB7:LAB7_PAD_PWR_2x3", dimensions: "2.00 × 3.00 mm", layer: "正面 (Top)", heightLimit: "平齐 0.035mm", qty: 1, notes: "接像增强管微光高压倍增电源正极输入。" },
+      { id: 53, ref: "P7", type: "P", module: "PAD", moduleName: "像管高压模块电源", name: "像管负极 (TUBE-)", mfr: "接地焊盘", spec: "接系统模拟地", footprint: "LAB7:LAB7_PAD_PWR_2x3", dimensions: "2.00 × 3.00 mm", layer: "正面 (Top)", heightLimit: "平齐 0.035mm", qty: 1, notes: "接像增强管阴极端子。" },
+      { id: 54, ref: "P8", type: "P", module: "PAD", moduleName: "红外补光灯接口", name: "IR灯阳极 (IR+)", mfr: "信号焊盘", spec: "直通V3P0系统轨", footprint: "LAB7:LAB7_PAD_SIG_1.5x2.5", dimensions: "1.50 × 2.50 mm", layer: "正面 (Top)", heightLimit: "平齐 0.035mm", qty: 1, notes: "外置红外LED阳极线。" },
+      { id: 55, ref: "P9", type: "P", module: "PAD", moduleName: "红外补光灯接口", name: "IR灯阴极 (IR-)", mfr: "信号焊盘", spec: "经R9限流至Q3漏极", footprint: "LAB7:LAB7_PAD_SIG_1.5x2.5", dimensions: "1.50 × 2.50 mm", layer: "正面 (Top)", heightLimit: "平齐 0.035mm", qty: 1, notes: "外置红外LED阴极线。" },
+      { id: 56, ref: "P10", type: "P", module: "PAD", moduleName: "外置光敏接口", name: "光敏端1 (LDR1)", mfr: "信号焊盘", spec: "接MCU ADC采样节点", footprint: "LAB7:LAB7_PAD_SIG_1.5x2.5", dimensions: "1.50 × 2.50 mm", layer: "正面 (Top)", heightLimit: "平齐 0.035mm", qty: 1, notes: "外壳前置光敏电阻接线端1。" },
+      { id: 57, ref: "P11", type: "P", module: "PAD", moduleName: "外置光敏接口", name: "光敏端2 (LDR2)", mfr: "信号焊盘", spec: "接模拟地GND", footprint: "LAB7:LAB7_PAD_SIG_1.5x2.5", dimensions: "1.50 × 2.50 mm", layer: "正面 (Top)", heightLimit: "平齐 0.035mm", qty: 1, notes: "外壳前置光敏电阻接线端2。" },
+      { id: 58, ref: "P12", type: "P", module: "PAD", moduleName: "外部指示灯接口", name: "红灯阳极 (RED+)", mfr: "微光限流焊盘", spec: "经R10限流1.5mA", footprint: "LAB7:LAB7_PAD_SIG_1.5x2.5", dimensions: "1.50 × 2.50 mm", layer: "正面 (Top)", heightLimit: "平齐 0.035mm", qty: 1, notes: "目镜视场内红色低电量指示灯。" },
+      { id: 59, ref: "P13", type: "P", module: "PAD", moduleName: "外部指示灯接口", name: "黄灯阳极 (YEL+)", mfr: "微光限流焊盘", spec: "经R11限流1.5mA", footprint: "LAB7:LAB7_PAD_SIG_1.5x2.5", dimensions: "1.50 × 2.50 mm", layer: "正面 (Top)", heightLimit: "平齐 0.035mm", qty: 1, notes: "目镜视场内黄色翻起休眠指示灯。" },
+      { id: 60, ref: "P14", type: "P", module: "PAD", moduleName: "外部指示灯接口", name: "LED共阴极 (LED-)", mfr: "共地焊盘", spec: "共用接地回路", footprint: "LAB7:LAB7_PAD_SIG_1.5x2.5", dimensions: "1.50 × 2.50 mm", layer: "正面 (Top)", heightLimit: "平齐 0.035mm", qty: 1, notes: "双色指示灯共阴极线束焊盘。" },
+      { id: 61, ref: "P15", type: "P", module: "PAD", moduleName: "机械开关触点", name: "开关信号回线 (SW2-RTN)", mfr: "信号焊盘", spec: "接系统参考地", footprint: "LAB7:LAB7_PAD_SIG_1.5x2.5", dimensions: "1.50 × 2.50 mm", layer: "正面 (Top)", heightLimit: "平齐 0.035mm", qty: 1, notes: "旋转开关地信号回线。" },
+
+      // --- 9. 产测与调试测试点 ---
+      { id: 62, ref: "TP1", type: "TP", module: "PAD", moduleName: "固件烧录调试", name: "SWD 数据线 (SWDIO)", mfr: "圆形镀金测试探针点", spec: "直径 Ø1.0mm", footprint: "TestPoint:TestPoint_Pad_D1.0mm", dimensions: "Ø 1.00 mm", layer: "底层 (Bottom)", heightLimit: "平齐 0.035mm", qty: 1, notes: "ST-Link / J-Link 烧录与调试数据线探针测试点。" },
+      { id: 63, ref: "TP2", type: "TP", module: "PAD", moduleName: "固件烧录调试", name: "SWD 时钟线 (SWCLK)", mfr: "圆形镀金测试探针点", spec: "直径 Ø1.0mm", footprint: "TestPoint:TestPoint_Pad_D1.0mm", dimensions: "Ø 1.00 mm", layer: "底层 (Bottom)", heightLimit: "平齐 0.035mm", qty: 1, notes: "ST-Link / J-Link 时钟线探针测试点。" },
+      { id: 64, ref: "TP3", type: "TP", module: "PAD", moduleName: "固件烧录调试", name: "硬件复位线 (NRST)", mfr: "圆形镀金测试探针点", spec: "直径 Ø1.0mm", footprint: "TestPoint:TestPoint_Pad_D1.0mm", dimensions: "Ø 1.00 mm", layer: "底层 (Bottom)", heightLimit: "平齐 0.035mm", qty: 1, notes: "产线测试夹具硬件复位触发测试点。" },
+      { id: 65, ref: "TP8", type: "TP", module: "PAD", moduleName: "产测与自校准", name: "现场校准触发点 (CALIB)", mfr: "圆形镀金测试探针点", spec: "直径 Ø1.0mm", footprint: "TestPoint:TestPoint_Pad_D1.0mm", dimensions: "Ø 1.00 mm", layer: "底层 (Bottom)", heightLimit: "平齐 0.035mm", qty: 1, notes: "现场校准触发触点：出厂检验时短接此点至GND，MCU自动采集当前环境照度并固化至内部EEPROM。" }
+    ];
+
+    let currentFilter = 'ALL';
+
+    function renderBom() {
+      const tbody = document.getElementById('bom-tbody');
+      tbody.innerHTML = '';
+      const query = document.getElementById('bom-search').value.toLowerCase().trim();
+
+      let visibleCount = 0;
+
+      BOM_DATA.forEach(row => {
+        // 分类匹配
+        if (currentFilter !== 'ALL' && row.module !== currentFilter) {
+          return;
+        }
+
+        // 文本搜索匹配
+        if (query) {
+          const matchString = (row.ref + ' ' + row.name + ' ' + row.mfr + ' ' + row.spec + ' ' + row.footprint + ' ' + row.notes).toLowerCase();
+          if (!matchString.includes(query)) {
+            return;
+          }
+        }
+
+        visibleCount++;
+        const tr = document.createElement('tr');
+        tr.className = "border-b border-slate-800/60 transition";
+
+        let badgeClass = "badge-r";
+        if (row.type === 'U') badgeClass = "badge-u";
+        else if (row.type === 'Q') badgeClass = "badge-q";
+        else if (row.type === 'C') badgeClass = "badge-c";
+        else if (row.type === 'L') badgeClass = "badge-l";
+        else if (row.type === 'D') badgeClass = "badge-d";
+        else if (row.type === 'P') badgeClass = "badge-p";
+        else if (row.type === 'TP') badgeClass = "badge-tp";
+        else if (row.type === 'RS') badgeClass = "badge-rs";
+
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 text-slate-500 font-mono text-[11px]">${row.id}</td>
+          <td class="py-2.5 px-3 whitespace-nowrap">
+            <span class="px-2 py-0.5 rounded font-mono font-bold text-xs ${badgeClass}">${row.ref}</span>
+          </td>
+          <td class="py-2.5 px-3 text-slate-300 font-sans text-xs whitespace-nowrap">${row.moduleName}</td>
+          <td class="py-2.5 px-3 font-sans">
+            <div class="font-bold text-slate-100 text-xs">${row.name}</div>
+            <div class="text-[11px] text-sky-400 font-mono mt-0.5">${row.mfr}</div>
+          </td>
+          <td class="py-2.5 px-3 text-slate-300 font-mono text-xs">${row.spec}</td>
+          <td class="py-2.5 px-3 text-slate-400 font-mono text-[11px] whitespace-nowrap">
+            <code class="bg-slate-950 px-1.5 py-0.5 rounded border border-slate-800 text-slate-300">${row.footprint.split(':')[1] || row.footprint}</code>
+          </td>
+          <td class="py-2.5 px-3 text-amber-300 font-mono text-xs whitespace-nowrap font-medium">${row.dimensions}</td>
+          <td class="py-2.5 px-2.5 text-center whitespace-nowrap">
+            <span class="text-[11px] px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-slate-300">${row.layer}</span>
+          </td>
+          <td class="py-2.5 px-2 text-center font-mono font-bold text-slate-200 text-xs">${row.qty}</td>
+          <td class="py-2.5 px-4 text-slate-400 font-sans text-xs leading-relaxed">${row.notes}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('bom-counter').innerText = `显示 ${visibleCount} / ${BOM_DATA.length} 个元器件与引线焊盘`;
+    }
+
+    function setModuleFilter(mod) {
+      currentFilter = mod;
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-sky-500', 'bg-sky-500/20', 'text-sky-300');
+        btn.classList.add('border-slate-800', 'bg-slate-900', 'text-slate-400');
+      });
+      event.currentTarget.classList.remove('border-slate-800', 'bg-slate-900', 'text-slate-400');
+      event.currentTarget.classList.add('active', 'border-sky-500', 'bg-sky-500/20', 'text-sky-300');
+      renderBom();
+    }
+
+    function filterBom() {
+      renderBom();
+    }
+
+    function exportToCsv() {
+      let csvContent = "\uFEFF"; // UTF-8 BOM
+      csvContent += "序号,位号,功能模块,元件名称,建议型号与厂商,电气规格参数,封装代码,物理尺寸(长x宽x高),安装面,用量,设计选型理由与注意事项\n";
+      BOM_DATA.forEach(row => {
+        const cleanNotes = row.notes.replace(/"/g, '""');
+        const cleanSpec = row.spec.replace(/"/g, '""');
+        csvContent += `"${row.id}","${row.ref}","${row.moduleName}","${row.name}","${row.mfr}","${cleanSpec}","${row.footprint}","${row.dimensions}","${row.layer}","${row.qty}","${cleanNotes}"\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "LAB7_PCB_元器件选型与物料清单详情表.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // ==========================================
+    // 深色 / 浅色模式切换引擎 (Theme Switcher)
+    // ==========================================
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.contains('dark');
+      if (isDark) {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+        localStorage.setItem('theme', 'dark');
+      }
+      updateThemeUI();
+    }
+
+    function updateThemeUI() {
+      const isDark = document.documentElement.classList.contains('dark');
+      const icon = document.getElementById('theme-icon');
+      const text = document.getElementById('theme-text');
+      const btn = document.getElementById('theme-toggle');
+      if (!icon || !text || !btn) return;
+      if (isDark) {
+        icon.className = "fa-solid fa-sun text-amber-400";
+        text.innerText = "浅色模式";
+        btn.className = "px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 border border-slate-700 transition flex items-center gap-1.5 shadow-sm";
+      } else {
+        icon.className = "fa-solid fa-moon text-indigo-600";
+        text.innerText = "深色模式";
+        btn.className = "px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-medium text-slate-700 border border-slate-300 transition flex items-center gap-1.5 shadow-sm";
+      }
+    }
+
+    // 初始渲染
+    updateThemeUI();
+    renderBom();
+  </script>
+</body>
+</html>

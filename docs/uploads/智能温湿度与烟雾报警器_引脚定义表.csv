@@ -1,0 +1,22 @@
+﻿物理引脚,MCU引脚编号,网络标号 (Net Name),复用功能 (Function),信号类型 (Type),外设连接与设计说明
+Pin 1,BOOT0,BOOT0,BOOT0,Input,启动模式选择，板载 10kΩ 下拉至 GND
+Pin 2,PC14,OSC32_IN,RCC_OSC32,Passive,32.768kHz 外部低速晶振引脚 (预留 RTC)
+Pin 3,PC15,OSC32_OUT,RCC_OSC32,Passive,32.768kHz 外部低速晶振引脚 (预留 RTC)
+Pin 4,NRST,NRST,RESET,Input,MCU 硬件复位引脚，接 100nF 滤波电容与复位按键
+Pin 5,VDDA,+3.3VA,Power,Power,模拟电源输入，通过磁珠与 LC 滤波连接到 +3.3V
+Pin 6,PA0,SMOKE_AO,ADC_IN0,Analog,MQ-2 烟雾传感器模拟电压输出采集 (0~3.3V)
+Pin 7,PA1,SMOKE_DO,GPIO_EXTI1,Input,MQ-2 数字阈值比较输出 (低电平触发外部中断)
+Pin 8,PA2,BUZZER_PWM,TIM2_CH3,Output,蜂鸣器驱动 PWM 输出 (2.7kHz 变频脉冲)
+Pin 9,PA3,LED_RUN,GPIO_Output,Output,绿色状态指示灯 (高电平点亮/PWM呼吸)
+Pin 10,PA4,LED_ALARM,GPIO_Output,Output,红色火警/超温报警指示灯 (高电平点亮)
+Pin 11,PA5,KEY_MUTE,GPIO_Input,Input,Key 1: 消音/校准按键，内部上拉，低电平有效
+Pin 12,PA6,KEY_PAGE,GPIO_Input,Input,Key 2: 翻页/自检按键，内部上拉，低电平有效
+Pin 13,PA7,TP_PA7,GPIO_Output,Output,测试点 TP1 / 预留外部继电器控制接口
+Pin 14,PB0,VBUS_ADC,ADC_IN8,Analog,USB 5V 输入电压分压检测 (预留电源监测)
+Pin 15,PB1,TP_PB1,GPIO,IO,备用 GPIO / 测试点 TP2
+Pin 16,VSS,GND,Power,Power,系统数字地，大面积底层铺铜
+Pin 17,VDD,+3.3V,Power,Power,3.3V 主电源输入，并联 100nF + 10µF 去耦电容
+Pin 18,PA13,SWDIO,SYS_SWDIO,IO,ARM SWD 调试数据线，引出 2.54mm 排针
+Pin 19,PA14,SWCLK,SYS_SWCLK,Input,ARM SWD 调试时钟线，引出 2.54mm 排针
+Pin 20,PB8,I2C1_SCL,I2C1_SCL,OD,I2C 时钟线，连接 SHT30 与 OLED，外接 4.7kΩ 上拉
+Pin 21,PB9,I2C1_SDA,I2C1_SDA,OD,I2C 数据线，连接 SHT30 与 OLED，外接 4.7kΩ 上拉

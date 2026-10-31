@@ -1,0 +1,11 @@
+{
+  "id": "stm32-hal-ll-driver-expert",
+  "title": "STM32 CMSIS / LL / HAL 零警告 C99 驱动专家",
+  "publisher": "Embedded-Agent-Skills / GitHub",
+  "version": "3.1.0",
+  "category": "firmware",
+  "summary": "专为 arm-none-eabi-gcc -Wall -Wextra -ffreestanding 打造，内置按键时间戳消抖、ADC EMA 滤波、PWM 软启动与看门狗安全架构。",
+  "source_site": "GitHub",
+  "source_url": "https://github.com/anthropics/skills/tree/main/stm32-hal-ll-driver-expert",
+  "installed_at": "2026-10-31 11:13:42"
+}

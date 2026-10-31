@@ -1,0 +1,17 @@
+【工程上下文与事实源 (SSOT)】：
+- 项目名称: ai-pcb-platform
+- 规范文件路径: /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/spec.json
+- 引脚映射文件: /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/pinout.json
+- 目标工作目录: /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform
+- 机械尺寸: 50 x 30 mm，板厚 1.0mm，2层板，倒角 R1.0mm。
+- 供电系统: 3.7V，拓扑: LDO稳压。
+- 主控芯片: STM32 (QFN)，调试接口: SWD。
+- 外设引脚: 共分配 0 个引脚。
+
+【核心任务：嵌入式 C 驱动与固件开发】
+1. 在 `/Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/firmware/` 目录下创建驱动与主逻辑代码：
+   - 生成 `Drivers/bsp_pinout.h`：将 `pinout.json` 完整映射为清晰的引脚宏定义与 GPIO 初始化结构体。
+   - 生成外设驱动（PWM 调光、ADC 采样、霍尔输入捕获、电源使能逻辑）。
+   - 编写主业务状态机与低功耗休眠模式。
+2. 编写 `Makefile` 或 `CMakeLists.txt`，支持通过 `arm-none-eabi-gcc` 一键编译。
+3. 保证代码纯 C 语言编写、函数注释完备、无任何内存泄露与未定义行为。

@@ -1,0 +1,17 @@
+【工程上下文与事实源 (SSOT)】：
+- 项目名称: ai-pcb-platform
+- 规范文件路径: /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/spec.json
+- 引脚映射文件: /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/pinout.json
+- 目标工作目录: /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform
+- 机械尺寸: 50 x 30 mm，板厚 1.0mm，2层板，倒角 R1.0mm。
+- 供电系统: 3.7V，拓扑: LDO稳压。
+- 主控芯片: STM32 (QFN)，调试接口: SWD。
+- 外设引脚: 共分配 0 个引脚。
+
+【核心任务：KiCad 电路板布局布线与打样】
+1. 在 `/Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/hardware/` 目录下生成/更新 KiCad 原理图与 PCB 文件：
+   - 遵循 `spec.json` 的外形尺寸（Edge.Cuts），严格打磨 R1.0 圆角与定位孔。
+   - 外沿环绕 3mm 法拉第接地屏蔽孔圈 (GND Via Fence)，全板顶底双面连续接地铺铜。
+   - 走线使用 45° 钝角走线，电源走线宽度不小于 0.5mm，剥离死铜孤岛。
+2. 调用 `kicad-cli pcb drc --refill-zones --save-board` 执行官方电气 DRC 校验，确保 0 违规、0 未连接。
+3. 调用 `kicad-cli pcb export gerbers` 与 `drill` 导出嘉立创标准打样生产压缩包。
