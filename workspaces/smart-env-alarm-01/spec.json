@@ -119,5 +119,17 @@
     "finish": "ENIG (沉金)",
     "faraday_cage": true,
     "acid_trap_chamfer": true
+  },
+  "bom_overrides": {
+    "U1": {
+      "LCSC": "C529331",
+      "LibraryType": "Basic",
+      "Value": "STM32G030F6P6"
+    },
+    "R3": {
+      "LCSC": "C25804",
+      "LibraryType": "Basic",
+      "Value": "BUZZER_PWM"
+    }
   }
 }

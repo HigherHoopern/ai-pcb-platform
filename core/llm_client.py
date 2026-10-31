@@ -73,7 +73,7 @@ def call_llm(
     if "qwen3" in model_name.lower() or is_local:
         payload["chat_template_kwargs"] = {"enable_thinking": enable_thinking}
 
-    if json_mode:
+    if json_mode and not is_local:
         payload["response_format"] = {"type": "json_object"}
 
     req_data = json.dumps(payload).encode("utf8")

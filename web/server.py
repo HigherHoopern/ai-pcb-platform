@@ -241,7 +241,8 @@ def api_create_project(data: dict):
         or "New-Hardware-Project"
     ).strip()
     folder_slug = raw_name.lower().replace(" ", "_").replace("/", "_")
-    parent_dir = data.get("parent_dir") or os.path.dirname(PLATFORM_ROOT)
+    default_ws_root = load_settings().get("workspace", {}).get("projects_root") or os.path.join(PLATFORM_ROOT, "workspaces")
+    parent_dir = data.get("parent_dir") or default_ws_root
     out_dir = os.path.join(parent_dir, folder_slug)
 
     os.makedirs(os.path.join(out_dir, "hardware", "scripts"), exist_ok=True)
@@ -382,7 +383,7 @@ def get_agents():
 
 @app.post("/api/agents/command")
 def get_agent_command(data: dict):
-    agent_id = data.get("agent_id", "claude")
+    agent_id = data.get("agent_id", "antigravity")
     task_type = data.get("task_type", "full")
     project_dir = data.get("project_dir")
     interactive = data.get("interactive", False)
@@ -391,7 +392,7 @@ def get_agent_command(data: dict):
 
 @app.post("/api/agents/dispatch")
 def dispatch_agent(data: dict):
-    agent_id = data.get("agent_id", "claude")
+    agent_id = data.get("agent_id", "antigravity")
     task_type = data.get("task_type", "full")
     project_dir = data.get("project_dir")
     try:
@@ -505,7 +506,8 @@ async def confirm_requirements(data: dict):
         out_dir = os.path.abspath(target_dir)
     else:
         slug = project_name.lower().replace(" ", "_").replace("/", "_")
-        out_dir = os.path.join(os.path.dirname(PLATFORM_ROOT), slug)
+        default_ws_root = load_settings().get("workspace", {}).get("projects_root") or os.path.join(PLATFORM_ROOT, "workspaces")
+        out_dir = os.path.join(default_ws_root, slug)
 
     os.makedirs(os.path.join(out_dir, "hardware", "out"), exist_ok=True)
     os.makedirs(os.path.join(out_dir, "firmware", "Drivers"), exist_ok=True)
@@ -686,10 +688,11 @@ def get_skill_detail(skill_name: str):
 # 6. 软硬件闭环审查 API (DRC / 3D 渲染 / 固件编译 / 文件预览)
 # ==============================================================================
 @app.get("/api/projects/file")
+@app.get("/api/projects/download")
 def serve_project_file(path: str = Query(...)):
     if not path or not os.path.isfile(path):
         raise HTTPException(status_code=404, detail=f"文件不存在: {path}")
-    return FileResponse(path)
+    return FileResponse(path, filename=os.path.basename(path))
 
 
 @app.get("/api/projects/read_source")
@@ -1055,7 +1058,7 @@ def api_copilot_chat(data: dict):
     module = data.get("module", "pcb")
     message = data.get("message", "")
     engine_type = data.get("engine_type") or data.get("engine", "llm")
-    agent_id = data.get("agent_id", "claude")
+    agent_id = data.get("agent_id", "antigravity")
     active_file_path = data.get("active_file_path", "")
     eda_mode = data.get("eda_mode", "kicad")
     llm_provider = data.get("llm_provider", "")

@@ -4,24 +4,24 @@ Merging object attributes
 
 Discarded input sections
 
- .text          0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
- .data          0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
- .bss           0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
+ .text          0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/app_state_machine.o
+ .data          0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/app_state_machine.o
+ .bss           0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/app_state_machine.o
  .text.App_StateMachine_GetState
-                0x00000000        0xc /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
- .text          0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/main.o
- .data          0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/main.o
- .bss           0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/main.o
- .text          0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/startup_minimal.o
- .data          0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/startup_minimal.o
- .bss           0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/startup_minimal.o
- .text          0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
- .data          0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
- .bss           0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x00000000        0xc /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/app_state_machine.o
+ .text          0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/main.o
+ .data          0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/main.o
+ .bss           0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/main.o
+ .text          0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/startup_minimal.o
+ .data          0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/startup_minimal.o
+ .bss           0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/startup_minimal.o
+ .text          0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
+ .data          0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
+ .bss           0x00000000        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
  .text.BSP_DelayMs
-                0x00000000       0x18 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x00000000       0x18 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
  .text.BSP_I2C_ReadReg
-                0x00000000       0x1e /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x00000000       0x1e /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
 
 Memory Configuration
 
@@ -32,159 +32,148 @@ RAM              0x20000000         0x00002000         xrw
 
 Linker script and memory map
 
-LOAD /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
-LOAD /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/main.o
-LOAD /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/startup_minimal.o
-LOAD /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
+LOAD /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/app_state_machine.o
+LOAD /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/main.o
+LOAD /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/startup_minimal.o
+LOAD /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
 LOAD /opt/homebrew/Cellar/arm-none-eabi-gcc/16.2.0/lib/gcc/arm-none-eabi/16.2.0/thumb/v6-m/nofp/libgcc.a
                 0x20002000                        _estack = (ORIGIN (RAM) + LENGTH (RAM))
 
 .isr_vector     0x08000000       0x40
                 0x08000000                        . = ALIGN (0x4)
  *(.isr_vector)
- .isr_vector    0x08000000       0x40 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/startup_minimal.o
+ .isr_vector    0x08000000       0x40 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/startup_minimal.o
                 0x08000000                g_pfnVectors
                 0x08000040                        . = ALIGN (0x4)
 
-.text           0x08000040      0x7d8
+.text           0x08000040      0x654
                 0x08000040                        . = ALIGN (0x4)
  *(.text)
  *(.text*)
  .text.App_StateMachine_Init
-                0x08000040       0x2c /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
+                0x08000040       0x1c /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/app_state_machine.o
                 0x08000040                App_StateMachine_Init
  .text.App_StateMachine_Step
-                0x0800006c      0x108 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
-                0x0800006c                App_StateMachine_Step
+                0x0800005c       0xb4 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/app_state_machine.o
+                0x0800005c                App_StateMachine_Step
  .text.startup.main
-                0x08000174       0x10 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/main.o
-                0x08000174                main
+                0x08000110       0x10 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/main.o
+                0x08000110                main
  .text.Default_Handler
-                0x08000184        0x2 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/startup_minimal.o
-                0x08000184                Default_Handler
- *fill*         0x08000186        0x2 
+                0x08000120        0x2 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/startup_minimal.o
+                0x08000120                Default_Handler
+ *fill*         0x08000122        0x2 
  .text.Reset_Handler
-                0x08000188       0x3c /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/startup_minimal.o
-                0x08000188                Reset_Handler
+                0x08000124       0x3c /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/startup_minimal.o
+                0x08000124                Reset_Handler
  .text.SysTick_Handler
-                0x080001c4       0x10 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
-                0x080001c4                SysTick_Handler
+                0x08000160       0x10 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x08000160                SysTick_Handler
  .text.BSP_System_Init
-                0x080001d4       0x4c /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
-                0x080001d4                BSP_System_Init
+                0x08000170       0x4c /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x08000170                BSP_System_Init
  .text.BSP_GetTickMs
-                0x08000220        0xc /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
-                0x08000220                BSP_GetTickMs
+                0x080001bc        0xc /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x080001bc                BSP_GetTickMs
  .text.BSP_GPIO_WritePin
-                0x0800022c       0x24 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
-                0x0800022c                BSP_GPIO_WritePin
+                0x080001c8       0x24 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x080001c8                BSP_GPIO_WritePin
  .text.BSP_GPIO_ReadPin
-                0x08000250       0x18 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
-                0x08000250                BSP_GPIO_ReadPin
+                0x080001ec       0x18 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x080001ec                BSP_GPIO_ReadPin
  .text.BSP_GPIO_TogglePin
-                0x08000268       0x18 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
-                0x08000268                BSP_GPIO_TogglePin
+                0x08000204       0x18 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x08000204                BSP_GPIO_TogglePin
  .text.BSP_ADC_ReadMillivolts
-                0x08000280       0x30 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
-                0x08000280                BSP_ADC_ReadMillivolts
+                0x0800021c       0x30 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x0800021c                BSP_ADC_ReadMillivolts
  .text.BSP_PWM_SetDutyPermille
-                0x080002b0       0x1c /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
-                0x080002b0                BSP_PWM_SetDutyPermille
+                0x0800024c       0x1c /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x0800024c                BSP_PWM_SetDutyPermille
  .text.BSP_EnterLowPowerSleep
-                0x080002cc        0x4 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
-                0x080002cc                BSP_EnterLowPowerSleep
+                0x08000268        0x4 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x08000268                BSP_EnterLowPowerSleep
  *(.rodata)
  *(.rodata*)
  .rodata.str1.1
-                0x080002d0      0x306 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
- *fill*         0x080005d6        0x2 
+                0x0800026c      0x306 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
+ *fill*         0x08000572        0x2 
  .rodata.g_bsp_pinout_table
-                0x080005d8      0x120 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
- .rodata.str1.1
-                0x080006f8        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
-                                0x306 (size before relaxing)
- .rodata.g_bsp_pinout_table
-                0x080006f8      0x120 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
-                0x08000818                        . = ALIGN (0x4)
-                0x08000818                        _etext = .
-                0x08000818                        _sidata = LOADADDR (.data)
+                0x08000574      0x120 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x08000694                        . = ALIGN (0x4)
+                0x08000694                        _etext = .
+                0x08000694                        _sidata = LOADADDR (.data)
 
-.glue_7         0x08000818        0x0
- .glue_7        0x08000818        0x0 linker stubs
+.glue_7         0x08000694        0x0
+ .glue_7        0x08000694        0x0 linker stubs
 
-.glue_7t        0x08000818        0x0
- .glue_7t       0x08000818        0x0 linker stubs
+.glue_7t        0x08000694        0x0
+ .glue_7t       0x08000694        0x0 linker stubs
 
-.vfp11_veneer   0x08000818        0x0
- .vfp11_veneer  0x08000818        0x0 linker stubs
+.vfp11_veneer   0x08000694        0x0
+ .vfp11_veneer  0x08000694        0x0 linker stubs
 
-.v4_bx          0x08000818        0x0
- .v4_bx         0x08000818        0x0 linker stubs
+.v4_bx          0x08000694        0x0
+ .v4_bx         0x08000694        0x0 linker stubs
 
-.iplt           0x08000818        0x0
- .iplt          0x08000818        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
+.iplt           0x08000694        0x0
+ .iplt          0x08000694        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/app_state_machine.o
 
-.rel.dyn        0x08000818        0x0
- .rel.iplt      0x08000818        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
+.rel.dyn        0x08000694        0x0
+ .rel.iplt      0x08000694        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/app_state_machine.o
 
-.data           0x20000000        0x8 load address 0x08000818
+.data           0x20000000        0x8 load address 0x08000694
                 0x20000000                        . = ALIGN (0x4)
                 0x20000000                        _sdata = .
  *(.data)
  *(.data*)
- .data.s_adc_ema_mv
-                0x20000000        0x2 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
  .data.s_filt_mv.0
-                0x20000002        0x2 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x20000000        0x2 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
+ *fill*         0x20000002        0x2 
  .data.s_gpio_in_shadow
-                0x20000004        0x4 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x20000004        0x4 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
                 0x20000008                        . = ALIGN (0x4)
                 0x20000008                        _edata = .
 
-.igot.plt       0x20000008        0x0 load address 0x08000820
- .igot.plt      0x20000008        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
+.igot.plt       0x20000008        0x0 load address 0x0800069c
+ .igot.plt      0x20000008        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/app_state_machine.o
 
-.bss            0x20000008       0x60 load address 0x08000820
+.bss            0x20000008       0x5c load address 0x0800069c
                 0x20000008                        . = ALIGN (0x4)
                 0x20000008                        _sbss = .
  *(.bss)
  *(.bss*)
- .bss.s_key_stable_pressed
-                0x20000008        0x1 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
- .bss.s_key_debounce_cnt
-                0x20000009        0x1 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
- *fill*         0x2000000a        0x2 
  .bss.s_app_ctx
-                0x2000000c       0x14 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
+                0x20000008       0x14 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/app_state_machine.o
  .bss.s_pwm_duty_table
-                0x20000020       0x40 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x2000001c       0x40 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
  .bss.s_gpio_out_shadow
-                0x20000060        0x4 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x2000005c        0x4 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
  .bss.s_sys_tick_ms
-                0x20000064        0x4 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x20000060        0x4 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
  *(COMMON)
-                0x20000068                        . = ALIGN (0x4)
-                0x20000068                        _ebss = .
-OUTPUT(/Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/Smart_Env_Alarm_01.elf elf32-littlearm)
+                0x20000064                        . = ALIGN (0x4)
+                0x20000064                        _ebss = .
+OUTPUT(/Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/Smart_Env_Alarm_01.elf elf32-littlearm)
 LOAD linker stubs
 
 .comment        0x00000000       0x12
- .comment       0x00000000       0x12 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
+ .comment       0x00000000       0x12 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/app_state_machine.o
                                  0x13 (size before relaxing)
- .comment       0x00000012        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/main.o
+ .comment       0x00000012        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/main.o
                                  0x13 (size before relaxing)
- .comment       0x00000012        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/startup_minimal.o
+ .comment       0x00000012        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/startup_minimal.o
                                  0x13 (size before relaxing)
- .comment       0x00000012        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
+ .comment       0x00000012        0x0 /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o
                                  0x13 (size before relaxing)
 
 .ARM.attributes
                 0x00000000       0x2c
  .ARM.attributes
-                0x00000000       0x2c /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/app_state_machine.o
+                0x00000000       0x2c /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/app_state_machine.o
  .ARM.attributes
-                0x0000002c       0x2c /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/main.o
+                0x0000002c       0x2c /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/main.o
  .ARM.attributes
-                0x00000058       0x2c /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/startup_minimal.o
+                0x00000058       0x2c /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/startup_minimal.o
  .ARM.attributes
-                0x00000084       0x2c /Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01/firmware/build/bsp_hal.o
+                0x00000084       0x2c /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/build/bsp_hal.o

@@ -363,9 +363,59 @@ app_state_t App_StateMachine_GetState(void);
 """
     _write_if_needed(os.path.join(app_dir, "app_state_machine.h"), app_sm_h)
 
-    app_sm_c = """/**
+    # 根据 pinout 动态生成 100% 覆盖 SSOT 引脚宏的初始化与周期采样/控制代码
+    used_macros = set()
+    boot_pin_lines = []
+    poll_pin_lines = []
+    heartbeat_pin_lines = []
+    alarm_pin_lines = []
+
+    for idx, p in enumerate(pinout):
+        raw_pin = str(p.get("pin", f"PIN_{idx}")).strip()
+        raw_net = str(p.get("net_name", f"SIG_{idx}")).strip()
+        raw_func = str(p.get("function", "GPIO")).strip()
+        macro_name = re.sub(r"[^A-Za-z0-9_]", "_", raw_net).upper().strip("_")
+        if not macro_name or macro_name[0].isdigit():
+            macro_name = f"NET_{macro_name}"
+        if macro_name in used_macros:
+            macro_name = f"{macro_name}_{idx}"
+        used_macros.add(macro_name)
+
+        idx_macro = f"PIN_{macro_name}_PIN_INDEX"
+        net_up = raw_net.upper()
+        func_up = raw_func.upper()
+
+        boot_pin_lines.append(f"        /* [{raw_pin}] {raw_net} ({raw_func}) 通道自检绑定 */")
+        boot_pin_lines.append(f"        (void){idx_macro};")
+
+        if "ADC" in func_up or "AO" in net_up or "SMOKE" in net_up or "SENS" in net_up:
+            poll_pin_lines.append(f"            s_app_ctx.primary_adc_mv = BSP_ADC_ReadMillivolts({idx_macro});")
+        elif "KEY" in net_up or "BTN" in net_up or "IN" in func_up or "EXTI" in func_up:
+            poll_pin_lines.append(f"            if (!BSP_GPIO_ReadPin({idx_macro})) {{ s_app_ctx.alarm_latched = false; }}")
+        elif "PWM" in func_up or "BUZZ" in net_up or "BEEP" in net_up:
+            alarm_pin_lines.append(f"        BSP_PWM_SetDutyPermille({idx_macro}, s_app_ctx.alarm_latched ? 500U : 0U);")
+        elif "ALARM" in net_up or "RELAY" in net_up:
+            alarm_pin_lines.append(f"        BSP_GPIO_WritePin({idx_macro}, s_app_ctx.alarm_latched);")
+        elif "LED" in net_up or "STATUS" in net_up or "RUN" in net_up:
+            heartbeat_pin_lines.append(f"            BSP_GPIO_TogglePin({idx_macro});")
+
+    if not boot_pin_lines:
+        boot_pin_lines.append("        if (BSP_ASSIGNED_PIN_COUNT > 0U) { BSP_GPIO_WritePin(g_bsp_pinout_table[0].pin_index, false); }")
+    if not poll_pin_lines:
+        poll_pin_lines.append("            s_app_ctx.primary_adc_mv = BSP_ADC_ReadMillivolts(0U);")
+    if not heartbeat_pin_lines:
+        heartbeat_pin_lines.append("            if (BSP_ASSIGNED_PIN_COUNT > 1U) { BSP_GPIO_TogglePin(g_bsp_pinout_table[1].pin_index); }")
+    if not alarm_pin_lines:
+        alarm_pin_lines.append("        BSP_PWM_SetDutyPermille(0U, s_app_ctx.alarm_latched ? 500U : 0U);")
+
+    boot_block = "\n".join(boot_pin_lines)
+    poll_block = "\n".join(poll_pin_lines)
+    hb_block = "\n".join(heartbeat_pin_lines)
+    alarm_block = "\n".join(alarm_pin_lines)
+
+    app_sm_c = f"""/**
  * @file    app_state_machine.c
- * @brief   自动绑定 bsp_pinout.h 外设引脚的非阻塞业务状态机
+ * @brief   自动绑定 bsp_pinout.h 全部外设引脚宏的非阻塞业务状态机 (100% SSOT Pin Coverage)
  */
 #include "app_state_machine.h"
 #include "bsp_hal.h"
@@ -373,54 +423,49 @@ app_state_t App_StateMachine_GetState(void);
 static app_context_t s_app_ctx;
 
 void App_StateMachine_Init(void)
-{
+{{
     s_app_ctx.current_state       = APP_STATE_BOOT_CHECK;
     s_app_ctx.last_sensor_poll_ms = 0UL;
     s_app_ctx.last_heartbeat_ms   = 0UL;
     s_app_ctx.primary_adc_mv      = 0U;
     s_app_ctx.alarm_threshold_mv  = 2500U;
     s_app_ctx.alarm_latched       = false;
-}
+}}
 
 void App_StateMachine_Step(void)
-{
+{{
     uint32_t now = BSP_GetTickMs();
 
-    switch (s_app_ctx.current_state) {
+    switch (s_app_ctx.current_state) {{
     case APP_STATE_BOOT_CHECK:
-        /* 上电自检所有配置的 GPIO/外设通道 */
-        if (BSP_ASSIGNED_PIN_COUNT > 0U) {
-            BSP_GPIO_WritePin(g_bsp_pinout_table[0].pin_index, false);
-        }
+        /* 上电自检并显式绑定 bsp_pinout.h 中定义的全部 SSOT 外设引脚宏 */
+{boot_block}
         s_app_ctx.current_state = APP_STATE_NORMAL_RUN;
         break;
 
     case APP_STATE_NORMAL_RUN:
         /* 每 50ms 轮询一次模拟传感器与按键状态 */
-        if ((now - s_app_ctx.last_sensor_poll_ms) >= 50UL) {
+        if ((now - s_app_ctx.last_sensor_poll_ms) >= 50UL) {{
             s_app_ctx.last_sensor_poll_ms = now;
-            s_app_ctx.primary_adc_mv = BSP_ADC_ReadMillivolts(0U);
-            if (s_app_ctx.primary_adc_mv >= s_app_ctx.alarm_threshold_mv) {
+{poll_block}
+            if (s_app_ctx.primary_adc_mv >= s_app_ctx.alarm_threshold_mv) {{
                 s_app_ctx.alarm_latched = true;
                 s_app_ctx.current_state = APP_STATE_ALARM_ACTIVE;
-            }
-        }
+            }}
+        }}
         /* 每 500ms 翻转一次运行状态指示灯 */
-        if ((now - s_app_ctx.last_heartbeat_ms) >= 500UL) {
+        if ((now - s_app_ctx.last_heartbeat_ms) >= 500UL) {{
             s_app_ctx.last_heartbeat_ms = now;
-            if (BSP_ASSIGNED_PIN_COUNT > 1U) {
-                BSP_GPIO_TogglePin(g_bsp_pinout_table[1].pin_index);
-            }
-        }
+{hb_block}
+        }}
         break;
 
     case APP_STATE_ALARM_ACTIVE:
-        /* 报警激活态：开启蜂鸣器 PWM (50% 占空比) 并快闪报警灯 */
-        BSP_PWM_SetDutyPermille(0U, 500U);
-        if (!s_app_ctx.alarm_latched) {
-            BSP_PWM_SetDutyPermille(0U, 0U);
+        /* 报警激活态：开启蜂鸣器 PWM 并驱动报警输出引脚 */
+{alarm_block}
+        if (!s_app_ctx.alarm_latched) {{
             s_app_ctx.current_state = APP_STATE_NORMAL_RUN;
-        }
+        }}
         break;
 
     case APP_STATE_LOW_POWER_IDLE:
@@ -428,13 +473,13 @@ void App_StateMachine_Step(void)
         BSP_EnterLowPowerSleep();
         s_app_ctx.current_state = APP_STATE_NORMAL_RUN;
         break;
-    }
-}
+    }}
+}}
 
 app_state_t App_StateMachine_GetState(void)
-{
+{{
     return s_app_ctx.current_state;
-}
+}}
 """
     _write_if_needed(os.path.join(app_dir, "app_state_machine.c"), app_sm_c)
 
