@@ -219,12 +219,29 @@
     html:not(.dark) .text-amber-300, html:not(.dark) .text-amber-400 { color: #d97706 !important; }
     html:not(.dark) .text-purple-300, html:not(.dark) .text-purple-400 { color: #7c3aed !important; }
     html:not(.dark) .text-rose-300, html:not(.dark) .text-rose-400 { color: #e11d48 !important; }
-    html:not(.dark) .bg-slate-950, html:not(.dark) .bg-slate-950\/70, html:not(.dark) .bg-slate-950\/80, html:not(.dark) .bg-slate-950\/90,
+    html:not(.dark) .bg-slate-950, html:not(.dark) .bg-slate-950\/40, html:not(.dark) .bg-slate-950\/70,
+    html:not(.dark) .bg-slate-950\/80, html:not(.dark) .bg-slate-950\/90, html:not(.dark) .bg-slate-950\/95,
     html:not(.dark) .bg-slate-900, html:not(.dark) .bg-slate-900\/40, html:not(.dark) .bg-slate-900\/50,
     html:not(.dark) .bg-slate-900\/60, html:not(.dark) .bg-slate-900\/70, html:not(.dark) .bg-slate-900\/80,
-    html:not(.dark) .bg-slate-900\/90 {
+    html:not(.dark) .bg-slate-900\/90,
+    html:not(.dark) #distill-upload-drawer,
+    html:not(.dark) #pcb-pinout-drawer,
+    html:not(.dark) #fw-pinout-drawer,
+    html:not(.dark) #vscode-file-preview-modal > div,
+    html:not(.dark) #vscode-diff-modal > div {
       background-color: #ffffff !important;
       border-color: #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+    html:not(.dark) #vscode-explorer-section,
+    html:not(.dark) #vscode-explorer-tree,
+    html:not(.dark) #sidebar-project-select {
+      background-color: #ffffff !important;
+    }
+    html:not(.dark) #distill-log {
+      background-color: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
     }
     html:not(.dark) .bg-slate-800, html:not(.dark) .bg-slate-800\/80, html:not(.dark) .bg-slate-800\/90 {
       background-color: #f1f5f9 !important;
@@ -241,7 +258,7 @@
       border-color: #cbd5e1 !important;
       color: #0f172a !important;
     }
-    html:not(.dark) #disp-cmd-preview, html:not(.dark) #disp-live-log, html:not(.dark) #distill-log,
+    html:not(.dark) #disp-cmd-preview, html:not(.dark) #disp-live-log,
     html:not(.dark) #confirmed-agent-prompt, html:not(.dark) #bsp-header-preview, html:not(.dark) #rev-fw-code-viewer,
     html:not(.dark) #orch-log-pre, html:not(.dark) #orch-report-pre, html:not(.dark) #rev-delivery-report-pre,
     html:not(.dark) #rev-fw-verify-log, html:not(.dark) #btm-output-pre, html:not(.dark) #btm-terminal-pre {
@@ -495,7 +512,7 @@
       </div>
 
       <!-- 1B. VS Code 左上角工程文件资源管理器 (Top-Left Project File Explorer) -->
-      <div id="vscode-explorer-section" class="sidebar-label px-2.5 py-2 border-b border-slate-800/90 bg-slate-950/40 space-y-1.5">
+      <div id="vscode-explorer-section" class="sidebar-label px-2.5 py-2 border-b border-slate-800/90 bg-white dark:bg-slate-950/30 space-y-1.5">
         <div class="px-1.5 py-0.5 flex items-center justify-between text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
           <button type="button" onclick="toggleExplorerTreeCollapse()" class="flex items-center gap-1.5 hover:text-sky-400 transition">
             <i id="explorer-chevron-icon" class="fa-solid fa-chevron-down text-[9px] text-sky-400"></i>
@@ -516,122 +533,139 @@
 
         <!-- 当前工程快速切换器 (VS Code Workspace Root Header) -->
         <div class="px-1">
-          <select id="sidebar-project-select" onchange="activateProject(this.value)" class="w-full bg-slate-900/90 border border-slate-800 hover:border-sky-500/40 rounded-lg px-2 py-1 text-[11px] font-mono font-bold text-amber-300 focus:outline-none focus:border-sky-500 truncate cursor-pointer" title="点击切换当前工作空间工程"></select>
+          <select id="sidebar-project-select" onchange="activateProject(this.value)" class="w-full bg-white dark:bg-slate-900/90 border border-slate-800 hover:border-sky-500/40 rounded-lg px-2 py-1 text-[11px] font-mono font-bold text-amber-300 focus:outline-none focus:border-sky-500 truncate cursor-pointer" title="点击切换当前工作空间工程"></select>
         </div>
 
         <!-- 递归多级工程目录文件树 (点击任意文件即可在线预览或编辑) -->
-        <div id="vscode-explorer-tree" class="max-h-60 overflow-y-auto space-y-0.5 pr-1 select-none">
+        <div id="vscode-explorer-tree" class="max-h-60 overflow-y-auto space-y-0.5 pr-1 select-none bg-white dark:bg-transparent">
           <div class="text-[11px] text-slate-500 px-2 py-2 italic">正在扫描工程目录文件树...</div>
         </div>
       </div>
 
-      <!-- 2. 研发主工作流导航菜单 (4 步核心研发闭环 + AI 加速与扩展) -->
+      <!-- 2. 研发主工作流导航菜单 (4 步核心研发闭环 + AI 加速与扩展，支持按模块折叠) -->
       <div class="p-2.5 space-y-1">
         <!-- 折叠态专用：左上角第一个图标即为“展开并查看工程文件目录树” -->
         <button type="button" id="btn-collapsed-explorer" onclick="toggleSidebar(); document.getElementById('vscode-explorer-tree')?.classList.remove('hidden');" data-tip-title="EXPLORER · 工程文件目录" data-tip-badge="TREE" data-tip-desc="点击展开左上角 VS Code 工程文件树，浏览并在线预览 hardware / firmware / docs 全部文件" class="sidebar-action-btn hidden w-full px-3 py-2 rounded-r-xl text-xs font-medium items-center justify-center text-amber-400 hover:text-amber-300">
           <i class="fa-solid fa-folder-tree text-sm w-4 text-center text-amber-400"></i>
         </button>
 
-        <div class="sidebar-section-title px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between">
-          <span>核心研发流 (Core Flow)</span>
+        <button type="button" onclick="toggleSidebarSection('core-flow')" class="sidebar-section-title w-full px-2 py-1 rounded-lg hover:bg-slate-800/40 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-sky-400 flex items-center justify-between transition cursor-pointer select-none" title="点击折叠/展开「核心研发流程」模块">
+          <span class="flex items-center gap-1.5">
+            <i id="sidebar-chevron-core-flow" class="fa-solid fa-chevron-down text-[9px] text-sky-400 transition-transform"></i>
+            <span>核心研发流程 (Core Flow)</span>
+          </span>
           <span class="text-[9px] font-mono text-sky-400">①→④</span>
-        </div>
+        </button>
         <nav class="space-y-1">
-          <button onclick="switchTab('dashboard')" id="tab-dashboard" data-tip-title="① 项目工作台" data-tip-badge="HOME" data-tip-desc="多工程切换、新建软硬件协同项目、工具链健康探针与交付指标总览" class="tab-btn active w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5" title="① 项目工作台与环境总览">
-            <div class="flex items-center gap-2.5 truncate">
-              <i class="fa-solid fa-gauge-high text-sm w-4 text-center text-sky-400"></i>
-              <span class="sidebar-label truncate">① 项目工作台</span>
-            </div>
-            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">HOME</span>
-          </button>
+          <div id="sidebar-sec-core-flow" class="space-y-1">
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" data-tip-title="① 项目工作台" data-tip-badge="HOME" data-tip-desc="多工程切换、新建软硬件协同项目、工具链健康探针与交付指标总览" class="tab-btn active w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5" title="① 项目工作台与环境总览">
+              <div class="flex items-center gap-2.5 truncate">
+                <i class="fa-solid fa-gauge-high text-sm w-4 text-center text-sky-400"></i>
+                <span class="sidebar-label truncate">① 项目工作台</span>
+              </div>
+              <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">HOME</span>
+            </button>
 
-          <button onclick="switchTab('intake')" id="tab-intake" data-tip-title="② 规格与引脚 (SSOT)" data-tip-badge="SSOT" data-tip-desc="软硬件单一事实源：在线编辑 spec.json 与引脚映射表，双向生成 bsp_pinout.h" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="② 规格与引脚中枢 (SSOT: spec.json ⇄ bsp_pinout.h)">
-            <div class="flex items-center gap-2.5 truncate">
-              <i class="fa-solid fa-network-wired text-sm w-4 text-center text-amber-400"></i>
-              <span class="sidebar-label truncate">② 规格与引脚 (SSOT)</span>
-            </div>
-            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">SSOT</span>
-          </button>
+            <button onclick="switchTab('intake')" id="tab-intake" data-tip-title="② 规格与引脚 (SSOT)" data-tip-badge="SSOT" data-tip-desc="软硬件单一事实源：在线编辑 spec.json 与引脚映射表，双向生成 bsp_pinout.h" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="② 规格与引脚中枢 (SSOT: spec.json ⇄ bsp_pinout.h)">
+              <div class="flex items-center gap-2.5 truncate">
+                <i class="fa-solid fa-network-wired text-sm w-4 text-center text-amber-400"></i>
+                <span class="sidebar-label truncate">② 规格与引脚 (SSOT)</span>
+              </div>
+              <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">SSOT</span>
+            </button>
 
-          <button onclick="switchTab('pcb')" id="tab-pcb" data-tip-title="③ PCB 硬件工坊" data-tip-badge="PCB" data-tip-desc="KiCad 原生版图与嘉立创 JLC 贴片模式 · 3D/2D/原理图/立创 BOM 零滚动切换与 DRC 自愈" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="③ PCB 硬件设计工坊 (KiCad / 嘉立创 JLC)">
-            <div class="flex items-center gap-2.5 truncate">
-              <i class="fa-solid fa-compass-drafting text-sm w-4 text-center text-emerald-400"></i>
-              <span class="sidebar-label truncate">③ PCB 硬件工坊</span>
-            </div>
-            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono">PCB</span>
-          </button>
+            <button onclick="switchTab('pcb')" id="tab-pcb" data-tip-title="③ PCB 硬件工坊" data-tip-badge="PCB" data-tip-desc="KiCad 原生版图与嘉立创 JLC 贴片模式 · 3D/2D/原理图/立创 BOM 零滚动切换与 DRC 自愈" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="③ PCB 硬件设计工坊 (KiCad / 嘉立创 JLC)">
+              <div class="flex items-center gap-2.5 truncate">
+                <i class="fa-solid fa-compass-drafting text-sm w-4 text-center text-emerald-400"></i>
+                <span class="sidebar-label truncate">③ PCB 硬件工坊</span>
+              </div>
+              <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono">PCB</span>
+            </button>
 
-          <button onclick="switchTab('firmware')" id="tab-firmware" data-tip-title="④ C99 固件工坊" data-tip-badge="C99" data-tip-desc="VS Code Monaco 内核 C99 编辑器 · 绑定 bsp_pinout.h 引脚宏、ARM-GCC 编译与状态机仿真" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="④ 嵌入式 C99 固件工坊 (Monaco / ARM-GCC)">
-            <div class="flex items-center gap-2.5 truncate">
-              <i class="fa-solid fa-file-code text-sm w-4 text-center text-sky-400"></i>
-              <span class="sidebar-label truncate">④ C99 固件工坊</span>
-            </div>
-            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-400 font-mono">C99</span>
-          </button>
-
-          <div class="sidebar-section-title px-2.5 pt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-            AI 自动化与插件生态
+            <button onclick="switchTab('firmware')" id="tab-firmware" data-tip-title="④ C99 固件工坊" data-tip-badge="C99" data-tip-desc="VS Code Monaco 内核 C99 编辑器 · 绑定 bsp_pinout.h 引脚宏、ARM-GCC 编译与状态机仿真" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="④ 嵌入式 C99 固件工坊 (Monaco / ARM-GCC)">
+              <div class="flex items-center gap-2.5 truncate">
+                <i class="fa-solid fa-file-code text-sm w-4 text-center text-sky-400"></i>
+                <span class="sidebar-label truncate">④ C99 固件工坊</span>
+              </div>
+              <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-400 font-mono">C99</span>
+            </button>
           </div>
 
-          <button onclick="switchTab('agents')" id="tab-agents" data-tip-title="全自动协同流水线" data-tip-badge="FLOW" data-tip-desc="5 阶段多智能体全自动闭环：架构分配 → PCB 布局 → C99 固件 → DRC/GCC 双验证" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="⚡ 5阶段全自动协同流水线">
-            <div class="flex items-center gap-2.5 truncate">
-              <i class="fa-solid fa-diagram-project text-sm w-4 text-center text-teal-400"></i>
-              <span class="sidebar-label truncate">全自动协同流水线</span>
-            </div>
-            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">FLOW</span>
+          <button type="button" onclick="toggleSidebarSection('ai-eco')" class="sidebar-section-title w-full px-2 pt-2.5 pb-1 rounded-lg hover:bg-slate-800/40 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-indigo-400 flex items-center justify-between transition cursor-pointer select-none" title="点击折叠/展开「AI 自动化与插件生态」模块">
+            <span class="flex items-center gap-1.5">
+              <i id="sidebar-chevron-ai-eco" class="fa-solid fa-chevron-down text-[9px] text-indigo-400 transition-transform"></i>
+              <span>AI 自动化与插件生态</span>
+            </span>
+            <span class="text-[9px] font-mono text-indigo-400">AI</span>
           </button>
 
-          <button onclick="switchTab('distiller')" id="tab-distiller" data-tip-title="Skill 知识蒸馏市场" data-tip-badge="SKILL" data-tip-desc="从主流社区一键安装硬件与嵌入式规范插件，或上传 PDF 数据手册蒸馏专属 Skill" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="🧩 Skill 插件市场与知识蒸馏工坊">
-            <div class="flex items-center gap-2.5 truncate">
-              <i class="fa-solid fa-puzzle-piece text-sm w-4 text-center text-indigo-400"></i>
-              <span class="sidebar-label truncate">Skill 知识蒸馏市场</span>
-            </div>
-            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">SKILL</span>
-          </button>
+          <div id="sidebar-sec-ai-eco" class="space-y-1">
+            <button onclick="switchTab('agents')" id="tab-agents" data-tip-title="全自动协同流水线" data-tip-badge="FLOW" data-tip-desc="5 阶段多智能体全自动闭环：架构分配 → PCB 布局 → C99 固件 → DRC/GCC 双验证" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="⚡ 5阶段全自动协同流水线">
+              <div class="flex items-center gap-2.5 truncate">
+                <i class="fa-solid fa-diagram-project text-sm w-4 text-center text-teal-400"></i>
+                <span class="sidebar-label truncate">全自动协同流水线</span>
+              </div>
+              <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">FLOW</span>
+            </button>
 
-          <button onclick="switchTab('config')" id="tab-config" data-tip-title="引擎与模型配置" data-tip-badge="CFG" data-tip-desc="配置 OpenAI / Anthropic / DeepSeek / 本地 Ollama 模型与 Coding CLI Agent 路由" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="⚙️ 模型与系统配置">
-            <div class="flex items-center gap-2.5 truncate">
-              <i class="fa-solid fa-sliders text-sm w-4 text-center text-slate-400"></i>
-              <span class="sidebar-label truncate">引擎与模型配置</span>
-            </div>
-            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">CFG</span>
-          </button>
+            <button onclick="switchTab('distiller')" id="tab-distiller" data-tip-title="Skill 知识蒸馏市场" data-tip-badge="SKILL" data-tip-desc="从主流社区一键安装硬件与嵌入式规范插件，或上传 PDF 数据手册蒸馏专属 Skill" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="🧩 Skill 插件市场与知识蒸馏工坊">
+              <div class="flex items-center gap-2.5 truncate">
+                <i class="fa-solid fa-puzzle-piece text-sm w-4 text-center text-indigo-400"></i>
+                <span class="sidebar-label truncate">Skill 知识蒸馏市场</span>
+              </div>
+              <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">SKILL</span>
+            </button>
+
+            <button onclick="switchTab('config')" id="tab-config" data-tip-title="引擎与模型配置" data-tip-badge="CFG" data-tip-desc="配置本地 Qwen3.8-27B / OpenAI / Anthropic / DeepSeek 模型与 Antigravity CLI Agent 路由" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="⚙️ 模型与系统配置">
+              <div class="flex items-center gap-2.5 truncate">
+                <i class="fa-solid fa-sliders text-sm w-4 text-center text-slate-400"></i>
+                <span class="sidebar-label truncate">引擎与模型配置</span>
+              </div>
+              <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">CFG</span>
+            </button>
+          </div>
         </nav>
       </div>
 
-      <!-- 3. 侧边栏快捷桌面端桥接工具箱 (Local EDA / IDE Bridge) -->
+      <!-- 3. 侧边栏快捷桌面端桥接工具箱 (Local EDA / IDE Bridge，支持模块折叠) -->
       <div class="px-2.5 py-1 border-t border-slate-800/80 space-y-1">
-        <div class="sidebar-section-title px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-          本地桌面工具桥接
+        <button type="button" onclick="toggleSidebarSection('local-bridge')" class="sidebar-section-title w-full px-2 py-1 rounded-lg hover:bg-slate-800/40 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-emerald-400 flex items-center justify-between transition cursor-pointer select-none" title="点击折叠/展开「本地桌面工具桥接」模块">
+          <span class="flex items-center gap-1.5">
+            <i id="sidebar-chevron-local-bridge" class="fa-solid fa-chevron-down text-[9px] text-emerald-400 transition-transform"></i>
+            <span>本地桌面工具桥接</span>
+          </span>
+          <span class="text-[9px] font-mono text-emerald-400">BRIDGE</span>
+        </button>
+        <div id="sidebar-sec-local-bridge" class="space-y-1">
+          <button onclick="openLocalTool('kicad')" data-tip-title="用 KiCad 打开 PCB" data-tip-badge="EDA" data-tip-desc="直接唤起本机桌面端 KiCad 10 打开当前工程的 .kicad_pcb 电路板文件" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="调用桌面 KiCad 打开当前工程的 .kicad_pcb">
+            <div class="flex items-center gap-2.5 truncate">
+              <i class="fa-solid fa-compass-drafting text-xs w-4 text-center text-slate-400"></i>
+              <span class="sidebar-label truncate">用 KiCad 打开 PCB</span>
+            </div>
+            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">EDA</span>
+          </button>
+          <button onclick="openLocalTool('vscode')" data-tip-title="用 VS Code 打开工程" data-tip-badge="IDE" data-tip-desc="唤起本机桌面 VS Code 打开当前工程的嵌入式 C99 固件与硬件目录" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="调用 VS Code 打开当前工程源码">
+            <div class="flex items-center gap-2.5 truncate">
+              <i class="fa-solid fa-laptop-code text-xs w-4 text-center text-slate-400"></i>
+              <span class="sidebar-label truncate">用 VS Code 打开工程</span>
+            </div>
+            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">IDE</span>
+          </button>
+          <button onclick="openLocalTool('finder')" data-tip-title="打开本地工程目录" data-tip-badge="DIR" data-tip-desc="在 macOS Finder 中定位并打开当前工程的本地物理文件夹" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="在 Finder 中打开当前工程文件夹">
+            <div class="flex items-center gap-2.5 truncate">
+              <i class="fa-regular fa-folder-open text-xs w-4 text-center text-slate-400"></i>
+              <span class="sidebar-label truncate">打开本地工程目录</span>
+            </div>
+            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">DIR</span>
+          </button>
+          <button onclick="exportAllInOneBundle()" id="btn-top-bundle" data-tip-title="导出全套交付包 ZIP" data-tip-badge="ZIP" data-tip-desc="一键打包导出 Gerber 制板包 + BOM/CPL 贴片表 + KiCad 工程 + C99 固件 (.elf/.hex/.bin)" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="一键导出 Gerber + BOM + KiCad + .hex/.bin/.elf + 验收报告">
+            <div class="flex items-center gap-2.5 truncate">
+              <i class="fa-solid fa-box-archive text-xs w-4 text-center text-slate-400"></i>
+              <span class="sidebar-label truncate">导出全套交付包 ZIP</span>
+            </div>
+            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">ZIP</span>
+          </button>
         </div>
-        <button onclick="openLocalTool('kicad')" data-tip-title="用 KiCad 打开 PCB" data-tip-badge="EDA" data-tip-desc="直接唤起本机桌面端 KiCad 10 打开当前工程的 .kicad_pcb 电路板文件" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="调用桌面 KiCad 打开当前工程的 .kicad_pcb">
-          <div class="flex items-center gap-2.5 truncate">
-            <i class="fa-solid fa-compass-drafting text-xs w-4 text-center text-slate-400"></i>
-            <span class="sidebar-label truncate">用 KiCad 打开 PCB</span>
-          </div>
-          <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">EDA</span>
-        </button>
-        <button onclick="openLocalTool('vscode')" data-tip-title="用 VS Code 打开工程" data-tip-badge="IDE" data-tip-desc="唤起本机桌面 VS Code 打开当前工程的嵌入式 C99 固件与硬件目录" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="调用 VS Code 打开当前工程源码">
-          <div class="flex items-center gap-2.5 truncate">
-            <i class="fa-solid fa-laptop-code text-xs w-4 text-center text-slate-400"></i>
-            <span class="sidebar-label truncate">用 VS Code 打开工程</span>
-          </div>
-          <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">IDE</span>
-        </button>
-        <button onclick="openLocalTool('finder')" data-tip-title="打开本地工程目录" data-tip-badge="DIR" data-tip-desc="在 macOS Finder 中定位并打开当前工程的本地物理文件夹" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="在 Finder 中打开当前工程文件夹">
-          <div class="flex items-center gap-2.5 truncate">
-            <i class="fa-regular fa-folder-open text-xs w-4 text-center text-slate-400"></i>
-            <span class="sidebar-label truncate">打开本地工程目录</span>
-          </div>
-          <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">DIR</span>
-        </button>
-        <button onclick="exportAllInOneBundle()" id="btn-top-bundle" data-tip-title="导出全套交付包 ZIP" data-tip-badge="ZIP" data-tip-desc="一键打包导出 Gerber 制板包 + BOM/CPL 贴片表 + KiCad 工程 + C99 固件 (.elf/.hex/.bin)" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="一键导出 Gerber + BOM + KiCad + .hex/.bin/.elf + 验收报告">
-          <div class="flex items-center gap-2.5 truncate">
-            <i class="fa-solid fa-box-archive text-xs w-4 text-center text-slate-400"></i>
-            <span class="sidebar-label truncate">导出全套交付包 ZIP</span>
-          </div>
-          <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">ZIP</span>
-        </button>
       </div>
     </div>
 
@@ -1366,7 +1400,7 @@
           <div class="flex items-center justify-between gap-2">
             <span class="text-xs text-slate-400 whitespace-nowrap">📐 阶段 2 PCB 主担:</span>
             <select id="orch-pcb-agent" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-amber-300 font-mono w-full">
-              <option value="antigravity">Antigravity (agy)</option>
+              <option value="antigravity" selected>Antigravity (agy)</option>
               <option value="claude">Claude Code (claude)</option>
               <option value="codex">Codex CLI (codex)</option>
               <option value="pi">Pi CLI (pi)</option>
@@ -1375,18 +1409,18 @@
           <div class="flex items-center justify-between gap-2">
             <span class="text-xs text-slate-400 whitespace-nowrap">🩺 阶段 3 DRC 自愈:</span>
             <select id="orch-drc-agent" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-sky-300 font-mono w-full">
+              <option value="antigravity" selected>Antigravity (agy)</option>
               <option value="codex">Codex CLI (codex)</option>
               <option value="claude">Claude Code (claude)</option>
-              <option value="antigravity">Antigravity (agy)</option>
               <option value="pi">Pi CLI (pi)</option>
             </select>
           </div>
           <div class="flex items-center justify-between gap-2">
             <span class="text-xs text-slate-400 whitespace-nowrap">💻 阶段 4 C 固件主担:</span>
             <select id="orch-fw-agent" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-emerald-300 font-mono w-full">
+              <option value="antigravity" selected>Antigravity (agy)</option>
               <option value="pi">Pi CLI (pi)</option>
               <option value="claude">Claude Code (claude)</option>
-              <option value="antigravity">Antigravity (agy)</option>
               <option value="codex">Codex CLI (codex)</option>
             </select>
           </div>
@@ -1632,9 +1666,9 @@
                 <option value="">默认模型</option>
               </select>
               <select id="pcb-cli-agent-select" onchange="onStudioEngineChange('pcb')" class="hidden bg-transparent text-[11px] text-amber-300 font-mono focus:outline-none">
+                <option value="antigravity" selected>AGY</option>
                 <option value="claude">Claude</option>
                 <option value="codex">Codex</option>
-                <option value="antigravity">AGY</option>
                 <option value="pi">Pi</option>
               </select>
             </div>
@@ -1895,10 +1929,10 @@
                 <option value="">默认模型</option>
               </select>
               <select id="fw-cli-agent-select" onchange="onStudioEngineChange('firmware')" class="hidden bg-transparent text-[11px] text-amber-300 font-mono focus:outline-none">
+                <option value="antigravity" selected>AGY</option>
                 <option value="pi">Pi CLI</option>
                 <option value="claude">Claude</option>
                 <option value="codex">Codex</option>
-                <option value="antigravity">AGY</option>
               </select>
             </div>
           </div>
@@ -2105,9 +2139,9 @@
         </div>
 
         <!-- 可折叠：上传本地数据手册/资料蒸馏为新 Skill (Book-to-Skill Drawer) -->
-        <div id="distill-upload-drawer" class="hidden p-4 rounded-xl bg-slate-950/95 border border-purple-500/40 space-y-3">
+        <div id="distill-upload-drawer" class="hidden p-4 rounded-xl bg-white dark:bg-slate-950/95 border border-purple-500/40 space-y-3 shadow-sm">
           <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-            <span class="text-xs font-bold text-purple-300"><i class="fa-solid fa-flask mr-1"></i>本地文档/数据手册智能蒸馏器 (Book-to-Skill Engine)</span>
+            <span class="text-xs font-bold text-purple-300"><i class="fa-solid fa-flask mr-1"></i>本地文档/数据手册智能蒸馏器 (Book-to-Skill Engine · 默认模型: Qwen3.8-27B)</span>
             <button type="button" onclick="toggleDistillUploadDrawer()" class="text-xs text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i> 收起</button>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
@@ -2115,19 +2149,20 @@
               <i class="fa-solid fa-file-arrow-up text-2xl text-purple-400"></i>
               <div class="flex-1 min-w-0">
                 <div class="text-xs font-semibold text-slate-200">选择 PDF / Word (.docx) / Excel (.xlsx) / Markdown</div>
-                <input type="file" id="distill-file" class="text-[11px] text-slate-400 mt-1 w-full">
+                <input type="file" id="distill-file" onchange="if(window.onDistillFileSelected) onDistillFileSelected(this)" class="text-[11px] text-slate-400 mt-1 w-full">
               </div>
             </div>
             <div class="md:col-span-4">
               <label class="block text-[11px] text-slate-400 mb-1">输出插件标识 (Skill ID):</label>
-              <input type="text" id="skill-name" value="custom-hardware-skill" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 font-mono">
+              <input type="text" id="skill-name" value="pcb-design-skill" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 font-mono">
             </div>
             <div class="md:col-span-3 flex items-end">
-              <button type="button" onclick="startDistill()" class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-md transition">
+              <button type="button" id="btn-start-distill" onclick="startDistill()" class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-md transition">
                 <i class="fa-solid fa-bolt mr-1"></i> 开始 AI 智能蒸馏并安装
               </button>
             </div>
           </div>
+          <div id="distill-inline-status" class="hidden px-3 py-2 rounded-lg bg-purple-500/10 border border-purple-500/30 text-xs font-mono text-purple-300"></div>
         </div>
       </div>
 

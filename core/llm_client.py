@@ -25,6 +25,15 @@ if PLATFORM_ROOT not in sys.path:
 from core.config_manager import resolve_llm_config
 
 
+def _clean_llm_output(content: str) -> str:
+    """清理推理模型可能输出的 <think>...</think> 思考块"""
+    if not content:
+        return ""
+    if "</think>" in content:
+        content = content.split("</think>", 1)[-1]
+    return content.strip()
+
+
 def call_llm(
     prompt: str,
     system_prompt: Optional[str] = None,
@@ -32,16 +41,18 @@ def call_llm(
     temperature: Optional[float] = None,
     max_tokens: int = 4096,
     task_type: str = "req_distill",
-    override_config: Optional[Dict[str, Any]] = None
+    override_config: Optional[Dict[str, Any]] = None,
+    enable_thinking: bool = False
 ) -> str:
     """调用当前激活或路由指定的 LLM API"""
     cfg = resolve_llm_config(task_type=task_type, override=override_config)
     api_key = cfg.get("api_key", "")
-    base_url = cfg.get("base_url", "https://api.siliconflow.cn/v1").rstrip("/")
-    model_name = cfg.get("model_name", "deepseek-ai/DeepSeek-V4-Flash")
+    base_url = cfg.get("base_url", "http://100.113.144.63:8012/v1").rstrip("/")
+    model_name = cfg.get("model_name", "Qwen3.8-27B")
     temp = temperature if temperature is not None else cfg.get("temperature", 0.2)
 
-    if not api_key and "127.0.0.1" not in base_url and "localhost" not in base_url:
+    is_local = any(h in base_url for h in ("127.0.0.1", "localhost", "100.", "192.168.", "10.", "172."))
+    if not api_key and not is_local:
         raise ValueError(
             f"当前服务商 [{cfg.get('provider_name', cfg.get('provider_id'))}] 未配置 API Key！"
             "请前往「模型与 Agent 配置中心」填写 API Key。"
@@ -59,6 +70,9 @@ def call_llm(
         "max_tokens": max_tokens
     }
 
+    if "qwen3" in model_name.lower() or is_local:
+        payload["chat_template_kwargs"] = {"enable_thinking": enable_thinking}
+
     if json_mode:
         payload["response_format"] = {"type": "json_object"}
 
@@ -72,21 +86,23 @@ def call_llm(
         headers["Authorization"] = f"Bearer {api_key}"
 
     req = urllib.request.Request(url, data=req_data, headers=headers)
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({})) if is_local else urllib.request.build_opener()
 
     try:
-        with urllib.request.urlopen(req, timeout=180) as resp:
+        with opener.open(req, timeout=240) as resp:
             data = json.loads(resp.read().decode("utf8"))
             content = data["choices"][0]["message"]["content"]
-            return content.strip()
+            return _clean_llm_output(content)
     except urllib.error.HTTPError as e:
         err_msg = e.read().decode("utf8", errors="ignore")
-        # 兼容部分不支持 response_format=json_object 的模型，自动降级重试一次
-        if json_mode and e.code == 400 and "response_format" in err_msg:
+        # 兼容部分不支持 response_format 或 chat_template_kwargs 的模型，自动降级重试一次
+        if e.code == 400 and ("response_format" in err_msg or "chat_template_kwargs" in err_msg):
             payload.pop("response_format", None)
+            payload.pop("chat_template_kwargs", None)
             req_retry = urllib.request.Request(url, data=json.dumps(payload).encode("utf8"), headers=headers)
-            with urllib.request.urlopen(req_retry, timeout=180) as resp2:
+            with opener.open(req_retry, timeout=240) as resp2:
                 data2 = json.loads(resp2.read().decode("utf8"))
-                return data2["choices"][0]["message"]["content"].strip()
+                return _clean_llm_output(data2["choices"][0]["message"]["content"])
         raise RuntimeError(f"LLM API 报错 ({e.code}) [{model_name} @ {base_url}]: {err_msg[:300]}")
     except Exception as e:
         raise RuntimeError(f"调用 LLM 失败 [{model_name} @ {base_url}]: {e}")

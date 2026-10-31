@@ -43,8 +43,19 @@ def get_default_settings() -> Dict[str, Any]:
 
     return {
         "llm": {
-            "active_provider": "siliconflow",
+            "active_provider": "ollama",
             "providers": {
+                "ollama": {
+                    "id": "ollama",
+                    "name": "本地 vLLM / Qwen3.8-27B (100.113.144.63)",
+                    "base_url": "http://100.113.144.63:8012/v1",
+                    "api_key": "EMPTY",
+                    "default_model": "Qwen3.8-27B",
+                    "models": [
+                        "Qwen3.8-27B",
+                        "qwen3.8"
+                    ]
+                },
                 "siliconflow": {
                     "id": "siliconflow",
                     "name": "SiliconFlow (硅基流动)",
@@ -93,42 +104,36 @@ def get_default_settings() -> Dict[str, Any]:
                         "google/gemini-2.5-pro",
                         "deepseek/deepseek-r1"
                     ]
-                },
-                "ollama": {
-                    "id": "ollama",
-                    "name": "Ollama / 本地大模型",
-                    "base_url": "http://127.0.0.1:11434/v1",
-                    "api_key": "ollama",
-                    "default_model": "qwen2.5-coder:14b",
-                    "models": [
-                        "qwen2.5-coder:14b",
-                        "deepseek-r1:14b",
-                        "llama3.3:latest"
-                    ]
                 }
             },
             "routing": {
                 "req_distill": {
                     "label": "需求解析与引脚矩阵提炼 (Gate 1)",
                     "provider": "default",
-                    "model": "",
+                    "model": "Qwen3.8-27B",
                     "temperature": 0.1
                 },
                 "skill_distill": {
                     "label": "技术规范与数据手册蒸馏 (Skill Distiller)",
                     "provider": "default",
-                    "model": "",
+                    "model": "Qwen3.8-27B",
                     "temperature": 0.2
                 },
                 "pinmux_review": {
                     "label": "软硬件引脚冲突与架构审查",
                     "provider": "default",
-                    "model": "",
+                    "model": "Qwen3.8-27B",
                     "temperature": 0.1
                 }
             }
         },
         "agents": {
+            "antigravity": {
+                "custom_bin": "",
+                "model_arg": "",
+                "extra_args": "",
+                "env_vars": {}
+            },
             "claude": {
                 "custom_bin": "",
                 "model_arg": "",
@@ -146,21 +151,15 @@ def get_default_settings() -> Dict[str, Any]:
                 "model_arg": "",
                 "extra_args": "",
                 "env_vars": {}
-            },
-            "antigravity": {
-                "custom_bin": "",
-                "model_arg": "",
-                "extra_args": "",
-                "env_vars": {}
             }
         },
         "workspace": {
-            "projects_root": os.path.dirname(PLATFORM_ROOT),
-            "active_project_dir": "/Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle",
+            "projects_root": os.path.join(PLATFORM_ROOT, "workspaces"),
+            "active_project_dir": os.path.join(PLATFORM_ROOT, "workspaces", "smart-env-alarm-01"),
             "pipeline": {
                 "pcb_agent": "antigravity",
-                "firmware_agent": "pi",
-                "drc_agent": "codex"
+                "firmware_agent": "antigravity",
+                "drc_agent": "antigravity"
             }
         }
     }
@@ -213,7 +212,7 @@ def resolve_llm_config(task_type: str = "req_distill", override: Dict[str, Any] 
     settings = load_settings()
     llm_cfg = settings.get("llm", {})
     providers = llm_cfg.get("providers", {})
-    active_pid = llm_cfg.get("active_provider", "siliconflow")
+    active_pid = llm_cfg.get("active_provider", "ollama")
     routing = llm_cfg.get("routing", {}).get(task_type, {})
 
     route_pid = routing.get("provider", "default")
@@ -222,15 +221,15 @@ def resolve_llm_config(task_type: str = "req_distill", override: Dict[str, Any] 
     else:
         target_pid = route_pid
 
-    p_info = providers.get(target_pid) or providers.get("siliconflow") or {}
-    model_name = routing.get("model") or p_info.get("default_model") or "deepseek-ai/DeepSeek-V4-Flash"
+    p_info = providers.get(target_pid) or providers.get("ollama") or {}
+    model_name = routing.get("model") or p_info.get("default_model") or "Qwen3.8-27B"
     temp = routing.get("temperature", 0.1)
 
     return {
         "provider_id": target_pid,
         "provider_name": p_info.get("name", target_pid),
-        "base_url": (p_info.get("base_url") or "https://api.siliconflow.cn/v1").rstrip("/"),
-        "api_key": p_info.get("api_key", ""),
+        "base_url": (p_info.get("base_url") or "http://100.113.144.63:8012/v1").rstrip("/"),
+        "api_key": p_info.get("api_key", "EMPTY"),
         "model_name": model_name,
         "temperature": float(temp)
     }

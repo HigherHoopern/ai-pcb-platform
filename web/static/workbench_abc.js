@@ -871,10 +871,10 @@ window.renderWorkbenchExplorerTree = function (detail) {
         const chevron = isCollapsed ? 'fa-chevron-right' : 'fa-chevron-down';
         const folderIcon = isCollapsed ? 'fa-folder text-amber-400/80' : 'fa-folder-open text-amber-400';
         const safeRel = (node.rel_path || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-        const childrenHtml = isCollapsed ? '' : `<div class="border-l border-slate-800/70 ml-2.5">${renderNodes(node.children, depth + 1)}</div>`;
+        const childrenHtml = isCollapsed ? '' : `<div class="border-l border-slate-200 dark:border-slate-800/70 ml-2.5">${renderNodes(node.children, depth + 1)}</div>`;
         return `
           <div>
-            <div onclick="toggleExplorerFolder('${safeRel}', event)" class="vscode-tree-item hover:bg-slate-800/70 flex items-center justify-between py-1 pr-2 rounded cursor-pointer text-[11px] text-slate-300 font-semibold" style="padding-left:${indentPx}px" title="点击展开/收起目录: ${escapeHtml(node.rel_path)}">
+            <div onclick="toggleExplorerFolder('${safeRel}', event)" class="vscode-tree-item flex items-center justify-between py-1 pr-2 rounded cursor-pointer text-[11px] text-slate-700 dark:text-slate-300 font-semibold" style="padding-left:${indentPx}px" title="点击展开/收起目录: ${escapeHtml(node.rel_path)}">
               <span class="flex items-center gap-1.5 truncate">
                 <i class="fa-solid ${chevron} text-[8px] text-slate-500 w-2.5 text-center"></i>
                 <i class="fa-regular ${folderIcon} text-[11px]"></i>
@@ -1107,6 +1107,46 @@ window.closeVscodeFilePreviewModal = function () {
   const modal = document.getElementById('vscode-file-preview-modal');
   if (modal) modal.classList.add('hidden');
 };
+
+// ============================================================================
+// 8. 侧边栏模块分组折叠控制 (核心研发流程 / AI 自动化与插件生态 / 本地桌面工具桥接)
+// ============================================================================
+window.toggleSidebarSection = function (sectionId) {
+  const secEl = document.getElementById(`sidebar-sec-${sectionId}`);
+  const chevEl = document.getElementById(`sidebar-chevron-${sectionId}`);
+  if (!secEl) return;
+
+  const isCollapsed = secEl.classList.toggle('hidden');
+  if (chevEl) {
+    chevEl.classList.toggle('fa-chevron-down', !isCollapsed);
+    chevEl.classList.toggle('fa-chevron-right', isCollapsed);
+  }
+  try {
+    localStorage.setItem(`ai_pcb_sidebar_sec_${sectionId}`, isCollapsed ? 'collapsed' : 'expanded');
+  } catch (e) {}
+};
+
+function restoreSidebarSectionsState() {
+  ['core-flow', 'ai-eco', 'local-bridge'].forEach(sectionId => {
+    try {
+      const saved = localStorage.getItem(`ai_pcb_sidebar_sec_${sectionId}`);
+      if (saved === 'collapsed') {
+        const secEl = document.getElementById(`sidebar-sec-${sectionId}`);
+        const chevEl = document.getElementById(`sidebar-chevron-${sectionId}`);
+        if (secEl) secEl.classList.add('hidden');
+        if (chevEl) {
+          chevEl.classList.remove('fa-chevron-down');
+          chevEl.classList.add('fa-chevron-right');
+        }
+      }
+    } catch (e) {}
+  });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  restoreSidebarSectionsState();
+});
+
 
 
 

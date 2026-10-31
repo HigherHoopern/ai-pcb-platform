@@ -10,12 +10,12 @@ let allAgentsData = {};
 let allProjectsList = [];
 let activeProjectDir = '';
 let activeProjectDetail = null;
-let currentSelectedProvider = 'siliconflow';
+let currentSelectedProvider = 'ollama';
 
 let selectedReqFiles = [];
-let currentDispatcherAgent = 'claude';
+let currentDispatcherAgent = 'antigravity';
 let currentDispatcherTask = 'full';
-let currentQuickAgent = 'claude';
+let currentQuickAgent = 'antigravity';
 let currentDispatcherCmdInfo = null;
 let activeRunningTaskId = null;
 let activePollTimer = null;
@@ -3279,33 +3279,95 @@ function toggleDistillUploadDrawer() {
   if (drawer) drawer.classList.toggle('hidden');
 }
 
+function onDistillFileSelected(input) {
+  if (!input || !input.files || !input.files.length) return;
+  const file = input.files[0];
+  const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+  const inlineStatus = document.getElementById('distill-inline-status');
+  if (inlineStatus) {
+    inlineStatus.classList.remove('hidden');
+    inlineStatus.textContent = `📄 已选文件: ${file.name} (${sizeMB} MB) · 将使用本地 Qwen3.8-27B 跨章节全书深度蒸馏`;
+  }
+}
+
 async function startDistill() {
   const fileInput = document.getElementById('distill-file');
-  const skillName = document.getElementById('skill-name')?.value || 'custom-spec-skill';
+  const skillName = document.getElementById('skill-name')?.value || 'pcb-design-skill';
   if (!fileInput || !fileInput.files.length) {
     showToast('请先选择需要蒸馏的规范或数据手册文件！', 'warn');
     return;
   }
+  const file = fileInput.files[0];
+  const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
   const log = document.getElementById('distill-log');
-  if (log) log.innerText = "正在上传文档并调用 AI 蒸馏引擎提炼 SKILL.md 与速查卡...\n";
+  const inlineStatus = document.getElementById('distill-inline-status');
+  const btn = document.getElementById('btn-start-distill');
+  const origBtnHtml = btn ? btn.innerHTML : '';
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Qwen3.8-27B 深度蒸馏中...`;
+  }
+
+  let elapsedSec = 0;
+  const updateProgressMsg = () => {
+    elapsedSec += 1;
+    let stageHint = '阶段 1/4: 解析 PDF 原生书签目录与全书章节结构...';
+    if (elapsedSec > 4 && elapsedSec <= 65) {
+      stageHint = '阶段 2/4: 调用 Qwen3.8-27B 跨章节萃取全书工艺参数与速查表 (cheatsheet.md)...';
+    } else if (elapsedSec > 65 && elapsedSec <= 130) {
+      stageHint = '阶段 3/4: 调用 Qwen3.8-27B 萃取全流程硬件设计模式与制造反模式 (patterns.md)...';
+    } else if (elapsedSec > 130) {
+      stageHint = '阶段 4/4: 生成全书各章节 AI 工程导读与 SKILL.md 路由索引...';
+    }
+    if (inlineStatus) {
+      inlineStatus.classList.remove('hidden');
+      inlineStatus.textContent = `⏳ [耗时 ${elapsedSec}s] 正在深度蒸馏《${file.name}》(${sizeMB} MB) → [${skillName}] · ${stageHint}`;
+    }
+    if (log) {
+      log.innerText =
+        `[AI-PCB Knowledge Distiller v2.5 · 本地 vLLM Qwen3.8-27B]\n` +
+        `源文件: ${file.name} (${sizeMB} MB)\n` +
+        `目标技能: skills/${skillName}/\n` +
+        `已用时间: ${elapsedSec} 秒\n` +
+        `当前进度: ${stageHint}\n\n` +
+        `正在对全书各章节参数表、线宽线距、过孔叠层、DFM/SMT 制造规范进行跨章节深度采样与大模型萃取，请稍候...`;
+    }
+  };
+
+  updateProgressMsg();
+  const progressTimer = setInterval(updateProgressMsg, 1000);
 
   const fd = new FormData();
-  fd.append('file', fileInput.files[0]);
+  fd.append('file', file);
   fd.append('skill_name', skillName);
 
   try {
     const res = await fetch('/api/distill', { method: 'POST', body: fd });
+    clearInterval(progressTimer);
     const j = await res.json();
     if (log) log.innerText = j.log || '蒸馏已完成';
+    if (inlineStatus) {
+      inlineStatus.textContent = j.success
+        ? `✅ 蒸馏完成 (共耗时 ${elapsedSec}s)！已生成 skills/${skillName}/ (SKILL.md + cheatsheet.md + patterns.md + 全书章节分册)`
+        : `⚠️ 蒸馏遇到问题，请查看下方日志详情`;
+    }
     await loadSkillsList();
     if (j.success) {
-      showToast(`知识库插件 [${skillName}] 蒸馏并安装成功！`);
-      previewSkill(skillName);
+      showToast(`知识库插件 [${skillName}] 全书深度蒸馏并安装成功！`);
+      setTimeout(() => previewSkill(skillName), 800);
     } else {
       showToast(`蒸馏遇到问题，请查看日志`, 'warn');
     }
   } catch (err) {
+    clearInterval(progressTimer);
     if (log) log.innerText = "蒸馏请求异常: " + err;
+    if (inlineStatus) inlineStatus.textContent = "❌ 蒸馏请求异常: " + err;
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = origBtnHtml || `<i class="fa-solid fa-bolt mr-1"></i> 开始 AI 智能蒸馏并安装`;
+    }
   }
 }
 

@@ -1,0 +1,16 @@
+【工程上下文与单一事实源 (SSOT)】：
+- 项目名称: Smart-Env-Alarm-01
+- 规范文件路径: /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/spec.json
+- 引脚映射文件: /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/pinout.json
+- 自动生成的 C 头文件: /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/Drivers/bsp_pinout.h
+- 目标工作目录: /Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01
+- 机械尺寸: 65.0 x 45.0 mm，板厚 1.2mm，2层板，倒角 R3mm。
+- 供电系统: USB Type-C 5V直流输入，耐压4.5V~6.0V，拓扑: 无升降压，LDO线性降压。
+- 主控芯片: STM32G030F6P6 (TSSOP-20)，调试接口: SWD。
+- 外设引脚: 共分配 12 个引脚。
+
+【核心任务：软硬件联合全案协同设计 (Full Co-Design)】
+请基于已锁定的需求模型 (SSOT)，完成全套软硬件闭环开发：
+1. 硬件端：在 `/Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/hardware/` 设计 KiCad 原理图与 PCB，完成 45° 平滑布线与接地法拉第屏蔽笼，运行 `kicad-cli` 达到 DRC 0 违规，导出打样文件。
+2. 固件端：在 `/Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/firmware/` 中直接引用已自动生成的 `Drivers/bsp_pinout.h`，编写配套的纯 C 语言驱动代码与应用状态机，完成 GCC 编译校验。
+3. 最终在 `/Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/docs/DELIVERY_REPORT.md` 中输出交付报告。

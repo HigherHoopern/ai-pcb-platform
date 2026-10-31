@@ -563,6 +563,7 @@ async def confirm_requirements(data: dict):
 # ==============================================================================
 @app.post("/api/distill")
 async def distill_upload(file: UploadFile = File(...), skill_name: str = Form("custom-skill")):
+    import asyncio
     upload_dir = os.path.join(PLATFORM_ROOT, "docs", "uploads")
     os.makedirs(upload_dir, exist_ok=True)
     temp_path = os.path.join(upload_dir, file.filename)
@@ -570,7 +571,8 @@ async def distill_upload(file: UploadFile = File(...), skill_name: str = Form("c
     with open(temp_path, "wb") as f:
         f.write(await file.read())
 
-    res = subprocess.run(
+    res = await asyncio.to_thread(
+        subprocess.run,
         [sys.executable, DISTILLER_PY, temp_path, "--name", skill_name],
         capture_output=True,
         text=True
@@ -578,7 +580,7 @@ async def distill_upload(file: UploadFile = File(...), skill_name: str = Form("c
 
     return {
         "success": res.returncode == 0,
-        "log": res.stdout or res.stderr,
+        "log": (res.stdout or "") + ("\n" + res.stderr if res.stderr else ""),
         "skill_name": skill_name
     }
 

@@ -113,17 +113,82 @@ def parse_doc(file_path):
         }
 
 def parse_pdf(file_path):
+    import re
     doc = fitz.open(file_path)
+    total_pages = len(doc)
     pages_text = []
-    for page_num in range(len(doc)):
+    page_map = {}
+    for page_num in range(total_pages):
         page = doc[page_num]
         txt = page.get_text().strip()
+        page_map[page_num + 1] = txt
         if txt:
             pages_text.append(f"--- Page {page_num+1} ---\n{txt}")
-            
+
+    raw_toc = []
+    try:
+        raw_toc = doc.get_toc() or []
+    except Exception:
+        raw_toc = []
+
+    toc_chapters = []
+    if raw_toc:
+        # 优先寻找“第X章 / Chapter X / 附录”主章节节点；若无则取非小节号的最高层级书签
+        chapter_nodes = []
+        lvl1_nodes = []
+        for idx, item in enumerate(raw_toc):
+            if len(item) < 3:
+                continue
+            lvl, title, pno = int(item[0]), str(item[1]).strip(), max(1, int(item[2]))
+            if title in ("封面", "书名页", "版权", "版权页", "目录", "目 录"):
+                continue
+            is_chapter = bool(re.match(r"^(第\s*[0-9一二三四五六七八九十百]+\s*[章篇部]|Chapter\s+\d+|附录|前\s*言|绪\s*论|参考文献)", title, re.I))
+            is_sub_numbered = bool(re.match(r"^\d+\.\d+", title))
+            node_obj = {"idx": idx, "level": lvl, "title": title, "start_page": pno}
+            if is_chapter:
+                chapter_nodes.append(node_obj)
+            elif lvl == 1 and not is_sub_numbered:
+                lvl1_nodes.append(node_obj)
+
+        filtered_nodes = chapter_nodes if len(chapter_nodes) >= 2 else lvl1_nodes
+
+        if filtered_nodes:
+            for i, node in enumerate(filtered_nodes):
+                start_p = node["start_page"]
+                end_p = (filtered_nodes[i + 1]["start_page"] - 1) if (i + 1 < len(filtered_nodes)) else total_pages
+                if end_p < start_p:
+                    end_p = start_p
+                # 收集该章下的子节标题
+                next_raw_idx = filtered_nodes[i + 1]["idx"] if (i + 1 < len(filtered_nodes)) else len(raw_toc)
+                sub_sections = []
+                for sub in raw_toc[node["idx"] + 1 : next_raw_idx]:
+                    if len(sub) >= 3:
+                        sub_sections.append(f"{sub[1].strip()} (P.{sub[2]})")
+                ch_pages = []
+                for p in range(start_p, min(end_p, total_pages) + 1):
+                    ptxt = page_map.get(p, "")
+                    if ptxt:
+                        ch_pages.append(f"[Page {p}]\n{ptxt}")
+                ch_body = "\n\n".join(ch_pages)
+                if ch_body.strip():
+                    header_meta = f"章节页码范围: 第 {start_p} 页 ~ 第 {end_p} 页 (共 {end_p - start_p + 1} 页)\n"
+                    if sub_sections:
+                        header_meta += "包含小节: " + " | ".join(sub_sections[:25]) + "\n\n"
+                    toc_chapters.append({
+                        "title": f"{node['title']} (P.{start_p}-{end_p})",
+                        "raw_title": node["title"],
+                        "start_page": start_p,
+                        "end_page": end_p,
+                        "sub_sections": sub_sections,
+                        "content": header_meta + ch_body
+                    })
+
     return {
         "file_type": "pdf",
         "filename": os.path.basename(file_path),
+        "total_pages": total_pages,
+        "toc": raw_toc,
+        "toc_chapters": toc_chapters,
         "full_text": "\n\n".join(pages_text),
         "tables": []
     }

@@ -1,6 +1,15 @@
 {
   "enabled_map": {
+    "pcb-design-skill": true,
+    "pcb-design-instruction": true,
     "stm32-hal-ll-driver-expert": true
   },
-  "installed_meta": {}
+  "installed_meta": {
+    "pcb-design-skill": {
+      "publisher": "嘉立创 × Qwen3.8-27B 蒸馏引擎",
+      "category": "pcb",
+      "source_url": "docs/嘉立创 从设计到量产：电子工程师PCB智造实战指南_YD.pdf",
+      "version": "2.5.0"
+    }
+  }
 }
