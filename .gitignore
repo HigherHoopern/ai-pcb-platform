@@ -6,3 +6,4 @@ __pycache__/
 *.log
 projects/*/.sim_build/
 projects/*/.copilot_snapshots/
+docs/*.pdf
