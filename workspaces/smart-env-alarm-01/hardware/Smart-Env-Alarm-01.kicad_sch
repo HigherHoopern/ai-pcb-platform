@@ -1,0 +1,20 @@
+(kicad_sch
+  (version 20231120)
+  (generator "ai_pcb_platform")
+  (generator_version "10.0")
+  (uuid "18bbffb2-0093-48aa-97c6-85e62584f540")
+  (paper "A4")
+  (title_block
+    (title "Smart-Env-Alarm-01")
+    (date "2026-10-31")
+    (rev "v2.0")
+    (company "AI-PCB Platform")
+  )
+  (lib_symbols)
+  (text "AI-PCB Platform SSOT Schematic\nProject: Smart-Env-Alarm-01\nMCU: STM32G030F6P6 (TSSOP-20)\nAssigned Pins: 12"
+    (exclude_from_sim no)
+    (at 60 50 0)
+    (effects (font (size 2.54 2.54)) (justify left))
+    (uuid "8ecb670b-70f0-469b-8e78-58f29ad183ae")
+  )
+)

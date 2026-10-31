@@ -3,7 +3,7 @@
 """AI-PCB Platform 多工程工作空间与软硬件确定性底座管理器 (Project & Workspace Manager)
 
 核心职责：
-  1. 多工程注册、自动发现与切换 (消除硬编码的 LAB7 路径)
+  1. 多工程注册、自动发现与切换 (通用化工作空间管理)
   2. 软硬件单一事实源 (spec.json & pinout.json) 读写与引脚冲突预检 (PinMux Validator)
   3. 确定性生成嵌入式 C 头文件 `firmware/Drivers/bsp_pinout.h`
   4. 动态调用 `kicad-cli pcb drc`、`kicad-cli pcb render` (3D 渲染) 与 `arm-none-eabi-gcc` 编译验证
@@ -22,88 +22,88 @@ from typing import Dict, Any, List, Optional
 
 PLATFORM_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONFIG_DIR = os.path.join(PLATFORM_ROOT, "config")
+WORKSPACES_DIR = os.path.join(PLATFORM_ROOT, "workspaces")
 REGISTRY_FILE = os.path.join(CONFIG_DIR, "projects_registry.json")
 
 from core.config_manager import load_settings, save_settings
 from core.mcu_database import check_mcu_specific_pin_rules, match_mcu_profile
 
 
-def _ensure_lab7_ssot_files():
-    """确保经典标杆工程 night-verson-goggle 根目录下拥有标准 spec.json 与 pinout.json"""
-    lab7_dir = "/Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle"
-    if not os.path.exists(lab7_dir):
-        return
-    spec_path = os.path.join(lab7_dir, "spec.json")
-    pinout_path = os.path.join(lab7_dir, "pinout.json")
+def _ensure_default_workspace():
+    """确保平台默认通用工程目录 workspaces/smart-env-alarm-01 存在且包含标准 spec.json 与 pinout.json"""
+    os.makedirs(WORKSPACES_DIR, exist_ok=True)
+    default_dir = os.path.join(WORKSPACES_DIR, "smart-env-alarm-01")
+    if not os.path.exists(default_dir):
+        os.makedirs(default_dir, exist_ok=True)
+    spec_path = os.path.join(default_dir, "spec.json")
+    pinout_path = os.path.join(default_dir, "pinout.json")
 
     if not os.path.exists(spec_path):
-        lab7_spec = {
-            "project_name": "LAB7-Night-Vision-Mainboard",
-            "project_summary": "LAB7 双筒微光夜视仪主控驱动板，支持 1.5V 干电池/锂电池供电升压、光敏自动调光、红外补光 PWM 控制、干簧管磁控与法拉第屏蔽笼。",
+        default_spec = {
+            "project_name": "Smart-Env-Alarm-01",
+            "project_summary": "智能温湿度与烟雾环境监测控制板，集成 SHT30 温湿度、MQ-2 气体检测、OLED 显示、蜂鸣器 PWM 驱动及按键交互状态机。",
             "mechanical": {
-                "width_mm": 59.0,
-                "height_mm": 26.0,
-                "thickness_mm": 1.0,
+                "width_mm": 60.0,
+                "height_mm": 40.0,
+                "thickness_mm": 1.6,
                 "layers": 2,
-                "fillet_mm": 1.0,
-                "mounting_holes": "底边中心 Ø3.5mm 半圆定位避让缺口 + 15组带Ø0.8mm穿线孔焊盘",
-                "height_limits": "正面限高 ≤ 4.5mm，背面扁平无高件",
-                "keepouts": "板边 3.0mm 法拉第接地屏蔽缝合孔圈"
+                "fillet_mm": 2.0,
+                "mounting_holes": "四角 M3 安装孔",
+                "height_limits": "正面限高 ≤ 12.0mm",
+                "keepouts": "板边 2.0mm 接地过孔缝合环"
             },
             "power": {
-                "input_source": "1.5V AA 干电池 / 3.7V 锂电池宽压输入",
-                "operating_voltage": "3.3V 系统主轨 + 升压驱动轨",
-                "boost_or_buck": "同步 Boost 升压拓扑 + 低噪声 LDO",
-                "max_current": "500mA",
-                "low_power_spec": "待机休眠电流 < 5uA",
-                "protection": ["PMOS 防反接保护", "ESD TVS 静电防护", "法拉第笼环绕接地"]
+                "input_source": "USB Type-C 5V / 3.7V 锂电池输入",
+                "operating_voltage": "3.3V 系统主轨",
+                "boost_or_buck": "低压差 LDO 稳压",
+                "max_current": "300mA",
+                "low_power_spec": "待机电流 < 15uA",
+                "protection": ["ESD TVS 防护", "电源去耦滤波网络"]
             },
             "mcu": {
-                "model": "STM32L011F4U6TR",
-                "package": "UFQFPN-20",
+                "model": "STM32G030F6P6",
+                "package": "TSSOP-20",
                 "debug_interface": "SWD (SWDIO/SWCLK/NRST/GND)",
-                "firmware_framework": "纯嵌入式 C (CMSIS / LL 低功耗状态机)"
+                "firmware_framework": "纯嵌入式 C99 (CMSIS / 非阻塞状态机)"
             },
             "peripherals": [
-                "光敏传感器 ADC 采集 (LDR_ADC)",
-                "红外补光灯 PWM 驱动 (IR_LED_PWM)",
-                "双色状态指示灯 (LED_RED / LED_YEL)",
-                "干簧管磁控翻转检测 (HALL_SW)",
-                "双档位模式拨动开关 (MODE_SW1 / MODE_SW2)",
-                "像管高压供电使能 (TUBE_PWR_EN)",
-                "电池电量低压监测 (BAT_ADC)"
+                "烟雾传感器 ADC 采样 (MQ2_ADC)",
+                "电池分压 ADC 监测 (VBAT_ADC)",
+                "蜂鸣器 PWM 报警输出 (BUZZER_PWM)",
+                "状态指示灯与按键消音输入 (LED_ALARM / KEY_MUTE)",
+                "I2C 温湿度传感器与 OLED 显示接口 (I2C1_SCL / I2C1_SDA)"
             ],
             "manufacturing": {
                 "fab": "JLCPCB (嘉立创)",
-                "finish": "ENIG (沉金 1.0mm)",
+                "finish": "HASL / ENIG",
                 "faraday_cage": True,
                 "acid_trap_chamfer": True
             }
         }
         try:
             with open(spec_path, "w", encoding="utf8") as f:
-                json.dump(lab7_spec, f, indent=2, ensure_ascii=False)
+                json.dump(default_spec, f, indent=2, ensure_ascii=False)
         except Exception:
             pass
 
     if not os.path.exists(pinout_path):
-        lab7_pinout = [
-            {"pin": "PA0", "net_name": "LDR_ADC", "function": "ADC_IN0", "description": "环境光敏电阻分压采样输入"},
-            {"pin": "PA1", "net_name": "BAT_ADC", "function": "ADC_IN1", "description": "电池电压电量分压采样输入"},
-            {"pin": "PA2", "net_name": "IR_PWM", "function": "TIM2_CH3", "description": "红外补光灯 MOSFET PWM 调光输出"},
-            {"pin": "PA3", "net_name": "TUBE_EN", "function": "GPIO_Output", "description": "夜视像管升压电源使能控制"},
-            {"pin": "PA4", "net_name": "HALL_INT", "function": "GPIO_EXTI4", "description": "干簧管磁控休眠唤醒中断输入"},
-            {"pin": "PA5", "net_name": "SW_GEAR1", "function": "GPIO_Input", "description": "主拨动开关1档开机信号输入"},
-            {"pin": "PA6", "net_name": "SW_GEAR2", "function": "GPIO_Input", "description": "主拨动开关2档红外开启信号输入"},
-            {"pin": "PA7", "net_name": "LED_RED", "function": "GPIO_Output", "description": "红色低电量报警状态指示灯"},
-            {"pin": "PB1", "net_name": "LED_IR_IND", "function": "GPIO_Output", "description": "黄色红外补光开启状态指示灯"},
+        default_pinout = [
+            {"pin": "PA0", "net_name": "MQ2_ADC", "function": "ADC_IN0", "description": "烟雾传感器模拟电压采样输入"},
+            {"pin": "PA1", "net_name": "VBAT_ADC", "function": "ADC_IN1", "description": "电池电压分压监测输入"},
+            {"pin": "PA2", "net_name": "UART1_TX", "function": "USART1_TX", "description": "调试串口发送端"},
+            {"pin": "PA3", "net_name": "UART1_RX", "function": "USART1_RX", "description": "调试串口接收端"},
+            {"pin": "PA4", "net_name": "BUZZER_PWM", "function": "TIM14_CH1", "description": "无源蜂鸣器 PWM 驱动输出"},
+            {"pin": "PA5", "net_name": "KEY_MUTE", "function": "GPIO_Input", "description": "按键消音与自检输入 (低有效)"},
+            {"pin": "PA6", "net_name": "LED_STATUS", "function": "GPIO_Output", "description": "系统运行状态绿色指示灯"},
+            {"pin": "PA7", "net_name": "LED_ALARM", "function": "GPIO_Output", "description": "超限报警红色高亮指示灯"},
+            {"pin": "PB6", "net_name": "I2C1_SCL", "function": "I2C1_SCL", "description": "SHT30 与 OLED 共用 I2C 时钟线"},
+            {"pin": "PB7", "net_name": "I2C1_SDA", "function": "I2C1_SDA", "description": "SHT30 与 OLED 共用 I2C 数据线"},
             {"pin": "PA13", "net_name": "SWDIO", "function": "SYS_SWDIO", "description": "SWD 调试数据接口"},
-            {"pin": "PA14", "net_name": "SWCLK", "function": "SYS_SWCLK", "description": "SWD 调试时钟接口"},
-            {"pin": "NRST", "net_name": "NRST", "function": "SYS_NRST", "description": "系统低电平复位引脚"}
+            {"pin": "PA14", "net_name": "SWCLK", "function": "SYS_SWCLK", "description": "SWD 调试时钟接口"}
         ]
         try:
             with open(pinout_path, "w", encoding="utf8") as f:
-                json.dump(lab7_pinout, f, indent=2, ensure_ascii=False)
+                json.dump(default_pinout, f, indent=2, ensure_ascii=False)
         except Exception:
             pass
 
@@ -315,12 +315,10 @@ def save_project_ssot(project_dir: str, spec: Dict[str, Any], pinout: List[Dict[
 
 
 def _load_registry() -> List[str]:
-    _ensure_lab7_ssot_files()
+    _ensure_default_workspace()
     os.makedirs(CONFIG_DIR, exist_ok=True)
     seed_dirs = [
-        "/Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle",
-        "/Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/smart-env-alarm-01",
-        "/Users/zhenxian/Documents/XXG/Xter/projects/test-nir-goggle"
+        os.path.join(WORKSPACES_DIR, "smart-env-alarm-01"),
     ]
     registered = []
     if os.path.exists(REGISTRY_FILE):
@@ -330,16 +328,22 @@ def _load_registry() -> List[str]:
         except Exception:
             registered = []
 
+    # 仅保留真实存在且非废弃实验目录的通用工程路径
+    legacy_keywords = ("night-verson-goggle", "test-nir-goggle")
+    registered = [
+        p for p in registered
+        if not any(tag in p.lower() for tag in legacy_keywords)
+    ]
+
     for d in seed_dirs:
         if os.path.exists(d) and d not in registered:
             registered.append(d)
 
-    # 扫描同级目录下带有 spec.json 或 hardware/*.kicad_pcb 的项目
-    parent_root = os.path.dirname(PLATFORM_ROOT)
-    if os.path.exists(parent_root):
-        for entry in os.listdir(parent_root):
-            full_p = os.path.join(parent_root, entry)
-            if full_p == PLATFORM_ROOT or not os.path.isdir(full_p):
+    # 扫描 workspaces 目录下所有通用工程
+    if os.path.exists(WORKSPACES_DIR):
+        for entry in sorted(os.listdir(WORKSPACES_DIR)):
+            full_p = os.path.join(WORKSPACES_DIR, entry)
+            if not os.path.isdir(full_p):
                 continue
             if os.path.exists(os.path.join(full_p, "spec.json")) or glob.glob(os.path.join(full_p, "hardware", "*.kicad_pcb")):
                 if full_p not in registered:
@@ -365,7 +369,7 @@ def list_projects() -> Dict[str, Any]:
     dirs = _load_registry()
     settings = load_settings()
     active_dir = settings.get("workspace", {}).get("active_project_dir", "")
-    if not active_dir or not os.path.exists(active_dir):
+    if not active_dir or not os.path.exists(active_dir) or active_dir not in dirs:
         active_dir = dirs[0] if dirs else ""
 
     projects = []
@@ -420,12 +424,12 @@ def list_projects() -> Dict[str, Any]:
 
 def get_project_details(project_dir: Optional[str] = None) -> Dict[str, Any]:
     """获取指定工程的完整软硬件详情（SSOT、PCB、3D图、DRC、BOM、固件文件树）"""
-    _ensure_lab7_ssot_files()
+    _ensure_default_workspace()
+    dirs = _load_registry()
     settings = load_settings()
     if not project_dir:
         project_dir = settings.get("workspace", {}).get("active_project_dir")
     if not project_dir or not os.path.exists(project_dir):
-        dirs = _load_registry()
         project_dir = dirs[0] if dirs else ""
 
     if not project_dir or not os.path.exists(project_dir):
@@ -458,7 +462,7 @@ def get_project_details(project_dir: Optional[str] = None) -> Dict[str, Any]:
     hw_dir = os.path.join(project_dir, "hardware")
     out_dir = os.path.join(hw_dir, "out")
     pcb_files = sorted(glob.glob(os.path.join(hw_dir, "*.kicad_pcb")))
-    # 优先将主文件 LAB7.kicad_pcb 或与工程同名文件排在第一位
+    # 优先将与工程同名或非测试文件排在第一位
     pcb_files.sort(key=lambda p: (0 if "test" not in os.path.basename(p).lower() else 1, os.path.basename(p)))
     sch_files = sorted(glob.glob(os.path.join(hw_dir, "*.kicad_sch")))
 
@@ -484,7 +488,6 @@ def get_project_details(project_dir: Optional[str] = None) -> Dict[str, Any]:
         os.path.join(out_dir, "drc.json"),
         os.path.join(hw_dir, "drc_chamfer.json"),
         os.path.join(hw_dir, "drc.json"),
-        os.path.join(project_dir, "LAB7-drc.json")
     ]:
         if os.path.exists(drc_cand):
             try:
@@ -796,6 +799,7 @@ def get_project_details(project_dir: Optional[str] = None) -> Dict[str, Any]:
         "release_bundle": release_bundle,
         "cross_module_sync": cross_module_sync,
         "explorer_tree": explorer_tree,
+        "file_tree": _build_vscode_file_tree(project_dir),
         "unified_diagnostics": unified_diagnostics,
         "hardware": {
             "pcb_files": pcb_files,
@@ -1129,4 +1133,253 @@ def export_all_in_one_bundle(project_dir: str) -> Dict[str, Any]:
         "files_count": len(added_files),
         "files": added_files
     }
+
+
+def _classify_file_preview_kind(filename: str) -> str:
+    low = filename.lower()
+    if low == "spec.json":
+        return "ssot_spec"
+    if low == "pinout.json":
+        return "ssot_pinout"
+    if low.endswith(".kicad_pcb"):
+        return "pcb_board"
+    if low.endswith(".kicad_sch"):
+        return "sch_sheet"
+    if low.endswith((".c", ".h", ".s", ".ld")) or filename in ("Makefile", "CMakeLists.txt"):
+        return "fw_source"
+    if low.endswith(".csv"):
+        return "csv_table"
+    if low.endswith(".svg"):
+        return "svg_vector"
+    if low.endswith((".png", ".jpg", ".jpeg", ".webp")):
+        return "image"
+    if low.endswith(".md"):
+        return "markdown"
+    if low.endswith(".json"):
+        return "json"
+    if low.endswith((".gbr", ".drl", ".gbrjob")):
+        return "gerber"
+    if low.endswith((".elf", ".hex", ".bin", ".map", ".o")):
+        return "firmware_artifact"
+    if low.endswith(".zip"):
+        return "archive"
+    return "text"
+
+
+def _build_vscode_file_tree(project_dir: str, max_depth: int = 4) -> Dict[str, Any]:
+    """扫描项目物理目录，生成 VS Code 左上角 Explorer 风格的递归多级目录树"""
+    root_abs = os.path.abspath(project_dir)
+    skip_names = {".git", "__pycache__", ".DS_Store", ".copilot_snapshots", ".sim_build", "node_modules"}
+
+    def _walk_dir(curr_dir: str, depth: int) -> List[Dict[str, Any]]:
+        if depth > max_depth or not os.path.isdir(curr_dir):
+            return []
+        try:
+            entries = os.listdir(curr_dir)
+        except Exception:
+            return []
+
+        dirs_list = []
+        files_list = []
+        for name in sorted(entries, key=lambda s: s.lower()):
+            if name in skip_names or name.startswith("."):
+                continue
+            full_p = os.path.join(curr_dir, name)
+            rel_p = os.path.relpath(full_p, root_abs)
+            if os.path.isdir(full_p):
+                children = _walk_dir(full_p, depth + 1)
+                dirs_list.append({
+                    "type": "dir",
+                    "name": name,
+                    "rel_path": rel_p,
+                    "abs_path": full_p,
+                    "children_count": len(children),
+                    "children": children
+                })
+            elif os.path.isfile(full_p):
+                try:
+                    sz = os.path.getsize(full_p)
+                except Exception:
+                    sz = 0
+                files_list.append({
+                    "type": "file",
+                    "name": name,
+                    "rel_path": rel_p,
+                    "abs_path": full_p,
+                    "size_bytes": sz,
+                    "ext": os.path.splitext(name)[1].lower(),
+                    "kind": _classify_file_preview_kind(name)
+                })
+        # VS Code 习惯：文件夹排在前面（重点目录 firmware / hardware / docs 优先），文件排在后面
+        priority_order = {"hardware": 0, "firmware": 1, "docs": 2}
+        dirs_list.sort(key=lambda d: (priority_order.get(d["name"].lower(), 9), d["name"].lower()))
+        file_priority = {"spec.json": 0, "pinout.json": 1}
+        files_list.sort(key=lambda f: (file_priority.get(f["name"].lower(), 9), f["name"].lower()))
+        return dirs_list + files_list
+
+    children = _walk_dir(root_abs, 1)
+    return {
+        "root_name": os.path.basename(root_abs),
+        "project_dir": root_abs,
+        "children": children
+    }
+
+
+def preview_project_file(project_dir: Optional[str], file_path: str) -> Dict[str, Any]:
+    """读取并解析工程目录下的任意文件，供 VS Code 工程文件预览器查看或在线编辑"""
+    settings = load_settings()
+    if not project_dir:
+        project_dir = settings.get("workspace", {}).get("active_project_dir")
+    if not project_dir or not os.path.exists(project_dir):
+        dirs = _load_registry()
+        project_dir = dirs[0] if dirs else ""
+
+    root_abs = os.path.abspath(project_dir)
+    target_abs = os.path.abspath(file_path if os.path.isabs(file_path) else os.path.join(root_abs, file_path))
+
+    # 安全边界检查：必须位于当前受管工程目录或工作空间内
+    if not os.path.exists(target_abs) or not os.path.isfile(target_abs):
+        return {"success": False, "error": f"文件不存在: {file_path}"}
+
+    rel_path = os.path.relpath(target_abs, root_abs) if target_abs.startswith(root_abs) else os.path.basename(target_abs)
+    fname = os.path.basename(target_abs)
+    ext = os.path.splitext(fname)[1].lower()
+    size_bytes = os.path.getsize(target_abs)
+    mtime_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(os.path.getmtime(target_abs)))
+    kind = _classify_file_preview_kind(fname)
+
+    # 1. 图片或 SVG 矢量文件
+    if kind in ("image", "svg_vector"):
+        text_preview = ""
+        if kind == "svg_vector" and size_bytes <= 300_000:
+            try:
+                with open(target_abs, "r", encoding="utf8", errors="ignore") as f:
+                    text_preview = f.read()
+            except Exception:
+                pass
+        return {
+            "success": True,
+            "name": fname,
+            "rel_path": rel_path,
+            "abs_path": target_abs,
+            "ext": ext,
+            "kind": kind,
+            "size_bytes": size_bytes,
+            "mtime": mtime_str,
+            "preview_mode": "image",
+            "editable": False,
+            "content": text_preview
+        }
+
+    # 2. 二进制构建产物或压缩包 (.elf / .bin / .o / .zip)
+    if ext in (".elf", ".bin", ".o", ".zip"):
+        summary_lines = [
+            f"📦 二进制/归档工程产物: {fname}",
+            f"📍 相对路径: {rel_path}",
+            f"📏 文件大小: {round(size_bytes / 1024.0, 2)} KB ({size_bytes} bytes)",
+            f"🕒 最后更新: {mtime_str}",
+            ""
+        ]
+        if ext == ".zip":
+            try:
+                with zipfile.ZipFile(target_abs, "r") as zf:
+                    names = zf.namelist()
+                    summary_lines.append(f"🗂️ 归档内包含 {len(names)} 个文件:")
+                    for n in names[:40]:
+                        summary_lines.append(f"  - {n}")
+            except Exception as e:
+                summary_lines.append(f"读取 ZIP 目录失败: {e}")
+        elif ext == ".elf" and shutil.which("arm-none-eabi-size"):
+            try:
+                res = subprocess.run([shutil.which("arm-none-eabi-size"), "-A", target_abs], capture_output=True, text=True, timeout=4)
+                if res.returncode == 0:
+                    summary_lines.append("🔬 ARM-GCC ELF 段大小分析 (arm-none-eabi-size -A):")
+                    summary_lines.append(res.stdout)
+            except Exception:
+                pass
+        return {
+            "success": True,
+            "name": fname,
+            "rel_path": rel_path,
+            "abs_path": target_abs,
+            "ext": ext,
+            "kind": kind,
+            "size_bytes": size_bytes,
+            "mtime": mtime_str,
+            "preview_mode": "binary",
+            "editable": False,
+            "content": "\n".join(summary_lines)
+        }
+
+    # 3. 文本 / 代码 / CSV / JSON / KiCad S-Expression / Gerber / Markdown
+    max_read_bytes = 256 * 1024
+    truncated = size_bytes > max_read_bytes
+    try:
+        with open(target_abs, "r", encoding="utf8", errors="replace") as f:
+            content = f.read(max_read_bytes)
+    except Exception as e:
+        return {"success": False, "error": f"读取文件失败: {e}"}
+
+    csv_table = None
+    if ext == ".csv":
+        try:
+            lines = content.splitlines()
+            reader = list(csv.reader(lines))
+            if reader:
+                csv_table = {
+                    "headers": reader[0],
+                    "rows": reader[1:150]
+                }
+        except Exception:
+            csv_table = None
+
+    editable_exts = {".c", ".h", ".s", ".ld", ".json", ".md", ".txt", ".csv", ".py", ".kicad_pcb", ".kicad_sch"}
+    is_editable = (ext in editable_exts or fname in ("Makefile", "CMakeLists.txt")) and not truncated
+
+    return {
+        "success": True,
+        "name": fname,
+        "rel_path": rel_path,
+        "abs_path": target_abs,
+        "ext": ext,
+        "kind": kind,
+        "size_bytes": size_bytes,
+        "mtime": mtime_str,
+        "line_count": len(content.splitlines()),
+        "truncated": truncated,
+        "preview_mode": "csv" if csv_table else "code",
+        "editable": is_editable,
+        "csv_table": csv_table,
+        "content": content
+    }
+
+
+def save_project_file_content(project_dir: Optional[str], file_path: str, content: str) -> Dict[str, Any]:
+    """保存用户在 VS Code 工程文件预览器中修改的文本/代码/JSON 文件"""
+    settings = load_settings()
+    if not project_dir:
+        project_dir = settings.get("workspace", {}).get("active_project_dir")
+    if not project_dir or not os.path.exists(project_dir):
+        dirs = _load_registry()
+        project_dir = dirs[0] if dirs else ""
+
+    root_abs = os.path.abspath(project_dir)
+    target_abs = os.path.abspath(file_path if os.path.isabs(file_path) else os.path.join(root_abs, file_path))
+    if not target_abs.startswith(root_abs):
+        return {"success": False, "error": "仅允许修改当前工程目录下的文件"}
+
+    with open(target_abs, "w", encoding="utf8") as f:
+        f.write(content)
+
+    # 若修改了 pinout.json 或 spec.json，自动同步刷新 bsp_pinout.h
+    if os.path.basename(target_abs) in ("spec.json", "pinout.json"):
+        sync_project_bsp_header(root_abs)
+
+    return {
+        "success": True,
+        "abs_path": target_abs,
+        "rel_path": os.path.relpath(target_abs, root_abs),
+        "size_bytes": os.path.getsize(target_abs)
+    }
+
 

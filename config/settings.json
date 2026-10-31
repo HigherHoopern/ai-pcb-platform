@@ -112,8 +112,8 @@
     }
   },
   "workspace": {
-    "projects_root": "/Users/zhenxian/Documents/XXG/Xter/projects",
-    "active_project_dir": "/Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle",
+    "projects_root": "/Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces",
+    "active_project_dir": "/Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01",
     "pipeline": {
       "pcb_agent": "antigravity",
       "firmware_agent": "pi",

@@ -109,9 +109,8 @@ def auto_heal_pcb_drc(pcb_path: str, max_iterations: int = 2) -> Dict[str, Any]:
         v_types = {v.get("type", "") for v in violations}
         heal_logs.append(f"[🔧 自愈迭代 #{it}] 检测到违规类型集合: {', '.join(sorted(v_types)) or 'unconnected_items'}")
 
-        # 若存在短路或未连接且该工程不是 LAB7 标杆板，重新通过确定性引擎重排拓扑以彻底消除未连接/短路
-        is_lab7 = "lab7" in os.path.basename(pcb_path).lower()
-        if (unconnected or "shorting_items" in v_types or "solder_mask_bridge" in v_types) and not is_lab7:
+        # 若存在短路或未连接，重新通过确定性引擎重排拓扑以彻底消除未连接/短路
+        if unconnected or "shorting_items" in v_types or "solder_mask_bridge" in v_types:
             heal_logs.append("  -> 检测到网络未闭合或焊盘桥接，调用确定性拓扑重构器重新对齐焊盘网络与走线...")
             generate_hardware_scaffold(project_dir, overwrite=True)
         else:
@@ -352,15 +351,9 @@ def _execute_pipeline_worker(pipeline_id: str):
         if mode == "multi_agent_cli":
             _run_optional_cli_agent_step(rec, s2["agent"], "pcb", timeout_sec=20)
 
-        existing_pcbs = glob.glob(os.path.join(project_dir, "hardware", "*.kicad_pcb"))
-        is_lab7 = any("lab7" in os.path.basename(p).lower() for p in existing_pcbs)
-        if is_lab7:
-            pcb_path = existing_pcbs[0]
-            _append_log(rec, f"  [✓] 检测到标杆工程 PCB: {os.path.basename(pcb_path)}，保留现有高精度版图。")
-        else:
-            hw_scaf = generate_hardware_scaffold(project_dir, overwrite=True)
-            pcb_path = hw_scaf.get("pcb_path", "")
-            _append_log(rec, f"  [✓] 已构建合规 KiCad PCB 与原理图: {os.path.basename(pcb_path)} ({hw_scaf.get('components_count', 0)} 器件, {hw_scaf.get('vias_count', 0)} 法拉第笼地孔)")
+        hw_scaf = generate_hardware_scaffold(project_dir, overwrite=True)
+        pcb_path = hw_scaf.get("pcb_path", "")
+        _append_log(rec, f"  [✓] 已构建合规 KiCad PCB 与原理图: {os.path.basename(pcb_path)} ({hw_scaf.get('components_count', 0)} 器件, {hw_scaf.get('vias_count', 0)} 法拉第笼地孔)")
 
         s2["elapsed_sec"] = round(time.time() - t_s2, 2)
         s2["status"] = "completed"

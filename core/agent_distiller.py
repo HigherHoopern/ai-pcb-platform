@@ -22,7 +22,7 @@ SYSTEM_PROMPT = """你是一位精通工业级硬件与嵌入式 C 系统的首�
 
 请输出且仅输出合法的 JSON 对象，格式如下：
 {
-  "project_name": "项目英文或缩写名称 (如: LAB7-Night-Vision)",
+  "project_name": "项目英文或缩写名称 (如: Smart-Env-Controller)",
   "project_summary": "100字以内的项目功能概括",
   "mechanical": {
     "width_mm": 50.0,

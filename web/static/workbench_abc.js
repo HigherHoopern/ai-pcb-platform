@@ -775,4 +775,338 @@ if (document.readyState === 'loading') {
   initSidebarCollapsedTooltips();
 }
 
+// ============================================================================
+// VS Code 左上角多级工程文件资源管理器 (Hierarchical Explorer Tree)
+// 与通用文件在线预览/编辑器 (Universal File Previewer)
+// ============================================================================
+let explorerCollapsedDirs = new Set(['hardware/out/gerber', 'firmware/build']);
+let explorerAllCollapsed = false;
+let currentPreviewFileData = null;
+let currentCsvShowSource = false;
+
+function getVscodeFileIconHtml(name, kind, ext) {
+  const low = (name || '').toLowerCase();
+  if (low === 'spec.json') return '<i class="fa-solid fa-sliders text-amber-400 w-3.5 text-center"></i>';
+  if (low === 'pinout.json') return '<i class="fa-solid fa-network-wired text-amber-400 w-3.5 text-center"></i>';
+  if (ext === '.kicad_pcb') return '<i class="fa-solid fa-compass-drafting text-emerald-400 w-3.5 text-center"></i>';
+  if (ext === '.kicad_sch') return '<i class="fa-solid fa-microchip text-teal-400 w-3.5 text-center"></i>';
+  if (ext === '.c') return '<i class="fa-solid fa-c text-sky-400 w-3.5 text-center font-extrabold"></i>';
+  if (ext === '.h') return '<i class="fa-solid fa-h text-purple-400 w-3.5 text-center font-extrabold"></i>';
+  if (low === 'makefile' || ext === '.ld' || ext === '.s') return '<i class="fa-solid fa-gears text-amber-300 w-3.5 text-center"></i>';
+  if (ext === '.csv') return '<i class="fa-solid fa-table-list text-emerald-300 w-3.5 text-center"></i>';
+  if (ext === '.svg' || ext === '.png' || ext === '.jpg') return '<i class="fa-regular fa-image text-pink-400 w-3.5 text-center"></i>';
+  if (ext === '.md') return '<i class="fa-brands fa-markdown text-indigo-400 w-3.5 text-center"></i>';
+  if (ext === '.json') return '<i class="fa-solid fa-code text-amber-300 w-3.5 text-center"></i>';
+  if (ext === '.elf' || ext === '.hex' || ext === '.bin') return '<i class="fa-solid fa-memory text-rose-400 w-3.5 text-center"></i>';
+  if (ext === '.zip') return '<i class="fa-solid fa-file-zipper text-purple-400 w-3.5 text-center"></i>';
+  return '<i class="fa-regular fa-file-lines text-slate-400 w-3.5 text-center"></i>';
+}
+
+function formatCompactSize(bytes) {
+  if (!bytes || bytes <= 0) return '';
+  if (bytes < 1024) return `${bytes}B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}K`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)}M`;
+}
+
+window.toggleExplorerFolder = function (relPath, evt) {
+  if (evt) evt.stopPropagation();
+  if (explorerCollapsedDirs.has(relPath)) {
+    explorerCollapsedDirs.delete(relPath);
+  } else {
+    explorerCollapsedDirs.add(relPath);
+  }
+  if (typeof activeProjectDetail !== 'undefined' && activeProjectDetail) {
+    window.renderWorkbenchExplorerTree(activeProjectDetail);
+  }
+};
+
+window.toggleAllExplorerFolders = function () {
+  explorerAllCollapsed = !explorerAllCollapsed;
+  if (!explorerAllCollapsed) {
+    explorerCollapsedDirs.clear();
+  } else if (typeof activeProjectDetail !== 'undefined' && activeProjectDetail?.file_tree) {
+    const collectDirs = (nodes) => {
+      (nodes || []).forEach(n => {
+        if (n.type === 'dir') {
+          explorerCollapsedDirs.add(n.rel_path);
+          collectDirs(n.children);
+        }
+      });
+    };
+    collectDirs(activeProjectDetail.file_tree.children);
+  }
+  if (typeof activeProjectDetail !== 'undefined' && activeProjectDetail) {
+    window.renderWorkbenchExplorerTree(activeProjectDetail);
+  }
+};
+
+window.renderWorkbenchExplorerTree = function (detail) {
+  const treeBox = document.getElementById('vscode-explorer-tree');
+  if (!treeBox || !detail) return;
+
+  // 同步左上角工程快速切换下拉框 (#sidebar-project-select)
+  const projSel = document.getElementById('sidebar-project-select');
+  if (projSel) {
+    const projs = (typeof projectsCache !== 'undefined' && Array.isArray(projectsCache) && projectsCache.length > 0)
+      ? projectsCache
+      : [{ project_dir: detail.project_dir, project_name: detail.project_name || 'Workspace' }];
+    projSel.innerHTML = projs.map(p => {
+      const sel = p.project_dir === detail.project_dir ? 'selected' : '';
+      return `<option value="${escapeHtml(p.project_dir)}" ${sel}>📂 ${escapeHtml(p.project_name || p.folder_name)}</option>`;
+    }).join('');
+  }
+
+  const fileTree = detail.file_tree;
+  if (!fileTree || !Array.isArray(fileTree.children) || fileTree.children.length === 0) {
+    treeBox.innerHTML = '<div class="text-[11px] text-slate-500 px-2 py-1.5">暂无工程文件</div>';
+    return;
+  }
+
+  function renderNodes(nodes, depth) {
+    return (nodes || []).map(node => {
+      const indentPx = depth * 11 + 4;
+      if (node.type === 'dir') {
+        const isCollapsed = explorerCollapsedDirs.has(node.rel_path);
+        const chevron = isCollapsed ? 'fa-chevron-right' : 'fa-chevron-down';
+        const folderIcon = isCollapsed ? 'fa-folder text-amber-400/80' : 'fa-folder-open text-amber-400';
+        const safeRel = (node.rel_path || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const childrenHtml = isCollapsed ? '' : `<div class="border-l border-slate-800/70 ml-2.5">${renderNodes(node.children, depth + 1)}</div>`;
+        return `
+          <div>
+            <div onclick="toggleExplorerFolder('${safeRel}', event)" class="vscode-tree-item hover:bg-slate-800/70 flex items-center justify-between py-1 pr-2 rounded cursor-pointer text-[11px] text-slate-300 font-semibold" style="padding-left:${indentPx}px" title="点击展开/收起目录: ${escapeHtml(node.rel_path)}">
+              <span class="flex items-center gap-1.5 truncate">
+                <i class="fa-solid ${chevron} text-[8px] text-slate-500 w-2.5 text-center"></i>
+                <i class="fa-regular ${folderIcon} text-[11px]"></i>
+                <span class="truncate font-mono">${escapeHtml(node.name)}</span>
+              </span>
+              <span class="text-[9px] text-slate-500 font-mono">${node.children_count || 0}</span>
+            </div>
+            ${childrenHtml}
+          </div>
+        `;
+      } else {
+        const isAct = (currentPreviewFileData && currentPreviewFileData.abs_path === node.abs_path) ||
+                      (typeof currentEditingFwPath !== 'undefined' && node.abs_path === currentEditingFwPath);
+        const ic = getVscodeFileIconHtml(node.name, node.kind, node.ext);
+        const safePath = (node.abs_path || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const safeName = (node.name || '').replace(/'/g, "\\'");
+        const sizeLabel = formatCompactSize(node.size_bytes);
+        return `
+          <div onclick="openExplorerFileItem('${node.kind}', '${safePath}', '${safeName}')" class="vscode-tree-item ${isAct ? 'active' : ''} flex items-center justify-between py-1 pr-2 rounded cursor-pointer text-[11px]" style="padding-left:${indentPx + 8}px" title="点击预览或编辑文件: ${escapeHtml(node.rel_path)} (${sizeLabel})">
+            <span class="flex items-center gap-1.5 truncate">
+              ${ic}
+              <span class="truncate font-mono">${escapeHtml(node.name)}</span>
+            </span>
+            <span class="text-[9px] text-slate-500 font-mono shrink-0 ml-1">${sizeLabel}</span>
+          </div>
+        `;
+      }
+    }).join('');
+  }
+
+  treeBox.innerHTML = renderNodes(fileTree.children, 0);
+};
+
+// 点击左上角文件树中的任意文件：弹出 VS Code 工程文件预览器（同时支持一键在对应工坊打开）
+window.openExplorerFileItem = async function (kind, absPath, fileName) {
+  if (!absPath) return;
+  try {
+    const projectDir = (typeof activeProjectDetail !== 'undefined' && activeProjectDetail?.project_dir) || '';
+    const url = `/api/projects/file-preview?path=${encodeURIComponent(absPath)}&project_dir=${encodeURIComponent(projectDir)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (!data.success) {
+      if (typeof showToast === 'function') showToast(data.error || '无法预览该文件', 'error');
+      return;
+    }
+    currentPreviewFileData = data;
+    currentCsvShowSource = false;
+    renderVscodeFilePreviewModal(data);
+    if (typeof activeProjectDetail !== 'undefined' && activeProjectDetail) {
+      window.renderWorkbenchExplorerTree(activeProjectDetail);
+    }
+  } catch (err) {
+    if (typeof showToast === 'function') showToast('加载文件预览失败: ' + err.message, 'error');
+  }
+};
+
+function renderVscodeFilePreviewModal(data) {
+  const modal = document.getElementById('vscode-file-preview-modal');
+  if (!modal) return;
+
+  const iconEl = document.getElementById('fprev-icon');
+  const titleEl = document.getElementById('fprev-title');
+  const metaEl = document.getElementById('fprev-meta-badge');
+  const dirtyEl = document.getElementById('fprev-dirty-badge');
+  const relEl = document.getElementById('fprev-relpath');
+  const footerEl = document.getElementById('fprev-footer-info');
+  const dlBtn = document.getElementById('btn-fprev-download');
+  const saveBtn = document.getElementById('btn-fprev-save');
+  const csvToggleBtn = document.getElementById('btn-fprev-csv-toggle');
+  const studioBtnText = document.getElementById('btn-fprev-open-studio-text');
+
+  if (iconEl) iconEl.innerHTML = getVscodeFileIconHtml(data.name, data.kind, data.ext);
+  if (titleEl) titleEl.textContent = data.name;
+  if (metaEl) metaEl.textContent = `${formatCompactSize(data.size_bytes)}${data.line_count ? ' · ' + data.line_count + ' 行' : ''}`;
+  if (dirtyEl) dirtyEl.classList.add('hidden');
+  if (relEl) relEl.textContent = `${activeProjectDetail?.project_name || 'workspace'} › ${data.rel_path}`;
+  if (footerEl) footerEl.textContent = `${data.rel_path} · 最后修改: ${data.mtime || '-'} · ${data.editable ? '可直接编辑并保存' : '只读预览'}`;
+  if (dlBtn) {
+    dlBtn.href = `/api/projects/download?path=${encodeURIComponent(data.abs_path)}`;
+    dlBtn.setAttribute('download', data.name);
+  }
+  if (saveBtn) {
+    saveBtn.classList.toggle('hidden', !data.editable);
+  }
+  if (csvToggleBtn) {
+    csvToggleBtn.classList.toggle('hidden', data.preview_mode !== 'csv');
+  }
+
+  // 设置“在对应工坊打开”按钮文案
+  if (studioBtnText) {
+    if (data.kind === 'ssot_spec' || data.kind === 'ssot_pinout') {
+      studioBtnText.textContent = '在 ② 规格与引脚 (SSOT) 中打开';
+    } else if (data.kind === 'fw_source') {
+      studioBtnText.textContent = '在 ④ C99 固件工坊编辑器中打开';
+    } else if (['pcb_board', 'sch_sheet', 'csv_table', 'svg_vector', 'image', 'gerber'].includes(data.kind)) {
+      studioBtnText.textContent = '在 ③ PCB 硬件工坊中打开';
+    } else {
+      studioBtnText.textContent = '定位到所属工坊';
+    }
+  }
+
+  const codePane = document.getElementById('fprev-code-pane');
+  const csvPane = document.getElementById('fprev-csv-pane');
+  const imgPane = document.getElementById('fprev-image-pane');
+  const editor = document.getElementById('fprev-code-editor');
+  const lineNums = document.getElementById('fprev-line-numbers');
+  const imgEl = document.getElementById('fprev-image-el');
+
+  if (data.preview_mode === 'image') {
+    codePane.classList.add('hidden');
+    csvPane.classList.add('hidden');
+    imgPane.classList.remove('hidden');
+    if (imgEl) {
+      imgEl.src = `/api/projects/download?path=${encodeURIComponent(data.abs_path)}&t=${Date.now()}`;
+    }
+  } else if (data.preview_mode === 'csv' && data.csv_table && !currentCsvShowSource) {
+    codePane.classList.add('hidden');
+    imgPane.classList.add('hidden');
+    csvPane.classList.remove('hidden');
+    const thead = document.getElementById('fprev-csv-thead');
+    const tbody = document.getElementById('fprev-csv-tbody');
+    if (thead) {
+      thead.innerHTML = `<tr>${(data.csv_table.headers || []).map(h => `<th class="py-2 px-2.5 border-b border-slate-800">${escapeHtml(h)}</th>`).join('')}</tr>`;
+    }
+    if (tbody) {
+      tbody.innerHTML = (data.csv_table.rows || []).map(row => `
+        <tr class="hover:bg-slate-900/60">
+          ${row.map(cell => `<td class="py-1.5 px-2.5 text-slate-200">${escapeHtml(cell)}</td>`).join('')}
+        </tr>
+      `).join('');
+    }
+  } else {
+    csvPane.classList.add('hidden');
+    imgPane.classList.add('hidden');
+    codePane.classList.remove('hidden');
+    if (editor) {
+      editor.value = data.content || '';
+      editor.readOnly = !data.editable;
+      editor.scrollTop = 0;
+    }
+    if (lineNums) {
+      const cnt = Math.max(1, (data.content || '').split('\n').length);
+      lineNums.textContent = Array.from({ length: cnt }, (_, i) => i + 1).join('\n');
+      lineNums.scrollTop = 0;
+    }
+  }
+
+  modal.classList.remove('hidden');
+}
+
+window.toggleCsvPreviewMode = function () {
+  if (!currentPreviewFileData) return;
+  currentCsvShowSource = !currentCsvShowSource;
+  renderVscodeFilePreviewModal(currentPreviewFileData);
+};
+
+window.onFprevEditorInput = function () {
+  const editor = document.getElementById('fprev-code-editor');
+  const lineNums = document.getElementById('fprev-line-numbers');
+  const dirtyEl = document.getElementById('fprev-dirty-badge');
+  if (dirtyEl) dirtyEl.classList.remove('hidden');
+  if (editor && lineNums) {
+    const cnt = Math.max(1, editor.value.split('\n').length);
+    lineNums.textContent = Array.from({ length: cnt }, (_, i) => i + 1).join('\n');
+  }
+};
+
+window.savePreviewedFileContent = async function () {
+  if (!currentPreviewFileData || !currentPreviewFileData.editable) return;
+  const editor = document.getElementById('fprev-code-editor');
+  if (!editor) return;
+  try {
+    const res = await fetch('/api/projects/file-save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        project_dir: activeProjectDetail?.project_dir || '',
+        path: currentPreviewFileData.abs_path,
+        content: editor.value
+      })
+    });
+    const out = await res.json();
+    if (out.success) {
+      currentPreviewFileData.content = editor.value;
+      const dirtyEl = document.getElementById('fprev-dirty-badge');
+      if (dirtyEl) dirtyEl.classList.add('hidden');
+      if (out.detail) {
+        activeProjectDetail = out.detail;
+        if (typeof renderReviewPane === 'function') renderReviewPane();
+      }
+      if (typeof showToast === 'function') showToast(`已保存文件: ${currentPreviewFileData.name}`);
+    } else {
+      if (typeof showToast === 'function') showToast(out.error || '保存失败', 'error');
+    }
+  } catch (err) {
+    if (typeof showToast === 'function') showToast('保存失败: ' + err.message, 'error');
+  }
+};
+
+window.openPreviewedFileInStudio = async function () {
+  if (!currentPreviewFileData) return;
+  const d = currentPreviewFileData;
+  closeVscodeFilePreviewModal();
+
+  if (d.kind === 'ssot_spec' || d.kind === 'ssot_pinout') {
+    switchTab('intake');
+  } else if (d.kind === 'fw_source') {
+    if (!coDesignSplitActive) switchTab('firmware');
+    if (typeof viewFirmwareSource === 'function') {
+      await viewFirmwareSource(d.abs_path, d.name);
+    }
+  } else if (d.kind === 'pcb_board') {
+    if (!coDesignSplitActive) switchTab('pcb');
+    switchPcbCanvasView('3d');
+  } else if (d.kind === 'sch_sheet' || (d.kind === 'svg_vector' && d.name.includes('sch'))) {
+    if (!coDesignSplitActive) switchTab('pcb');
+    switchPcbCanvasView('2d_sch');
+  } else if (d.kind === 'svg_vector') {
+    if (!coDesignSplitActive) switchTab('pcb');
+    switchPcbCanvasView('2d_pcb');
+  } else if (d.kind === 'csv_table') {
+    if (!coDesignSplitActive) switchTab('pcb');
+    switchPcbCanvasView('bom');
+  } else {
+    switchTab('pcb');
+  }
+};
+
+window.closeVscodeFilePreviewModal = function () {
+  const modal = document.getElementById('vscode-file-preview-modal');
+  if (modal) modal.classList.add('hidden');
+};
+
+
 

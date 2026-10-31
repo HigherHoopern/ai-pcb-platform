@@ -1,0 +1,123 @@
+{
+  "project_name": "Smart-Env-Alarm-01",
+  "project_summary": "智能温湿度与烟雾环境报警器，集成SHT30温湿度、MQ-2烟雾检测、OLED显示、蜂鸣器及按键交互，具备低功耗待机、滤波防误报和声光报警功能，适用于家庭、机房和仓储监测。",
+  "mechanical": {
+    "width_mm": 65.0,
+    "height_mm": 45.0,
+    "thickness_mm": 1.2,
+    "layers": 2,
+    "fillet_mm": 3,
+    "mounting_holes": "4个Ø2.5mm镀锡固定安装孔，孔心距板边3.5mm，周围4.5mm禁布阻焊开窗",
+    "height_limits": "无明确限高，但需考虑MQ-2传感器高度约19mm，OLED屏及排母高度",
+    "keepouts": "定位孔周围禁布，MQ-2传感器下方及周围开槽进行热隔离，SHT30区域远离发热体"
+  },
+  "power": {
+    "input_source": "USB Type-C 5V直流输入，耐压4.5V~6.0V",
+    "operating_voltage": "3.3V",
+    "boost_or_buck": "无升降压，LDO线性降压",
+    "max_current": "500mA（LDO最大输出，输入保险丝限制500mA）",
+    "low_power_spec": "待机目标<10uA（文档提及低功耗待机，未给出具体值）",
+    "protection": [
+      "防反接保护（SSM3J328R P-MOSFET）",
+      "ESD/TVS防护（USBLC6-2SC6）",
+      "自恢复保险丝（500mA PPTC）"
+    ]
+  },
+  "mcu": {
+    "model": "STM32G030F6P6",
+    "package": "TSSOP-20",
+    "debug_interface": "SWD",
+    "firmware_framework": "纯嵌入式C (裸机/协作式状态机)"
+  },
+  "peripherals": [
+    "SHT30温湿度传感器 (I2C)",
+    "MQ-2烟雾传感器 (ADC+EXTI)",
+    "0.96寸OLED SSD1306 (I2C)",
+    "蜂鸣器 (PWM驱动)",
+    "绿色运行LED",
+    "红色报警LED",
+    "2个轻触按键",
+    "USB Type-C接口",
+    "SWD调试接口"
+  ],
+  "pinout_table": [
+    {
+      "pin": "PA0",
+      "net_name": "MQ2_AO",
+      "function": "ADC_IN0",
+      "description": "MQ-2模拟输出，12位ADC采样烟雾浓度"
+    },
+    {
+      "pin": "PA1",
+      "net_name": "MQ2_DO",
+      "function": "EXTI1",
+      "description": "MQ-2数字输出（LM393比较器输出），下降沿触发报警中断"
+    },
+    {
+      "pin": "PA2",
+      "net_name": "BUZZER_PWM",
+      "function": "TIM2_CH3 (PWM)",
+      "description": "蜂鸣器驱动信号，2.7kHz PWM，经MOSFET低端开关"
+    },
+    {
+      "pin": "PA3",
+      "net_name": "LED_RUN",
+      "function": "GPIO_OUT",
+      "description": "绿色运行指示灯，正常时每2秒慢闪"
+    },
+    {
+      "pin": "PA4",
+      "net_name": "LED_ALARM",
+      "function": "GPIO_OUT",
+      "description": "红色报警指示灯，报警时5Hz快闪"
+    },
+    {
+      "pin": "PA5",
+      "net_name": "KEY1",
+      "function": "GPIO_IN (EXTI)",
+      "description": "按键1：短按消音，长按3秒校准烟雾基准"
+    },
+    {
+      "pin": "PA6",
+      "net_name": "KEY2",
+      "function": "GPIO_IN (EXTI)",
+      "description": "按键2：短按翻页，长按2秒自检"
+    },
+    {
+      "pin": "PB8",
+      "net_name": "I2C1_SCL",
+      "function": "I2C1_SCL",
+      "description": "I2C时钟线，连接SHT30和OLED，4.7kΩ上拉"
+    },
+    {
+      "pin": "PB9",
+      "net_name": "I2C1_SDA",
+      "function": "I2C1_SDA",
+      "description": "I2C数据线，连接SHT30和OLED，4.7kΩ上拉"
+    },
+    {
+      "pin": "PA13",
+      "net_name": "SWDIO",
+      "function": "SWDIO",
+      "description": "SWD调试数据口，接ST-Link"
+    },
+    {
+      "pin": "PA14",
+      "net_name": "SWCLK",
+      "function": "SWCLK",
+      "description": "SWD调试时钟口，接ST-Link"
+    },
+    {
+      "pin": "BOOT0",
+      "net_name": "BOOT0",
+      "function": "BOOT0",
+      "description": "启动模式选择，10kΩ下拉到GND"
+    }
+  ],
+  "manufacturing": {
+    "fab": "JLCPCB",
+    "finish": "ENIG (沉金)",
+    "faraday_cage": true,
+    "acid_trap_chamfer": true
+  }
+}

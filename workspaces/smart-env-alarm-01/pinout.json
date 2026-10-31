@@ -1,0 +1,74 @@
+[
+  {
+    "pin": "PA0",
+    "net_name": "MQ2_AO",
+    "function": "ADC_IN0",
+    "description": "MQ-2模拟输出，12位ADC采样烟雾浓度"
+  },
+  {
+    "pin": "PA1",
+    "net_name": "MQ2_DO",
+    "function": "EXTI1",
+    "description": "MQ-2数字输出（LM393比较器输出），下降沿触发报警中断"
+  },
+  {
+    "pin": "PA2",
+    "net_name": "BUZZER_PWM",
+    "function": "TIM2_CH3 (PWM)",
+    "description": "蜂鸣器驱动信号，2.7kHz PWM，经MOSFET低端开关"
+  },
+  {
+    "pin": "PA3",
+    "net_name": "LED_RUN",
+    "function": "GPIO_OUT",
+    "description": "绿色运行指示灯，正常时每2秒慢闪"
+  },
+  {
+    "pin": "PA4",
+    "net_name": "LED_ALARM",
+    "function": "GPIO_OUT",
+    "description": "红色报警指示灯，报警时5Hz快闪"
+  },
+  {
+    "pin": "PA5",
+    "net_name": "KEY1",
+    "function": "GPIO_IN (EXTI)",
+    "description": "按键1：短按消音，长按3秒校准烟雾基准"
+  },
+  {
+    "pin": "PA6",
+    "net_name": "KEY2",
+    "function": "GPIO_IN (EXTI)",
+    "description": "按键2：短按翻页，长按2秒自检"
+  },
+  {
+    "pin": "PB8",
+    "net_name": "I2C1_SCL",
+    "function": "I2C1_SCL",
+    "description": "I2C时钟线，连接SHT30和OLED，4.7kΩ上拉"
+  },
+  {
+    "pin": "PB9",
+    "net_name": "I2C1_SDA",
+    "function": "I2C1_SDA",
+    "description": "I2C数据线，连接SHT30和OLED，4.7kΩ上拉"
+  },
+  {
+    "pin": "PA13",
+    "net_name": "SWDIO",
+    "function": "SWDIO",
+    "description": "SWD调试数据口，接ST-Link"
+  },
+  {
+    "pin": "PA14",
+    "net_name": "SWCLK",
+    "function": "SWCLK",
+    "description": "SWD调试时钟口，接ST-Link"
+  },
+  {
+    "pin": "BOOT0",
+    "net_name": "BOOT0",
+    "function": "BOOT0",
+    "description": "启动模式选择，10kΩ下拉到GND"
+  }
+]

@@ -139,6 +139,9 @@
     #app-sidebar.sidebar-collapsed .sidebar-action-btn i {
       font-size: 0.95rem !important;
     }
+    #app-sidebar.sidebar-collapsed #btn-collapsed-explorer {
+      display: flex !important;
+    }
 
     /* 折叠态右侧悬浮详情气泡卡片 */
     #sidebar-hover-tooltip {
@@ -491,8 +494,44 @@
         </button>
       </div>
 
+      <!-- 1B. VS Code 左上角工程文件资源管理器 (Top-Left Project File Explorer) -->
+      <div id="vscode-explorer-section" class="sidebar-label px-2.5 py-2 border-b border-slate-800/90 bg-slate-950/40 space-y-1.5">
+        <div class="px-1.5 py-0.5 flex items-center justify-between text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+          <button type="button" onclick="toggleExplorerTreeCollapse()" class="flex items-center gap-1.5 hover:text-sky-400 transition">
+            <i id="explorer-chevron-icon" class="fa-solid fa-chevron-down text-[9px] text-sky-400"></i>
+            <span>EXPLORER · 工程文件目录</span>
+          </button>
+          <div class="flex items-center gap-1">
+            <button type="button" onclick="openNewProjectModal()" class="px-1.5 py-0.5 rounded hover:bg-slate-800 text-sky-400" title="新建软硬件协同工程">
+              <i class="fa-solid fa-folder-plus text-[10px]"></i>
+            </button>
+            <button type="button" onclick="toggleAllExplorerFolders()" class="px-1.5 py-0.5 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200" title="展开/折叠全部子文件夹">
+              <i class="fa-regular fa-folder-open text-[10px]"></i>
+            </button>
+            <button type="button" onclick="loadProjectWorkspace()" class="px-1.5 py-0.5 rounded hover:bg-slate-800 text-slate-400 hover:text-sky-400" title="刷新工程目录文件树">
+              <i class="fa-solid fa-rotate text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 当前工程快速切换器 (VS Code Workspace Root Header) -->
+        <div class="px-1">
+          <select id="sidebar-project-select" onchange="activateProject(this.value)" class="w-full bg-slate-900/90 border border-slate-800 hover:border-sky-500/40 rounded-lg px-2 py-1 text-[11px] font-mono font-bold text-amber-300 focus:outline-none focus:border-sky-500 truncate cursor-pointer" title="点击切换当前工作空间工程"></select>
+        </div>
+
+        <!-- 递归多级工程目录文件树 (点击任意文件即可在线预览或编辑) -->
+        <div id="vscode-explorer-tree" class="max-h-60 overflow-y-auto space-y-0.5 pr-1 select-none">
+          <div class="text-[11px] text-slate-500 px-2 py-2 italic">正在扫描工程目录文件树...</div>
+        </div>
+      </div>
+
       <!-- 2. 研发主工作流导航菜单 (4 步核心研发闭环 + AI 加速与扩展) -->
       <div class="p-2.5 space-y-1">
+        <!-- 折叠态专用：左上角第一个图标即为“展开并查看工程文件目录树” -->
+        <button type="button" id="btn-collapsed-explorer" onclick="toggleSidebar(); document.getElementById('vscode-explorer-tree')?.classList.remove('hidden');" data-tip-title="EXPLORER · 工程文件目录" data-tip-badge="TREE" data-tip-desc="点击展开左上角 VS Code 工程文件树，浏览并在线预览 hardware / firmware / docs 全部文件" class="sidebar-action-btn hidden w-full px-3 py-2 rounded-r-xl text-xs font-medium items-center justify-center text-amber-400 hover:text-amber-300">
+          <i class="fa-solid fa-folder-tree text-sm w-4 text-center text-amber-400"></i>
+        </button>
+
         <div class="sidebar-section-title px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between">
           <span>核心研发流 (Core Flow)</span>
           <span class="text-[9px] font-mono text-sky-400">①→④</span>
@@ -558,27 +597,6 @@
             <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">CFG</span>
           </button>
         </nav>
-      </div>
-
-      <!-- 2B. VS Code Explorer 工程文件资源管理器树 (Project File Tree) -->
-      <div id="vscode-explorer-section" class="sidebar-label px-2.5 py-1.5 border-t border-slate-800/80 space-y-1">
-        <div class="px-2 py-1 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-slate-400">
-          <button type="button" onclick="toggleExplorerTreeCollapse()" class="flex items-center gap-1.5 hover:text-sky-400 transition">
-            <i id="explorer-chevron-icon" class="fa-solid fa-chevron-down text-[9px]"></i>
-            <span>EXPLORER · 工程文件树</span>
-          </button>
-          <div class="flex items-center gap-1">
-            <button type="button" onclick="toggleCoDesignSplitView()" class="px-1.5 py-0.5 rounded hover:bg-slate-800 text-emerald-400" title="开启软硬件左右同屏分屏">
-              <i class="fa-solid fa-table-columns text-[10px]"></i>
-            </button>
-            <button type="button" onclick="loadProjectWorkspace()" class="px-1.5 py-0.5 rounded hover:bg-slate-800 text-slate-400 hover:text-sky-400" title="刷新工程文件树">
-              <i class="fa-solid fa-rotate text-[10px]"></i>
-            </button>
-          </div>
-        </div>
-        <div id="vscode-explorer-tree" class="max-h-48 overflow-y-auto space-y-1 pr-1">
-          <div class="text-[11px] text-slate-500 px-2 py-2 italic">正在扫描工程文件树...</div>
-        </div>
       </div>
 
       <!-- 3. 侧边栏快捷桌面端桥接工具箱 (Local EDA / IDE Bridge) -->
@@ -1732,14 +1750,14 @@
                     <span>Top 顶层 3D 渲染视图 (F.Cu)</span>
                     <span class="text-emerald-400 font-mono text-[11px]">F.Cu · Top View</span>
                   </div>
-                  <img id="rev-top-3d-img" src="/api/image/lab7_top" class="w-full rounded-lg border border-slate-800/80 object-cover shadow-lg transition-transform duration-500 group-hover:scale-[1.01]" alt="Top 3D">
+                  <img id="rev-top-3d-img" src="/api/image/default_top" class="w-full rounded-lg border border-slate-800/80 object-cover shadow-lg transition-transform duration-500 group-hover:scale-[1.01]" alt="Top 3D">
                 </div>
                 <div class="bg-slate-950/90 rounded-xl p-3 border border-slate-800 overflow-hidden group">
                   <div class="text-xs text-slate-400 font-semibold mb-2 flex justify-between">
                     <span>Bottom 底层 3D 渲染视图 (B.Cu)</span>
                     <span class="text-emerald-400 font-mono text-[11px]">B.Cu · Bottom View</span>
                   </div>
-                  <img id="rev-bot-3d-img" src="/api/image/lab7_bottom" class="w-full rounded-lg border border-slate-800/80 object-cover shadow-lg transition-transform duration-500 group-hover:scale-[1.01]" alt="Bottom 3D">
+                  <img id="rev-bot-3d-img" src="/api/image/default_bottom" class="w-full rounded-lg border border-slate-800/80 object-cover shadow-lg transition-transform duration-500 group-hover:scale-[1.01]" alt="Bottom 3D">
                 </div>
               </div>
             </div>
@@ -2629,6 +2647,78 @@
         <button type="button" id="btn-confirm-create-project" onclick="submitCreateProjectModal()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-sky-500/20 flex items-center gap-2">
           <i class="fa-solid fa-rocket"></i> 立即创建并初始化软硬件工程
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================================== -->
+  <!-- VS Code 工程文件通用预览与在线编辑器模态框 (Universal File Previewer)    -->
+  <!-- ==================================================================== -->
+  <div id="vscode-file-preview-modal" onclick="if(event.target===this)closeVscodeFilePreviewModal()" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/75 backdrop-blur-sm p-4">
+    <div class="w-full max-w-5xl rounded-2xl bg-slate-950 border border-sky-500/40 shadow-2xl overflow-hidden flex flex-col max-h-[88vh]">
+      <!-- 顶部文件面包屑与动作栏 -->
+      <div class="px-4 py-2.5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 bg-slate-900/90">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span id="fprev-icon" class="text-sky-400 text-sm"><i class="fa-regular fa-file-code"></i></span>
+          <div class="truncate">
+            <div class="flex items-center gap-2">
+              <h3 id="fprev-title" class="text-xs font-extrabold text-slate-100 font-mono truncate">filename.c</h3>
+              <span id="fprev-meta-badge" class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">0 KB</span>
+              <span id="fprev-dirty-badge" class="hidden text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono">● 已修改</span>
+            </div>
+            <p id="fprev-relpath" class="text-[11px] font-mono text-slate-400 truncate">firmware/App/main.c</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-1.5">
+          <!-- CSV 表格/源码切换按钮 (仅预览 .csv 时显示) -->
+          <button type="button" id="btn-fprev-csv-toggle" onclick="toggleCsvPreviewMode()" class="hidden px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-xs font-semibold">
+            <i class="fa-solid fa-table mr-1"></i> 切换表格/源码
+          </button>
+          <!-- 一键跳转到对应专业工坊 -->
+          <button type="button" id="btn-fprev-open-studio" onclick="openPreviewedFileInStudio()" class="px-3 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 text-xs font-semibold flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> <span id="btn-fprev-open-studio-text">在对应工坊打开</span>
+          </button>
+          <!-- 保存修改 (仅可编辑文本文件显示) -->
+          <button type="button" id="btn-fprev-save" onclick="savePreviewedFileContent()" class="hidden px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold flex items-center gap-1.5 shadow">
+            <i class="fa-solid fa-floppy-disk"></i> 保存修改
+          </button>
+          <!-- 下载原文件 -->
+          <a id="btn-fprev-download" href="#" download class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-xs flex items-center gap-1">
+            <i class="fa-solid fa-download"></i> 下载
+          </a>
+          <button type="button" onclick="closeVscodeFilePreviewModal()" class="w-7 h-7 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- 主体预览区：支持代码/文本带行号编辑、CSV 交互式表格、图片/SVG 缩放预览 -->
+      <div class="flex-1 overflow-hidden flex flex-col bg-slate-950">
+        <!-- 模式 1：带行号代码/文本查看与编辑器 -->
+        <div id="fprev-code-pane" class="flex-1 flex overflow-hidden">
+          <pre id="fprev-line-numbers" class="select-none py-3 px-2.5 text-right text-[11px] font-mono text-slate-600 bg-slate-900/70 border-r border-slate-800/80 leading-relaxed overflow-hidden" style="min-width: 3rem;">1</pre>
+          <textarea id="fprev-code-editor" spellcheck="false" oninput="onFprevEditorInput()" onscroll="document.getElementById('fprev-line-numbers').scrollTop=this.scrollTop" class="flex-1 h-[66vh] overflow-y-auto text-xs font-mono text-emerald-200 bg-slate-950 p-3 focus:outline-none leading-relaxed resize-none"></textarea>
+        </div>
+
+        <!-- 模式 2：CSV 交互式数据表格预览 (BOM / CPL) -->
+        <div id="fprev-csv-pane" class="hidden flex-1 overflow-auto p-4 max-h-[66vh]">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead id="fprev-csv-thead" class="border-b border-slate-800 text-[11px] text-slate-400 bg-slate-900/80 sticky top-0"></thead>
+            <tbody id="fprev-csv-tbody" class="divide-y divide-slate-800/60 font-mono text-[11px]"></tbody>
+          </table>
+        </div>
+
+        <!-- 模式 3：图片与 SVG 矢量图高清预览 -->
+        <div id="fprev-image-pane" class="hidden flex-1 overflow-auto p-6 flex items-center justify-center bg-slate-950 max-h-[66vh]">
+          <img id="fprev-image-el" src="" class="max-h-[58vh] w-auto object-contain rounded-xl border border-slate-800 shadow-2xl" alt="File Preview">
+        </div>
+      </div>
+
+      <!-- 底部状态提示 -->
+      <div class="px-4 py-1.5 border-t border-slate-800 bg-slate-900/60 flex items-center justify-between text-[11px] font-mono text-slate-400">
+        <span id="fprev-footer-info">UTF-8 · Ready</span>
+        <span>快捷键 Esc 关闭预览 · 点击「在对应工坊打开」可联动编辑与编译</span>
       </div>
     </div>
   </div>

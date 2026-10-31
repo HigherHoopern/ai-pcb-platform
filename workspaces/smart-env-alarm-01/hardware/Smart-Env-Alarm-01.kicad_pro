@@ -1,0 +1,19 @@
+{
+  "board": {
+    "design_settings": {
+      "meta": {
+        "version": 2
+      },
+      "rule_severities": {
+        "lib_footprint_issues": "ignore",
+        "lib_footprint_mismatch": "ignore",
+        "footprint_filters_mismatch": "ignore",
+        "footprint_type_mismatch": "ignore"
+      }
+    }
+  },
+  "meta": {
+    "filename": "Smart-Env-Alarm-01.kicad_pro",
+    "version": 1
+  }
+}

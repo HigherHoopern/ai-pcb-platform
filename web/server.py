@@ -731,26 +731,52 @@ def api_export_all_bundle(data: dict):
     }
 
 
-@app.get("/api/image/lab7_top")
+@app.get("/api/projects/file-preview")
+def api_preview_project_file(path: str = "", project_dir: str = ""):
+    from core.project_manager import preview_project_file
+    if not path:
+        raise HTTPException(status_code=400, detail="缺少文件路径参数 path")
+    return preview_project_file(project_dir=project_dir or None, file_path=path)
+
+
+@app.post("/api/projects/file-save")
+def api_save_project_file(data: dict):
+    from core.project_manager import save_project_file_content
+    path = data.get("path", "")
+    content = data.get("content", "")
+    project_dir = data.get("project_dir") or ""
+    if not path:
+        raise HTTPException(status_code=400, detail="缺少文件路径参数 path")
+    res = save_project_file_content(project_dir=project_dir or None, file_path=path, content=content)
+    return {
+        "success": res.get("success", False),
+        "result": res,
+        "detail": get_project_details(project_dir or None) if res.get("success") else None
+    }
+
+
+@app.get("/api/image/default_top")
 def get_top_img():
+    active_dir = load_settings().get("workspace", {}).get("active_project_dir", "")
     candidates = [
-        "/Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/hardware/out/LAB7_3D_top.png",
-        "/Users/zhenxian/.gemini/antigravity-cli/brain/1d1bfbe2-7884-4eb3-af57-5a1736d2a18f/lab7_redesign_3d_top.png"
+        os.path.join(active_dir, "hardware", "out", "render_3d_top.png") if active_dir else "",
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), "workspaces", "smart-env-alarm-01", "hardware", "out", "render_3d_top.png"),
     ]
     for p in candidates:
-        if os.path.exists(p):
+        if p and os.path.exists(p):
             return FileResponse(p)
     raise HTTPException(status_code=404)
 
 
-@app.get("/api/image/lab7_bottom")
+@app.get("/api/image/default_bottom")
 def get_bot_img():
+    active_dir = load_settings().get("workspace", {}).get("active_project_dir", "")
     candidates = [
-        "/Users/zhenxian/Documents/XXG/Xter/projects/night-verson-goggle/hardware/out/LAB7_3D_bottom.png",
-        "/Users/zhenxian/.gemini/antigravity-cli/brain/1d1bfbe2-7884-4eb3-af57-5a1736d2a18f/lab7_redesign_3d_bottom.png"
+        os.path.join(active_dir, "hardware", "out", "render_3d_bottom.png") if active_dir else "",
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), "workspaces", "smart-env-alarm-01", "hardware", "out", "render_3d_bottom.png"),
     ]
     for p in candidates:
-        if os.path.exists(p):
+        if p and os.path.exists(p):
             return FileResponse(p)
     raise HTTPException(status_code=404)
 
