@@ -292,14 +292,25 @@
       padding: 0.75rem;
       background: rgba(15, 23, 42, 0.35);
     }
-    /* 当开启软硬件分屏或打开右侧全局 Copilot 边栏时，释放中央画布至 100% 满宽 */
+    /* UI/UX 极简高密度重构：PCB 与 C99 主画布默认独占 100% 满宽，右侧统一使用可折叠全局 Copilot 边栏 */
+    .studio-main-col,
     #app-main-scroll-area.codesign-split-active .studio-main-col,
     body.global-copilot-open .studio-main-col {
       grid-column: span 12 / span 12 !important;
     }
+    .studio-inner-copilot,
     #app-main-scroll-area.codesign-split-active .studio-inner-copilot,
     body.global-copilot-open .studio-inner-copilot {
       display: none !important;
+    }
+    /* 固件水平文件标签栏样式 */
+    #rev-fw-file-list > button {
+      width: auto !important;
+      padding: 0.35rem 0.75rem !important;
+      border-radius: 0.5rem !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      gap: 0.5rem !important;
     }
 
     /* 方案 B：软硬件跨屏双向点击高亮脉冲动画 (Cross-Probing Highlight) */
@@ -430,75 +441,71 @@
         </button>
       </div>
 
-      <!-- 2. 研发主工作流导航菜单 (P4 双核心工坊架构) -->
+      <!-- 2. 研发主工作流导航菜单 (4 步核心研发闭环 + AI 加速与扩展) -->
       <div class="p-2.5 space-y-1">
         <div class="sidebar-section-title px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-between">
-          <span>工程底座与规格中枢</span>
-          <span class="text-[9px] font-mono text-sky-400">WORKBENCH</span>
+          <span>核心研发流 (Core Flow)</span>
+          <span class="text-[9px] font-mono text-sky-400">①→④</span>
         </div>
         <nav class="space-y-1">
-          <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn active w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5" title="① 工程工作台">
+          <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn active w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5" title="① 项目工作台与环境总览">
             <div class="flex items-center gap-2.5 truncate">
               <i class="fa-solid fa-gauge-high text-sm w-4 text-center text-sky-400"></i>
-              <span class="sidebar-label truncate">工程与环境总览</span>
+              <span class="sidebar-label truncate">① 项目工作台</span>
             </div>
-            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 font-mono">①</span>
+            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">HOME</span>
           </button>
 
-          <button onclick="switchTab('intake')" id="tab-intake" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="② 需求与引脚中枢 (SSOT)">
+          <button onclick="switchTab('intake')" id="tab-intake" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="② 规格与引脚中枢 (SSOT: spec.json ⇄ bsp_pinout.h)">
             <div class="flex items-center gap-2.5 truncate">
               <i class="fa-solid fa-network-wired text-sm w-4 text-center text-amber-400"></i>
-              <span class="sidebar-label truncate">需求与引脚中枢 (SSOT)</span>
+              <span class="sidebar-label truncate">② 规格与引脚 (SSOT)</span>
             </div>
-            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-mono">②</span>
+            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">SSOT</span>
           </button>
 
-          <div class="sidebar-section-title px-2.5 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-            双核心设计工坊 (Core Studios)
-          </div>
-
-          <button onclick="switchTab('pcb')" id="tab-pcb" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="📐 模块一：PCB 硬件设计工坊 (KiCad / 嘉立创)">
+          <button onclick="switchTab('pcb')" id="tab-pcb" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="③ PCB 硬件设计工坊 (KiCad / 嘉立创 JLC)">
             <div class="flex items-center gap-2.5 truncate">
               <i class="fa-solid fa-compass-drafting text-sm w-4 text-center text-emerald-400"></i>
-              <span class="sidebar-label truncate">PCB 硬件设计工坊</span>
+              <span class="sidebar-label truncate">③ PCB 硬件工坊</span>
             </div>
-            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono">PCB</span>
+            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono">PCB</span>
           </button>
 
-          <button onclick="switchTab('firmware')" id="tab-firmware" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="💻 模块二：嵌入式 C 固件工坊 (C99 / ARM-GCC)">
+          <button onclick="switchTab('firmware')" id="tab-firmware" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="④ 嵌入式 C99 固件工坊 (Monaco / ARM-GCC)">
             <div class="flex items-center gap-2.5 truncate">
               <i class="fa-solid fa-file-code text-sm w-4 text-center text-sky-400"></i>
-              <span class="sidebar-label truncate">嵌入式 C 固件工坊</span>
+              <span class="sidebar-label truncate">④ C99 固件工坊</span>
             </div>
-            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 font-mono">C99</span>
+            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-400 font-mono">C99</span>
           </button>
 
-          <div class="sidebar-section-title px-2.5 pt-2 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-            自动化流水线与配置
+          <div class="sidebar-section-title px-2.5 pt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            AI 自动化与插件生态
           </div>
 
-          <button onclick="switchTab('agents')" id="tab-agents" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="🤖 5阶段全自动协同流水线">
+          <button onclick="switchTab('agents')" id="tab-agents" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="⚡ 5阶段全自动协同流水线">
             <div class="flex items-center gap-2.5 truncate">
               <i class="fa-solid fa-diagram-project text-sm w-4 text-center text-teal-400"></i>
-              <span class="sidebar-label truncate">全流程协同流水线</span>
+              <span class="sidebar-label truncate">全自动协同流水线</span>
             </div>
-            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-400 font-mono">FLOW</span>
+            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">FLOW</span>
           </button>
 
-          <button onclick="switchTab('distiller')" id="tab-distiller" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="🧩 Skill 插件市场与知识蒸馏工坊 (VS Code Extensions 风格)">
+          <button onclick="switchTab('distiller')" id="tab-distiller" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="🧩 Skill 插件市场与知识蒸馏工坊">
             <div class="flex items-center gap-2.5 truncate">
               <i class="fa-solid fa-puzzle-piece text-sm w-4 text-center text-indigo-400"></i>
-              <span class="sidebar-label truncate">Skill 市场与知识蒸馏</span>
+              <span class="sidebar-label truncate">Skill 知识蒸馏市场</span>
             </div>
-            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 font-mono">SKILL</span>
+            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">SKILL</span>
           </button>
 
           <button onclick="switchTab('config')" id="tab-config" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="⚙️ 模型与系统配置">
             <div class="flex items-center gap-2.5 truncate">
-              <i class="fa-solid fa-sliders text-sm w-4 text-center text-purple-400"></i>
-              <span class="sidebar-label truncate">模型与 Agent 配置</span>
+              <i class="fa-solid fa-sliders text-sm w-4 text-center text-slate-400"></i>
+              <span class="sidebar-label truncate">引擎与模型配置</span>
             </div>
-            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono">CFG</span>
+            <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">CFG</span>
           </button>
         </nav>
       </div>
@@ -519,7 +526,7 @@
             </button>
           </div>
         </div>
-        <div id="vscode-explorer-tree" class="max-h-52 overflow-y-auto space-y-1 pr-1">
+        <div id="vscode-explorer-tree" class="max-h-48 overflow-y-auto space-y-1 pr-1">
           <div class="text-[11px] text-slate-500 px-2 py-2 italic">正在扫描工程文件树...</div>
         </div>
       </div>
@@ -529,168 +536,132 @@
         <div class="sidebar-section-title px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
           本地桌面工具桥接
         </div>
-        <button onclick="openLocalTool('kicad')" class="sidebar-action-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="调用桌面 KiCad 打开当前工程的 .kicad_pcb">
+        <button onclick="openLocalTool('kicad')" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="调用桌面 KiCad 打开当前工程的 .kicad_pcb">
           <div class="flex items-center gap-2.5 truncate">
-            <i class="fa-solid fa-compass-drafting text-sm w-4 text-center text-emerald-400"></i>
+            <i class="fa-solid fa-compass-drafting text-xs w-4 text-center text-slate-400"></i>
             <span class="sidebar-label truncate">用 KiCad 打开 PCB</span>
           </div>
-          <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono">EDA</span>
+          <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">EDA</span>
         </button>
-        <button onclick="openLocalTool('vscode')" class="sidebar-action-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="调用 VS Code 打开当前工程源码">
+        <button onclick="openLocalTool('vscode')" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="调用 VS Code 打开当前工程源码">
           <div class="flex items-center gap-2.5 truncate">
-            <i class="fa-solid fa-laptop-code text-sm w-4 text-center text-sky-400"></i>
+            <i class="fa-solid fa-laptop-code text-xs w-4 text-center text-slate-400"></i>
             <span class="sidebar-label truncate">用 VS Code 打开工程</span>
           </div>
-          <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 font-mono">IDE</span>
+          <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">IDE</span>
         </button>
-        <button onclick="openLocalTool('finder')" class="sidebar-action-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="在 Finder 中打开当前工程文件夹">
+        <button onclick="openLocalTool('finder')" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="在 Finder 中打开当前工程文件夹">
           <div class="flex items-center gap-2.5 truncate">
-            <i class="fa-regular fa-folder-open text-sm w-4 text-center text-amber-400"></i>
+            <i class="fa-regular fa-folder-open text-xs w-4 text-center text-slate-400"></i>
             <span class="sidebar-label truncate">打开本地工程目录</span>
           </div>
-          <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-mono">DIR</span>
+          <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">DIR</span>
         </button>
-        <button onclick="exportAllInOneBundle()" id="btn-top-bundle" class="sidebar-action-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="一键导出 Gerber + BOM + KiCad + .hex/.bin/.elf + 验收报告">
+        <button onclick="exportAllInOneBundle()" id="btn-top-bundle" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="一键导出 Gerber + BOM + KiCad + .hex/.bin/.elf + 验收报告">
           <div class="flex items-center gap-2.5 truncate">
-            <i class="fa-solid fa-box-archive text-sm w-4 text-center text-purple-400"></i>
+            <i class="fa-solid fa-box-archive text-xs w-4 text-center text-slate-400"></i>
             <span class="sidebar-label truncate">导出全套交付包 ZIP</span>
           </div>
-          <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono">ZIP</span>
+          <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">ZIP</span>
         </button>
       </div>
     </div>
 
     <!-- 4. 侧边栏底部：环境探针状态与深浅色主题切换 -->
     <div class="p-2.5 border-t border-slate-800/80 space-y-1">
-      <button onclick="switchTab('config')" class="sidebar-action-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="点击进入模型与 Agent 配置中心">
+      <button onclick="switchTab('config')" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="点击进入模型与 Agent 配置中心">
         <div class="flex items-center gap-2.5 truncate">
           <span class="w-4 flex items-center justify-center shrink-0">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
           </span>
           <span id="env-badge-text" class="sidebar-label truncate">KiCad / GCC / LLM 就绪</span>
         </div>
-        <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-mono">OK</span>
+        <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono">OK</span>
       </button>
-      <button id="theme-toggle" onclick="toggleTheme()" class="sidebar-action-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="切换深色 / 浅色外观主题">
+      <button id="theme-toggle" onclick="toggleTheme()" class="sidebar-action-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="切换深色 / 浅色外观主题">
         <div class="flex items-center gap-2.5 truncate">
-          <i id="theme-icon" class="fa-solid fa-sun text-sm w-4 text-center text-amber-400"></i>
+          <i id="theme-icon" class="fa-solid fa-sun text-xs w-4 text-center text-slate-400"></i>
           <span id="theme-text" class="sidebar-label truncate">浅色模式</span>
         </div>
-        <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 font-mono">UI</span>
+        <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">UI</span>
       </button>
     </div>
   </aside>
 
   <!-- ==================================================================== -->
-  <!-- 区域 ③ + ④：右侧主工作空间容器 (Titlebar + Editor Tabs + Main + Panel) -->
+  <!-- 区域 ③ + ④：右侧主工作空间容器 (Titlebar + Main + Bottom Panel)       -->
   <!-- ==================================================================== -->
   <div id="app-main-wrapper" class="flex-1 flex flex-col min-w-0 min-h-0 overflow-hidden">
 
-    <!-- 顶部 VS Code Command Center 状态与命令栏 -->
-    <header class="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur-md z-30 px-4 py-2 flex flex-wrap items-center justify-between gap-2 shrink-0">
+    <!-- 顶部极简 Command Center 状态与命令栏 -->
+    <header class="border-b border-slate-800/80 bg-slate-900/95 backdrop-blur-md z-30 px-4 py-2 flex flex-wrap items-center justify-between gap-2 shrink-0">
       <div class="flex items-center gap-2.5">
         <span id="top-view-title" class="text-xs font-bold text-slate-100 flex items-center gap-2 whitespace-nowrap">
-          <i class="fa-solid fa-gauge-high text-sky-400"></i> ① 工程与环境工作台
+          <i class="fa-solid fa-gauge-high text-sky-400"></i> ① 项目工作台
         </span>
       </div>
 
-      <!-- 居中：VS Code 标志性 Command Palette 搜索与命令中心触发器 (Cmd+P / Ctrl+K) -->
-      <button type="button" onclick="openCommandPalette()" class="flex-1 max-w-md mx-2 px-3 py-1.5 rounded-lg bg-slate-950/90 hover:bg-slate-950 border border-slate-700/80 hover:border-sky-500/60 text-xs text-slate-400 hover:text-slate-200 flex items-center justify-between gap-3 transition shadow-inner" title="打开命令面板与工程文件快速跳转 (快捷键 Cmd+P / Ctrl+K)">
+      <!-- 居中：Command Palette 搜索与命令中心触发器 (Cmd+P / Ctrl+K) -->
+      <button type="button" onclick="openCommandPalette()" class="flex-1 max-w-md mx-2 px-3 py-1.5 rounded-lg bg-slate-950/90 hover:bg-slate-950 border border-slate-800 hover:border-slate-700 text-xs text-slate-400 hover:text-slate-200 flex items-center justify-between gap-3 transition" title="打开命令面板与工程文件快速跳转 (快捷键 Cmd+P / Ctrl+K)">
         <span class="flex items-center gap-2 truncate">
-          <i class="fa-solid fa-magnifying-glass text-sky-400 text-[11px]"></i>
-          <span class="truncate">搜索工程文件 (spec/bsp/main.c) 或输入 <code class="text-amber-300 font-mono">&gt;</code> 运行 IDE 命令...</span>
+          <i class="fa-solid fa-magnifying-glass text-slate-400 text-[11px]"></i>
+          <span class="truncate">搜索文件 (bsp_pinout.h / main.c) 或输入 <code class="text-sky-400 font-mono">&gt;</code> 运行命令...</span>
         </span>
-        <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] font-mono text-slate-300 border border-slate-700 shrink-0">⌘P / Ctrl+K</kbd>
+        <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-[10px] font-mono text-slate-400 border border-slate-700 shrink-0">⌘P</kbd>
       </button>
 
-      <!-- 右侧：全局当前激活工程切换器、分屏/面板布局开关与高频操作 -->
-      <div class="flex flex-wrap items-center gap-1.5">
-        <div class="flex items-center gap-1.5 bg-slate-950/90 border border-slate-800 rounded-lg px-2.5 py-1 shadow-inner">
-          <span class="text-[11px] text-slate-400 whitespace-nowrap"><i class="fa-solid fa-layer-group text-amber-400 mr-1"></i>工程:</span>
-          <select id="global-project-select" onchange="switchGlobalProject(this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-xs text-slate-100 font-medium focus:outline-none focus:border-sky-500 min-w-[175px]">
+      <!-- 右侧：当前激活工程切换器、窗口布局控制组与主行动按钮 -->
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1">
+          <span class="text-[11px] text-slate-400 whitespace-nowrap">工程:</span>
+          <select id="global-project-select" onchange="switchGlobalProject(this.value)" class="bg-transparent text-xs text-slate-100 font-medium focus:outline-none min-w-[165px]">
             <option value="">正在加载工程列表...</option>
           </select>
         </div>
 
-        <!-- VS Code 右上角窗口布局控制图标组 (Split Editor / Toggle Panel / Global Copilot) -->
-        <div class="inline-flex items-center rounded-lg bg-slate-950/90 border border-slate-800 p-0.5">
-          <button type="button" id="btn-header-split" onclick="toggleCoDesignSplitView()" class="px-2 py-1 rounded text-[11px] font-semibold text-slate-300 hover:text-emerald-400 hover:bg-slate-800/80 flex items-center gap-1 transition" title="开启/关闭 软硬件左右同屏分屏 (左 PCB 画布 + 右 C99 源码)">
-            <i class="fa-solid fa-table-columns text-emerald-400"></i>
-            <span class="hidden xl:inline">软硬件同屏</span>
+        <!-- 窗口布局控制组 (同屏分屏 / 仿真终端面板 / 右侧 AI Copilot) -->
+        <div class="inline-flex items-center rounded-lg bg-slate-950 border border-slate-800 p-0.5 gap-0.5">
+          <button type="button" id="btn-header-split" onclick="toggleCoDesignSplitView()" class="px-2.5 py-1 rounded text-[11px] font-medium text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition" title="开启/关闭 软硬件左右同屏分屏 (左 PCB 画布 + 右 C99 源码)">
+            <i class="fa-solid fa-table-columns text-slate-400"></i>
+            <span class="hidden xl:inline">分屏</span>
           </button>
-          <button type="button" id="btn-header-panel" onclick="toggleBottomPanel()" class="px-2 py-1 rounded text-[11px] font-semibold text-slate-300 hover:text-sky-400 hover:bg-slate-800/80 flex items-center gap-1 transition" title="显示/隐藏底部 PROBLEMS & SIMULATOR 综合面板 (Ctrl+J)">
-            <i class="fa-solid fa-window-maximize fa-rotate-180 text-sky-400"></i>
-            <span class="hidden xl:inline">诊断/仿真</span>
+          <button type="button" id="btn-header-panel" onclick="toggleBottomPanel('simulator'); runFirmwareOnlineSimulation();" class="px-2.5 py-1 rounded text-[11px] font-medium text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition" title="显示/隐藏底部 PROBLEMS & C99 状态机在线仿真面板 (Ctrl+J)">
+            <i class="fa-solid fa-wave-square text-slate-400"></i>
+            <span class="hidden xl:inline">仿真/诊断</span>
           </button>
-          <button type="button" id="btn-header-copilot" onclick="toggleGlobalCopilotSidebar()" class="px-2 py-1 rounded text-[11px] font-semibold text-slate-300 hover:text-purple-400 hover:bg-slate-800/80 flex items-center gap-1 transition" title="展开/收起右侧全局 AI Copilot 辅助边栏 (支持 @pinout @drc @gcc 跨模态协同)">
-            <i class="fa-solid fa-robot text-purple-400"></i>
-            <span class="hidden xl:inline">全局AI边栏</span>
+          <button type="button" id="btn-header-copilot" onclick="toggleGlobalCopilotSidebar()" class="px-2.5 py-1 rounded text-[11px] font-medium text-slate-300 hover:text-white hover:bg-slate-800 flex items-center gap-1.5 transition" title="展开/收起右侧统一 AI Copilot 对话助手 (@pinout @drc @gcc)">
+            <i class="fa-solid fa-comments text-sky-400"></i>
+            <span class="hidden xl:inline">AI 助手</span>
           </button>
         </div>
 
-        <button onclick="promptCreateNewProject()" class="px-2.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold transition flex items-center gap-1 whitespace-nowrap shadow-sm" title="使用行业工程模板向导创建新硬件工程">
-          <i class="fa-solid fa-wand-magic-sparkles"></i> 新建工程
+        <button onclick="promptCreateNewProject()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition flex items-center gap-1.5 whitespace-nowrap" title="使用行业工程模板向导创建新硬件工程">
+          <i class="fa-solid fa-plus text-[10px]"></i> 新建
         </button>
-        <button onclick="switchTab('agents'); startAutonomousPipeline();" class="px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 text-xs font-bold transition flex items-center gap-1 whitespace-nowrap shadow-sm btn-shimmer" title="对当前激活工程一键启动 5 阶段软硬件协同自愈流水线">
-          <i class="fa-solid fa-rocket"></i> 一键全流程构建
+        <button onclick="switchTab('agents'); startAutonomousPipeline();" class="px-3 py-1.5 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap shadow-sm" title="对当前激活工程一键启动 5 阶段软硬件协同自愈流水线">
+          <i class="fa-solid fa-bolt"></i> 全自动构建
         </button>
       </div>
     </header>
 
-    <!-- P1：VS Code 多标签页编辑器栏 (Editor Tabs Bar) + 面包屑导航 (Breadcrumbs) -->
-    <div id="vscode-editor-tabs-bar" class="bg-slate-900/95 border-b border-slate-800/90 flex items-center justify-between px-2 shrink-0 select-none overflow-x-auto">
+    <!-- 原本重复的顶部伪文件标签栏已隐藏，保持 DOM ID 100% 兼容 -->
+    <div id="vscode-editor-tabs-bar" class="hidden bg-slate-900/95 border-b border-slate-800/90 items-center justify-between px-2 shrink-0 select-none overflow-x-auto">
       <div id="vscode-open-tabs-list" class="flex items-center overflow-x-auto no-scrollbar">
-        <div onclick="switchTab('dashboard')" id="edtab-dashboard" class="vscode-editor-tab active">
-          <i class="fa-solid fa-gauge-high text-sky-400"></i>
-          <span>workspace.overview</span>
-        </div>
-        <div onclick="switchTab('intake')" id="edtab-intake" class="vscode-editor-tab">
-          <i class="fa-solid fa-network-wired text-amber-400"></i>
-          <span>pinout.json (SSOT)</span>
-        </div>
-        <div onclick="switchTab('pcb')" id="edtab-pcb" class="vscode-editor-tab">
-          <i class="fa-solid fa-compass-drafting text-emerald-400"></i>
-          <span id="edtab-pcb-label">board.kicad_pcb (3D/2D)</span>
-        </div>
-        <div onclick="switchTab('firmware')" id="edtab-firmware" class="vscode-editor-tab">
-          <i class="fa-solid fa-file-code text-sky-400"></i>
-          <span id="edtab-fw-label">app_state_machine.c</span>
-        </div>
-        <div onclick="switchTab('agents')" id="edtab-agents" class="vscode-editor-tab">
-          <i class="fa-solid fa-diagram-project text-teal-400"></i>
-          <span>pipeline.workflow</span>
-        </div>
-        <div onclick="switchTab('distiller')" id="edtab-distiller" class="vscode-editor-tab">
-          <i class="fa-solid fa-puzzle-piece text-indigo-400"></i>
-          <span>extensions.skills</span>
-        </div>
+        <div onclick="switchTab('dashboard')" id="edtab-dashboard" class="vscode-editor-tab active"><span>workspace.overview</span></div>
+        <div onclick="switchTab('intake')" id="edtab-intake" class="vscode-editor-tab"><span>pinout.json (SSOT)</span></div>
+        <div onclick="switchTab('pcb')" id="edtab-pcb" class="vscode-editor-tab"><span id="edtab-pcb-label">board.kicad_pcb</span></div>
+        <div onclick="switchTab('firmware')" id="edtab-firmware" class="vscode-editor-tab"><span id="edtab-fw-label">app_state_machine.c</span></div>
+        <div onclick="switchTab('agents')" id="edtab-agents" class="vscode-editor-tab"><span>pipeline.workflow</span></div>
+        <div onclick="switchTab('distiller')" id="edtab-distiller" class="vscode-editor-tab"><span>extensions.skills</span></div>
       </div>
-
-      <!-- 标签栏右侧：当前路径面包屑 + 快捷编辑/编译/仿真/Diff/分屏按钮 -->
       <div class="hidden md:flex items-center gap-1.5 pl-3 py-1 shrink-0 text-[11px]">
-        <span id="vscode-breadcrumb-text" class="font-mono text-slate-400 truncate max-w-[230px]">
-          project &rsaquo; workspace.overview
-        </span>
-        <button type="button" onclick="openMonacoDiffModal()" class="px-2 py-0.5 rounded bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 font-mono text-[10px]" title="打开 VS Code Monaco Side-by-Side Diff 变更对比视图">
-          <i class="fa-solid fa-code-compare mr-0.5"></i>Diff
-        </button>
-        <button type="button" onclick="toggleBottomPanel('simulator'); runFirmwareOnlineSimulation();" class="px-2 py-0.5 rounded bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 border border-purple-500/30 font-mono text-[10px]" title="打开 C99 状态机在线仿真与逻辑分析仪">
-          <i class="fa-solid fa-wave-square mr-0.5"></i>Sim
-        </button>
-        <button type="button" onclick="runHardwareDrcVerify()" class="px-2 py-0.5 rounded bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 font-mono text-[10px]" title="快速运行 KiCad DRC 硬件体检">
-          <i class="fa-solid fa-shield-halved mr-0.5"></i>DRC
-        </button>
-        <button type="button" onclick="runDynamicFirmwareVerify()" class="px-2 py-0.5 rounded bg-sky-500/15 hover:bg-sky-500/25 text-sky-400 border border-sky-500/30 font-mono text-[10px]" title="快速编译 C99 固件 (.elf/.hex/.bin)">
-          <i class="fa-solid fa-hammer mr-0.5"></i>GCC
-        </button>
-        <button type="button" id="btn-tabbar-split" onclick="toggleCoDesignSplitView()" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-mono text-[10px]" title="左右分屏同时打开 PCB 画布与 C99 编辑器">
-          <i class="fa-solid fa-columns mr-0.5 text-emerald-400"></i>Split
-        </button>
+        <span id="vscode-breadcrumb-text" class="font-mono text-slate-400 truncate max-w-[230px]">project &rsaquo; workspace.overview</span>
+        <button type="button" id="btn-tabbar-split" onclick="toggleCoDesignSplitView()">Split</button>
       </div>
     </div>
 
-    <!-- 主体可滚动编辑区 (支持单视图或 P1 软硬件左右同屏分屏) -->
-    <main id="app-main-scroll-area" class="flex-1 overflow-y-auto p-5 max-w-7xl mx-auto w-full">
+    <!-- 主体可滚动编辑区 (释放 100% 满宽画布，支持单视图或软硬件左右同屏分屏) -->
+    <main id="app-main-scroll-area" class="flex-1 overflow-y-auto p-4 max-w-full mx-auto w-full">
 
       <!-- ================================================================== -->
       <!-- 1. 工程与环境总览 (Dashboard & Workspace)                            -->
@@ -1514,85 +1485,108 @@
     </section>
 
     <!-- ================================================================== -->
-    <!-- 5A. 模块一：PCB 硬件设计工坊 (KiCad / 嘉立创 JLC + 对话式修正助手)      -->
+    <!-- 5A. 模块一：PCB 硬件设计工坊 (极简高密度工具栏 + 零滚动 4 合 1 画布)       -->
     <!-- ================================================================== -->
-    <section id="pane-pcb" class="space-y-6 hidden">
+    <section id="pane-pcb" class="space-y-3 hidden">
       <!-- 跨模块变更同步提醒横幅 -->
-      <div id="pcb-cross-sync-banner" class="hidden p-3.5 rounded-2xl bg-amber-500/15 border border-amber-500/40 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div id="pcb-cross-sync-banner" class="hidden px-3.5 py-2 rounded-xl bg-amber-500/15 border border-amber-500/40 flex flex-wrap items-center justify-between gap-2 text-xs">
         <div class="flex items-center gap-2 text-amber-300">
           <i class="fa-solid fa-triangle-exclamation text-amber-400"></i>
-          <span>检测到共享引脚表 (<code class="font-mono">pinout.json</code>) 或参数刚在其他模块发生变更，建议立即同步重绘 PCB 版图与原理图！</span>
+          <span>检测到共享引脚表 (<code class="font-mono">pinout.json</code>) 发生变更，建议立即同步重绘 PCB 版图与原理图！</span>
         </div>
-        <button type="button" onclick="runHardwareScaffold()" class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow">
-          <i class="fa-solid fa-rotate mr-1"></i> 一键同步重绘 PCB & 3D 视图
+        <button type="button" onclick="runHardwareScaffold()" class="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow">
+          <i class="fa-solid fa-rotate mr-1"></i> 同步重绘 PCB & 3D
         </button>
       </div>
 
-      <!-- 顶部工具栏：EDA 生态切换器 (KiCad vs 嘉立创) + AI 驱动引擎选择器 + 硬件工程操作 -->
-      <div class="glass-card rounded-2xl p-5 space-y-4 border border-emerald-500/30">
-        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
-          <div>
-            <div class="flex items-center gap-2">
-              <h2 id="rev-project-title" class="text-base font-bold text-slate-100">📐 模块一：PCB 硬件设计工坊 (PCB Hardware Studio)</h2>
-              <span id="pcb-eda-mode-badge" class="text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono font-bold">🎯 KiCad 原生设计模式</span>
+      <!-- 极简高密度单行主工具栏 (Compact PCB Studio Toolbar) -->
+      <div class="glass-card rounded-xl px-4 py-2.5 space-y-2.5 border border-slate-800/90">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <!-- 左：工程选择 + EDA 生态切换胶囊 + 标题徽章 -->
+          <div class="flex flex-wrap items-center gap-2">
+            <h2 id="rev-project-title" class="text-xs font-extrabold text-slate-100 hidden sm:inline">③ PCB 硬件工坊</h2>
+            <span id="pcb-eda-mode-badge" class="hidden">🎯 KiCad 模式</span>
+            <p id="rev-project-subtitle" class="hidden">KiCad / 嘉立创 JLC 硬件协同工坊</p>
+            <select id="rev-pcb-select" class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs font-mono text-slate-200"></select>
+
+            <!-- KiCad vs 嘉立创 JLC 模式切换器 -->
+            <div class="inline-flex rounded-lg bg-slate-950 p-0.5 border border-slate-800">
+              <button type="button" id="btn-eda-kicad" onclick="switchEdaMode('kicad')" class="px-2.5 py-1 rounded-md text-[11px] font-bold transition bg-emerald-500 text-slate-950 shadow">
+                🎯 KiCad 原生
+              </button>
+              <button type="button" id="btn-eda-jlc" onclick="switchEdaMode('jlc')" class="px-2.5 py-1 rounded-md text-[11px] font-bold transition text-slate-400 hover:text-slate-100">
+                🏭 嘉立创 JLC
+              </button>
             </div>
-            <p id="rev-project-subtitle" class="text-xs text-slate-400 mt-0.5">支持自由切换 <strong>KiCad 原生模式</strong> 与 <strong>嘉立创 JLC 贴片增强模式</strong>，提供立创商城 C 编号匹配、2D/3D 视图与对话式 DRC 自愈</p>
+
+            <!-- 共享引脚表 (SSOT Pinout) 速查抽屉 -->
+            <button type="button" onclick="toggleStudioPinoutDrawer('pcb')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-[11px] text-slate-300 border border-slate-700 font-medium flex items-center gap-1 transition">
+              <i class="fa-solid fa-thumbtack text-sky-400"></i> 📌 SSOT 引脚表
+            </button>
           </div>
 
-          <!-- EDA 生态切换胶囊 + AI 引擎与模型选择器 -->
-          <div class="flex flex-wrap items-center gap-2.5">
-            <!-- 1. KiCad vs 嘉立创 JLC 模式切换器 -->
-            <div class="inline-flex rounded-xl bg-slate-950 p-1 border border-slate-800">
-              <button type="button" id="btn-eda-kicad" onclick="switchEdaMode('kicad')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-500 text-slate-950 shadow">
-                🎯 KiCad 原生模式
-              </button>
-              <button type="button" id="btn-eda-jlc" onclick="switchEdaMode('jlc')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-slate-100">
-                🏭 嘉立创 JLC 贴片模式
-              </button>
-            </div>
-
-            <!-- 2. AI 引擎选择器 (内置 LLM 模型直驱 vs Coding CLI Agent) -->
-            <div class="flex flex-wrap items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1">
-              <span class="text-[11px] text-slate-400 whitespace-nowrap"><i class="fa-solid fa-microchip text-purple-400 mr-1"></i>AI 引擎:</span>
-              <select id="pcb-engine-select" onchange="onStudioEngineChange('pcb')" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-100 font-medium">
-                <option value="llm">⚡ 内置 LLM 模型直驱</option>
-                <option value="cli">🤖 Coding CLI Agent</option>
-              </select>
-              <select id="pcb-llm-model-select" onchange="onStudioEngineChange('pcb')" class="bg-slate-900 border border-purple-500/40 rounded-lg px-2 py-1 text-xs text-purple-300 font-mono">
-                <option value="">默认激活模型</option>
-              </select>
-              <select id="pcb-cli-agent-select" onchange="onStudioEngineChange('pcb')" class="hidden bg-slate-900 border border-amber-500/40 rounded-lg px-2 py-1 text-xs text-amber-300 font-mono">
-                <option value="claude">Claude Code</option>
-                <option value="codex">Codex CLI</option>
-                <option value="antigravity">Antigravity</option>
-                <option value="pi">Pi CLI</option>
-              </select>
-            </div>
-
-            <!-- 3. 共享引脚表 (SSOT Pinout) 速查与快改抽屉开关 -->
-            <button type="button" onclick="toggleStudioPinoutDrawer('pcb')" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs text-sky-300 border border-sky-500/30 font-semibold flex items-center gap-1.5">
-              <i class="fa-solid fa-thumbtack text-sky-400"></i> 📌 共享引脚表 (SSOT)
+          <!-- 右：1 个主视觉 CTA (运行 DRC 校验) + 中性暗灰次级动作按钮组 -->
+          <div class="flex flex-wrap items-center gap-1.5">
+            <!-- 主视觉 Primary CTA：运行 DRC 校验 -->
+            <button id="btn-run-drc" onclick="runDynamicDrc()" class="px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-xs text-slate-950 font-bold flex items-center gap-1.5 shadow-sm transition">
+              <i class="fa-solid fa-shield-halved"></i> 运行 DRC 校验
             </button>
+            <button id="btn-heal-drc" onclick="runDrcSelfHeal()" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-[11px] text-slate-200 border border-slate-700 flex items-center gap-1 font-medium transition">
+              <i class="fa-solid fa-kit-medical text-emerald-400"></i> DRC 自愈
+            </button>
+            <button id="btn-scaffold-hw" onclick="runHardwareScaffold()" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-[11px] text-slate-300 border border-slate-700 flex items-center gap-1 font-medium transition">
+              <i class="fa-solid fa-wand-magic-sparkles text-slate-400"></i> 重绘版图
+            </button>
+            <button id="btn-render-3d" onclick="runDynamic3dRender()" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-[11px] text-slate-300 border border-slate-700 flex items-center gap-1 font-medium transition">
+              <i class="fa-solid fa-camera-rotate text-slate-400"></i> 刷新视图
+            </button>
+
+            <span class="text-slate-800">|</span>
+
+            <!-- 生产与交付导出组 (克制中性按钮) -->
+            <button id="btn-export-jlc-smt" onclick="runExportJlcSmtPackage()" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-[11px] text-emerald-300 border border-slate-700 font-semibold flex items-center gap-1 transition" title="导出嘉立创 Gerber + BOM + CPL 贴片包">
+              <i class="fa-solid fa-industry"></i> 嘉立创 SMT 包
+            </button>
+            <button id="btn-export-easyeda" onclick="runExportEasyEdaPackage()" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-[11px] text-slate-300 border border-slate-700 font-medium flex items-center gap-1 transition" title="导出嘉立创 EDA 专业版工程包">
+              <i class="fa-solid fa-file-import text-sky-400"></i> EasyEDA 包
+            </button>
+            <button id="btn-export-all-bundle" onclick="exportAllInOneBundle()" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-[11px] text-slate-200 border border-slate-700 font-medium flex items-center gap-1 transition" title="下载全套软硬件交付 ZIP">
+              <i class="fa-solid fa-box-archive text-indigo-400"></i> 全套 ZIP
+            </button>
+
+            <!-- 隐藏式/紧凑 AI 引擎选择器 (保持 DOM 兼容) -->
+            <div class="hidden xl:flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-lg px-2 py-0.5">
+              <select id="pcb-engine-select" onchange="onStudioEngineChange('pcb')" class="bg-transparent text-[11px] text-slate-300 focus:outline-none">
+                <option value="llm">⚡ LLM</option>
+                <option value="cli">🤖 CLI</option>
+              </select>
+              <select id="pcb-llm-model-select" onchange="onStudioEngineChange('pcb')" class="bg-transparent text-[11px] text-slate-400 font-mono max-w-[110px] focus:outline-none">
+                <option value="">默认模型</option>
+              </select>
+              <select id="pcb-cli-agent-select" onchange="onStudioEngineChange('pcb')" class="hidden bg-transparent text-[11px] text-amber-300 font-mono focus:outline-none">
+                <option value="claude">Claude</option>
+                <option value="codex">Codex</option>
+                <option value="antigravity">AGY</option>
+                <option value="pi">Pi</option>
+              </select>
+            </div>
           </div>
         </div>
 
         <!-- 内嵌可折叠：共享引脚表 (SSOT Pinout) 速查与快改抽屉 -->
-        <div id="pcb-pinout-drawer" class="hidden p-4 rounded-xl bg-slate-950/90 border border-sky-500/40 space-y-3">
+        <div id="pcb-pinout-drawer" class="hidden p-3 rounded-xl bg-slate-950/95 border border-sky-500/40 space-y-2.5">
           <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-sky-400"><i class="fa-solid fa-link mr-1"></i>软硬件共享单一事实源引脚表 (<code class="font-mono">pinout.json</code> ⇄ <code class="font-mono">bsp_pinout.h</code>)</span>
-              <span class="text-[11px] text-slate-400">在此修改引脚后可一键重绘 PCB 并同步更新 C 固件宏定义</span>
-            </div>
+            <span class="text-xs font-bold text-sky-400"><i class="fa-solid fa-link mr-1"></i>软硬件共享单一事实源引脚表 (<code class="font-mono">pinout.json</code> ⇄ <code class="font-mono">bsp_pinout.h</code>)</span>
             <div class="flex items-center gap-2">
               <button type="button" onclick="addStudioQuickPinRow('pcb')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700">
                 <i class="fa-solid fa-plus text-emerald-400 mr-1"></i>新增引脚
               </button>
               <button type="button" onclick="saveStudioQuickPinout('pcb', true, true)" class="px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow">
-                <i class="fa-solid fa-bolt mr-1"></i>保存引脚表并同步重绘 PCB + 固件
+                <i class="fa-solid fa-bolt mr-1"></i>保存并同步 PCB + 固件
               </button>
             </div>
           </div>
-          <div class="max-h-56 overflow-y-auto">
+          <div class="max-h-48 overflow-y-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead>
                 <tr class="border-b border-slate-800 text-[11px] text-slate-400">
@@ -1609,129 +1603,98 @@
           </div>
         </div>
 
-        <!-- 快捷工程动作按钮栏 -->
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <div class="flex flex-wrap items-center gap-2">
-            <select id="rev-pcb-select" class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs font-mono text-slate-200"></select>
-            <button id="btn-scaffold-hw" onclick="runHardwareScaffold()" class="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-xs text-amber-300 border border-amber-500/30 flex items-center gap-1.5 font-medium">
-              <i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> 生成基准 PCB & 原理图
-            </button>
-            <button id="btn-render-3d" onclick="runDynamic3dRender()" class="px-3 py-1.5 rounded-xl bg-sky-600/20 hover:bg-sky-600/30 text-xs text-sky-300 border border-sky-500/30 flex items-center gap-1.5 font-medium">
-              <i class="fa-solid fa-camera-rotate text-sky-400"></i> 刷新 2D/3D 视图
-            </button>
-            <button id="btn-run-drc" onclick="runDynamicDrc()" class="px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-xs text-emerald-300 border border-emerald-500/30 flex items-center gap-1.5 font-medium">
-              <i class="fa-solid fa-shield-halved text-emerald-400"></i> 运行 DRC 校验
-            </button>
-            <button id="btn-heal-drc" onclick="runDrcSelfHeal()" class="px-3 py-1.5 rounded-xl bg-teal-500/20 hover:bg-teal-500/30 text-xs text-teal-300 border border-teal-500/30 flex items-center gap-1.5 font-medium">
-              <i class="fa-solid fa-kit-medical text-teal-400"></i> DRC 自动自愈
-            </button>
-          </div>
-          <div class="flex flex-wrap items-center gap-2">
-            <button id="btn-export-jlc-smt" onclick="runExportJlcSmtPackage()" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-xs text-slate-950 font-bold flex items-center gap-1.5 shadow-md">
-              <i class="fa-solid fa-industry"></i> 导出嘉立创 SMT 包 (Gerber+BOM+CPL)
-            </button>
-            <button id="btn-export-easyeda" onclick="runExportEasyEdaPackage()" class="px-3 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-xs text-sky-300 border border-sky-500/30 flex items-center gap-1.5 font-semibold">
-              <i class="fa-solid fa-file-import text-sky-400"></i> 导出嘉立创 EDA 专业版工程包
-            </button>
-            <button id="btn-export-all-bundle" onclick="exportAllInOneBundle()" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-xs text-white font-bold flex items-center gap-1.5 shadow-md">
-              <i class="fa-solid fa-box-archive"></i> 全套交付包 ZIP
-            </button>
-          </div>
-        </div>
-
-        <!-- 嘉立创 (JLCPCB / LCSC / EasyEDA Pro) 制造工艺体检与 SMT 费用优化驾驶舱 -->
-        <div id="jlc-mode-panel" class="hidden p-4 rounded-xl bg-emerald-950/25 border border-emerald-500/40 space-y-3">
+        <!-- 嘉立创 (JLCPCB / LCSC / EasyEDA Pro) 制造工艺体检面板 (切换到 JLC 模式时展开) -->
+        <div id="jlc-mode-panel" class="hidden p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/30 space-y-2.5">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <div class="flex items-center gap-2">
-              <span class="px-2.5 py-0.5 rounded bg-emerald-500 text-slate-950 text-[11px] font-extrabold">🏭 嘉立创 JLCPCB · 立创商城 LCSC · 嘉立创 EDA 专业版 协同中枢</span>
-              <span id="jlc-free-tier-badge" class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">✅ 符合 ≤100×100mm 免费/特价打样条件</span>
+              <span class="px-2 py-0.5 rounded bg-emerald-500 text-slate-950 text-[11px] font-extrabold">🏭 嘉立创 JLCPCB · LCSC 协同中枢</span>
+              <span id="jlc-free-tier-badge" class="text-[11px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-mono">✅ ≤100×100mm 免费打样</span>
             </div>
-            <div class="flex flex-wrap items-center gap-2">
-              <button type="button" onclick="optimizeBomToJlcBasic()" class="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1 shadow">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> AI 一键优化为立创基础库 (免换料费)
+            <div class="flex flex-wrap items-center gap-1.5">
+              <button type="button" onclick="optimizeBomToJlcBasic()" class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[11px] flex items-center gap-1 shadow">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> 一键转立创基础库 (免换料费)
               </button>
-              <button type="button" onclick="openLocalTool('easyeda')" class="px-3 py-1 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 font-semibold text-xs flex items-center gap-1">
-                <i class="fa-solid fa-up-right-from-square"></i> 在嘉立创 EDA 专业版中打开
+              <button type="button" onclick="openLocalTool('easyeda')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-sky-300 border border-slate-700 font-semibold text-[11px] flex items-center gap-1">
+                <i class="fa-solid fa-up-right-from-square"></i> 嘉立创 EDA 打开
               </button>
             </div>
           </div>
-
-          <!-- 动态 DFM 4 宫格体检指标 -->
-          <div id="jlc-dfm-cards-grid" class="grid grid-cols-1 md:grid-cols-4 gap-2.5 text-[11px] font-mono">
-            <div class="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-300">📏 板框尺寸与打样线: <strong class="text-emerald-400">检测中...</strong></div>
-            <div class="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-300">〰️ 最小走线线宽 (≥5mil): <strong class="text-emerald-400">0.25mm / 0.50mm</strong></div>
-            <div class="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-300">🕳️ 过孔内/外径 (≥0.3/0.6): <strong class="text-emerald-400">0.30mm / 0.60mm</strong></div>
-            <div class="p-2.5 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-300">🔩 SMT 基础库 vs 扩展库: <strong class="text-amber-400">统计中...</strong></div>
+          <div id="jlc-dfm-cards-grid" class="grid grid-cols-1 md:grid-cols-4 gap-2 text-[11px] font-mono">
+            <div class="p-2 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-300">📏 板框尺寸: <strong class="text-emerald-400">检测中...</strong></div>
+            <div class="p-2 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-300">〰️ 最小线宽: <strong class="text-emerald-400">0.25mm / 0.50mm</strong></div>
+            <div class="p-2 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-300">🕳️ 过孔内/外径: <strong class="text-emerald-400">0.30mm / 0.60mm</strong></div>
+            <div class="p-2 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-300">🔩 SMT 库别: <strong class="text-amber-400">统计中...</strong></div>
           </div>
-
-          <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-emerald-500/20">
-            <span class="text-[11px] text-slate-400">💡 提示：下方 BOM 表支持直接修改 <code class="text-emerald-300">LCSC C编号</code> 与 <code class="text-emerald-300">Basic/Extended</code> 库别，点击编号可直达立创商城查看实时库存与价格。</span>
-            <div id="jlc-files-download-bar" class="flex flex-wrap items-center gap-2"></div>
-          </div>
+          <div id="jlc-files-download-bar" class="flex flex-wrap items-center gap-2 pt-1"></div>
         </div>
       </div>
 
-      <!-- 主工作区：左侧 8 列 (DRC + 多维画布 [3D/2D走线/原理图] + 可编辑立创 BOM 表) + 右侧 4 列 (💬 PCB 对话式设计与修正助手) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <!-- 左侧 8 列：硬件可视化与 BOM 画布 -->
-        <div class="lg:col-span-8 studio-main-col space-y-5">
-          <!-- DRC 状态横幅 (含违规明细与单条 AI 修复按钮) -->
-          <div id="rev-drc-summary" class="p-3.5 rounded-xl bg-slate-950/90 border border-slate-800"></div>
+      <!-- 主工作区：100% 全宽硬件可视化与零滚动 4 合 1 子标签画布 -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+        <div class="lg:col-span-12 studio-main-col space-y-3">
+          <!-- DRC 状态横幅 + Gerber/Bundle 下载横幅 -->
+          <div id="rev-drc-summary" class="px-3.5 py-2.5 rounded-xl bg-slate-950/90 border border-slate-800"></div>
+          <div id="rev-gerber-banner" class="hidden px-3.5 py-2 rounded-xl bg-slate-900 border border-emerald-500/30 flex items-center justify-between text-xs"></div>
+          <div id="rev-bundle-banner" class="hidden px-3.5 py-2 rounded-xl bg-slate-900 border border-indigo-500/30 flex items-center justify-between text-xs"></div>
 
-          <!-- Gerber 生产包下载横幅 -->
-          <div id="rev-gerber-banner" class="hidden p-3 rounded-xl bg-purple-950/30 border border-purple-500/30 flex items-center justify-between text-xs"></div>
-
-          <!-- 全套软硬件交付包下载横幅 -->
-          <div id="rev-bundle-banner" class="hidden p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/40 flex items-center justify-between text-xs"></div>
-
-          <!-- 多维硬件画布：3D 正反面渲染视图 / 2D 铜皮走线图 (SVG) / 2D 原理图预览 (SVG) -->
-          <div class="glass-card rounded-2xl p-5 space-y-4">
+          <!-- 零滚动 4 合 1 硬件主画布：[🧊 3D 渲染] [📐 2D 铜皮走线] [🔌 硬件原理图] [📋 BOM 与立创选型] -->
+          <div class="glass-card rounded-xl p-4 space-y-3 border border-slate-800/90">
             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+              <!-- 4 合 1 视图切换胶囊 -->
               <div class="flex flex-wrap items-center gap-1.5">
                 <button type="button" id="btn-pcb-canvas-3d" onclick="switchPcbCanvasView('3d')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 shadow transition">
-                  🧊 3D 正反面渲染视图
+                  🧊 3D 正反面渲染
                 </button>
                 <button type="button" id="btn-pcb-canvas-2d" onclick="switchPcbCanvasView('2d_pcb')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 hover:text-white border border-slate-800 transition">
-                  📐 2D 铜皮走线图 (SVG)
+                  📐 2D 铜皮走线 (SVG)
                 </button>
                 <button type="button" id="btn-pcb-canvas-sch" onclick="switchPcbCanvasView('2d_sch')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 hover:text-white border border-slate-800 transition">
-                  🔌 硬件原理图预览 (SVG)
+                  🔌 硬件原理图 (SVG)
+                </button>
+                <button type="button" id="btn-pcb-canvas-bom" onclick="switchPcbCanvasView('bom')" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 hover:text-white border border-slate-800 transition flex items-center gap-1.5">
+                  <span>📋 BOM 与立创选型</span>
+                  <span id="rev-bom-count" class="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-800 text-amber-300 font-mono">0 项</span>
                 </button>
               </div>
-              <div class="flex items-center gap-2">
-                <button onclick="openLocalTool('kicad')" class="px-3 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 font-semibold text-xs flex items-center gap-1.5 transition">
-                  <i class="fa-solid fa-compass-drafting text-emerald-400"></i> 用 KiCad 打开 PCB
+
+              <!-- 右侧：打开外部桌面 EDA 与唤醒右侧 AI 助手 -->
+              <div class="flex items-center gap-1.5">
+                <button onclick="openLocalTool('kicad')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 font-medium text-xs flex items-center gap-1.5 transition">
+                  <i class="fa-solid fa-compass-drafting text-emerald-400"></i> KiCad 打开
                 </button>
-                <button onclick="openLocalTool('easyeda')" class="px-3 py-1.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/30 font-semibold text-xs flex items-center gap-1.5 transition">
-                  <i class="fa-solid fa-cloud-arrow-up text-sky-400"></i> 嘉立创 EDA 专业版导入
+                <button onclick="openLocalTool('easyeda')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 font-medium text-xs flex items-center gap-1.5 transition">
+                  <i class="fa-solid fa-cloud-arrow-up text-sky-400"></i> 嘉立创导入
+                </button>
+                <button onclick="toggleGlobalCopilotSidebar(true); setGlobalCopilotTarget('pcb');" class="px-2.5 py-1 rounded-lg bg-pink-500/15 hover:bg-pink-500/25 text-pink-300 border border-pink-500/30 font-semibold text-xs flex items-center gap-1 transition">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i> AI 改板助手
                 </button>
               </div>
             </div>
 
-            <!-- 视图 1：3D 顶层与底层视图 -->
+            <!-- 子视图 1：3D 顶层与底层正反面渲染视图 -->
             <div id="pcb-canvas-pane-3d" class="space-y-3">
-              <div id="rev-3d-empty-hint" class="hidden p-8 text-center border border-dashed border-slate-800 rounded-2xl text-xs text-slate-400">
-                当前工程暂未生成 3D 渲染图。请点击上方 <strong>「刷新 2D/3D 视图」</strong>。
+              <div id="rev-3d-empty-hint" class="hidden p-8 text-center border border-dashed border-slate-800 rounded-xl text-xs text-slate-400">
+                当前工程暂未生成 3D 渲染图。请点击上方 <strong>「刷新视图」</strong>。
               </div>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-slate-950/80 rounded-2xl p-3.5 border border-slate-800 overflow-hidden group">
+                <div class="bg-slate-950/90 rounded-xl p-3 border border-slate-800 overflow-hidden group">
                   <div class="text-xs text-slate-400 font-semibold mb-2 flex justify-between">
                     <span>Top 顶层 3D 渲染视图 (F.Cu)</span>
                     <span class="text-emerald-400 font-mono text-[11px]">F.Cu · Top View</span>
                   </div>
-                  <img id="rev-top-3d-img" src="/api/image/lab7_top" class="w-full rounded-xl border border-slate-800/80 object-cover shadow-xl transition-transform duration-500 group-hover:scale-[1.02]" alt="Top 3D">
+                  <img id="rev-top-3d-img" src="/api/image/lab7_top" class="w-full rounded-lg border border-slate-800/80 object-cover shadow-lg transition-transform duration-500 group-hover:scale-[1.01]" alt="Top 3D">
                 </div>
-                <div class="bg-slate-950/80 rounded-2xl p-3.5 border border-slate-800 overflow-hidden group">
+                <div class="bg-slate-950/90 rounded-xl p-3 border border-slate-800 overflow-hidden group">
                   <div class="text-xs text-slate-400 font-semibold mb-2 flex justify-between">
                     <span>Bottom 底层 3D 渲染视图 (B.Cu)</span>
                     <span class="text-emerald-400 font-mono text-[11px]">B.Cu · Bottom View</span>
                   </div>
-                  <img id="rev-bot-3d-img" src="/api/image/lab7_bottom" class="w-full rounded-xl border border-slate-800/80 object-cover shadow-xl transition-transform duration-500 group-hover:scale-[1.02]" alt="Bottom 3D">
+                  <img id="rev-bot-3d-img" src="/api/image/lab7_bottom" class="w-full rounded-lg border border-slate-800/80 object-cover shadow-lg transition-transform duration-500 group-hover:scale-[1.01]" alt="Bottom 3D">
                 </div>
               </div>
             </div>
 
-            <!-- 视图 2：2D 铜皮走线与过孔环矢量图 (SVG) -->
+            <!-- 子视图 2：2D 铜皮走线与过孔环矢量图 (SVG) -->
             <div id="pcb-canvas-pane-2d" class="hidden space-y-2">
               <div class="flex items-center justify-between text-xs text-slate-400">
                 <span>📐 KiCad 2D 顶层/底层铜皮走线、焊盘、法拉第过孔环与丝印矢量图 (<code class="text-emerald-400">F.Cu / B.Cu / F.SilkS / Edge.Cuts</code>)</span>
@@ -1739,12 +1702,12 @@
                   <i class="fa-solid fa-rotate mr-1"></i> 重新导出 2D SVG
                 </button>
               </div>
-              <div class="bg-slate-950 rounded-2xl p-4 border border-slate-800 flex items-center justify-center min-h-[340px] overflow-auto">
-                <img id="rev-pcb-2d-svg-img" src="" class="max-h-[460px] w-auto object-contain rounded-lg" alt="2D Copper Routing SVG">
+              <div class="bg-slate-950 rounded-xl p-4 border border-slate-800 flex items-center justify-center min-h-[380px] overflow-auto">
+                <img id="rev-pcb-2d-svg-img" src="" class="max-h-[500px] w-auto object-contain rounded-lg" alt="2D Copper Routing SVG">
               </div>
             </div>
 
-            <!-- 视图 3：2D 硬件原理图预览 (SVG) -->
+            <!-- 子视图 3：2D 硬件原理图预览 (SVG) -->
             <div id="pcb-canvas-pane-sch" class="hidden space-y-2">
               <div class="flex items-center justify-between text-xs text-slate-400">
                 <span>🔌 SSOT 硬件原理图与主控引脚网络映射框图 (<code class="text-sky-400">.kicad_sch</code> 矢量预览)</span>
@@ -1752,187 +1715,141 @@
                   <i class="fa-solid fa-rotate mr-1"></i> 重新导出原理图 SVG
                 </button>
               </div>
-              <div class="bg-white/95 rounded-2xl p-4 border border-slate-700 flex items-center justify-center min-h-[340px] overflow-auto">
-                <img id="rev-sch-2d-svg-img" src="" class="max-h-[460px] w-auto object-contain rounded-lg" alt="2D Schematic SVG">
+              <div class="bg-white/95 rounded-xl p-4 border border-slate-700 flex items-center justify-center min-h-[380px] overflow-auto">
+                <img id="rev-sch-2d-svg-img" src="" class="max-h-[500px] w-auto object-contain rounded-lg" alt="2D Schematic SVG">
               </div>
             </div>
-          </div>
 
-          <!-- 带立创商城编号 (LCSC Part #) 在线编辑与直达链接的 BOM 物料清单表 -->
-          <div class="glass-card rounded-2xl p-5 space-y-3">
-            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
-              <div>
-                <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
-                  <i class="fa-solid fa-table-list text-amber-400"></i> 工程物料清单 (BOM) & 立创商城 SMT 在线选型表
-                </h3>
-                <p class="text-[11px] text-slate-400 mt-0.5">支持直接修改 <code class="text-emerald-400">LCSC C编号</code> 与 <code class="text-emerald-400">Basic / Extended</code> 库别并自动同步至嘉立创贴片文件</p>
+            <!-- 子视图 4：工程物料清单 (BOM) & 立创商城 SMT 在线选型表 (零滚动原地切换) -->
+            <div id="pcb-canvas-pane-bom" class="hidden space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-800">
+                <div class="text-xs text-slate-300">
+                  <i class="fa-solid fa-table-list text-amber-400 mr-1"></i>
+                  <strong>立创商城 SMT 在线选型表</strong> · 支持直接修改 <code class="text-emerald-400">LCSC C编号</code> 与 <code class="text-emerald-400">Basic / Extended</code> 库别
+                </div>
+                <div class="flex items-center gap-2">
+                  <button onclick="optimizeBomToJlcBasic()" class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-amber-300 border border-slate-700 font-semibold">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> 一键转立创基础库
+                  </button>
+                  <button onclick="runExportJlcSmtPackage()" class="text-[11px] px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold">
+                    <i class="fa-solid fa-file-csv mr-1"></i> 导出 JLC_BOM & CPL
+                  </button>
+                </div>
               </div>
-              <div class="flex flex-wrap items-center gap-2">
-                <span id="rev-bom-count" class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 font-mono">0 项物料</span>
-                <button onclick="optimizeBomToJlcBasic()" class="text-[11px] px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 font-semibold">
-                  <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> 一键转立创基础库
-                </button>
-                <button onclick="runExportJlcSmtPackage()" class="text-[11px] px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 font-semibold">
-                  <i class="fa-solid fa-file-csv mr-1"></i> 导出 JLC_BOM & CPL
-                </button>
+              <div class="max-h-[460px] overflow-y-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="border-b border-slate-800 text-[11px] text-slate-400">
+                      <th class="py-1.5 px-2">位号 (Ref)</th>
+                      <th class="py-1.5 px-2">型号 / 参数 (Comment)</th>
+                      <th class="py-1.5 px-2">封装 (Footprint)</th>
+                      <th class="py-1.5 px-2">立创编号 (可在线编辑)</th>
+                      <th class="py-1.5 px-2">SMT 库别</th>
+                      <th class="py-1.5 px-2">数量</th>
+                      <th class="py-1.5 px-2 text-right">立创商城</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rev-bom-tbody"></tbody>
+                </table>
               </div>
-            </div>
-            <div class="max-h-80 overflow-y-auto">
-              <table class="w-full text-left border-collapse">
-                <thead>
-                  <tr class="border-b border-slate-800 text-[11px] text-slate-400">
-                    <th class="py-1.5 px-2">位号 (Ref)</th>
-                    <th class="py-1.5 px-2">型号 / 参数 (Comment)</th>
-                    <th class="py-1.5 px-2">封装 (Footprint)</th>
-                    <th class="py-1.5 px-2">立创编号 (可在线编辑)</th>
-                    <th class="py-1.5 px-2">SMT 库别</th>
-                    <th class="py-1.5 px-2">数量</th>
-                    <th class="py-1.5 px-2 text-right">立创商城</th>
-                  </tr>
-                </thead>
-                <tbody id="rev-bom-tbody"></tbody>
-              </table>
             </div>
           </div>
         </div>
 
-        <!-- 右侧 4 列：💬 PCB 硬件对话式设计与问题修正助手 (PCB Interactive Copilot) -->
-        <div class="lg:col-span-4 studio-inner-copilot glass-card rounded-2xl p-5 border-2 border-emerald-500/40 flex flex-col justify-between space-y-3 sticky top-20">
-          <div class="space-y-2.5">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <div>
-                <h3 class="text-sm font-extrabold text-slate-100 flex items-center gap-1.5">
-                  <i class="fa-solid fa-comments text-emerald-400"></i> PCB 对话式设计与修正助手
-                </h3>
-                <p id="pcb-copilot-engine-hint" class="text-[10px] text-slate-400 mt-0.5 font-mono">当前驱动: ⚡ 内置 LLM · 支持 Diff 预览与一键撤销回滚</p>
-              </div>
-              <button type="button" onclick="clearCopilotChat('pcb')" class="text-[11px] px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700" title="清空当前对话记录">
-                <i class="fa-solid fa-trash-can"></i> 清空
-              </button>
-            </div>
-
-            <!-- 快捷问题修正指令胶囊 -->
-            <div class="space-y-1.5">
-              <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">点击快捷指令或输入自然语言修改尺寸/线宽/引脚/BOM：</div>
-              <div class="flex flex-wrap gap-1.5">
-                <button type="button" onclick="sendQuickCopilotPrompt('pcb', '请诊断当前 PCB 的 DRC 报告，自动执行 DRC 冲突自愈并刷新 2D/3D 渲染视图')" class="text-[11px] px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 transition text-left">
-                  🩹 自动诊断并修复 DRC
-                </button>
-                <button type="button" onclick="sendQuickCopilotPrompt('pcb', '请将电路板尺寸调整为 65x45mm，电源线宽加粗到 0.6mm，重新生成 PCB 与 3D 视图')" class="text-[11px] px-2.5 py-1 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 text-sky-400 border border-sky-500/30 transition text-left">
-                  📏 改 65x45mm & 电源线 0.6mm
-                </button>
-                <button type="button" onclick="sendQuickCopilotPrompt('pcb', '请将所有扩展库元器件优化替换为嘉立创 SMT 基础库 (Basic Library)，降低贴片换料费并导出 JLC_BOM 与 CPL')" class="text-[11px] px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/30 transition text-left">
-                  🪄 优化 BOM 为嘉立创基础库
-                </button>
-                <button type="button" onclick="sendQuickCopilotPrompt('pcb', '请新增 PB0 引脚作为 RELAY_CTRL，同步更新 pinout.json 与 bsp_pinout.h 并重新生成 PCB')" class="text-[11px] px-2.5 py-1 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 text-purple-400 border border-purple-500/30 transition text-left">
-                  📌 新增 PB0 引脚 (RELAY_CTRL)
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 对话消息流 -->
-          <div id="pcb-copilot-messages" class="h-[440px] overflow-y-auto rounded-xl bg-slate-950/90 border border-slate-800 p-3 space-y-3 text-xs">
-            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 leading-relaxed">
-              👋 您好！我是 <strong>PCB 硬件设计对话助手</strong>。我支持：<br>
-              1. <strong>尺寸/层叠/线宽/过孔调整</strong>（如“改板框为 70x45mm，电源线加粗到 0.6mm”）<br>
-              2. <strong>引脚增删与互换</strong>（如“把 PA0 和 PA1 互换”、“新增 PB0 为 RELAY_CTRL”）<br>
-              3. <strong>嘉立创基础库替换与 DRC 自愈</strong>，且每次修改均支持 <strong>查看 Diff</strong> 与 <strong>一键撤销回滚</strong>！
-            </div>
-          </div>
-
-          <!-- 底部输入框 -->
-          <div class="space-y-2 pt-1">
-            <div class="flex gap-2">
-              <textarea id="pcb-copilot-input" rows="2" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendCopilotMessage('pcb');}" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 resize-none" placeholder="输入硬件修改指令 (如：把电源线加粗到 0.6mm / 把 PA2 和 PA3 互换 / 优化为立创基础库)..."></textarea>
-              <button type="button" id="btn-send-pcb-copilot" onclick="sendCopilotMessage('pcb')" class="px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-xs shrink-0 flex items-center justify-center shadow-md">
-                <i class="fa-solid fa-paper-plane mr-1"></i> 发送
-              </button>
-            </div>
-          </div>
+        <!-- 隐藏式内部 Copilot 挂载点 (已收拢至右侧全局 AI Copilot 抽屉，保留 DOM ID 供 app.js 后台同步) -->
+        <div class="lg:col-span-4 studio-inner-copilot hidden">
+          <p id="pcb-copilot-engine-hint"></p>
+          <div id="pcb-copilot-messages"></div>
+          <textarea id="pcb-copilot-input"></textarea>
+          <button type="button" id="btn-send-pcb-copilot"></button>
         </div>
       </div>
     </section>
 
     <!-- ================================================================== -->
-    <!-- 5B. 模块二：嵌入式 C 固件工坊 (C99 IDE / ARM-GCC + 对话式编程助手)     -->
+    <!-- 5B. 模块二：嵌入式 C 固件工坊 (代码置顶首屏 + 水平文件标签栏 + 100% 全宽) -->
     <!-- ================================================================== -->
-    <section id="pane-firmware" class="space-y-6 hidden">
+    <section id="pane-firmware" class="space-y-3 hidden">
       <!-- 跨模块变更同步提醒横幅 -->
-      <div id="fw-cross-sync-banner" class="hidden p-3.5 rounded-2xl bg-sky-500/15 border border-sky-500/40 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div id="fw-cross-sync-banner" class="hidden px-3.5 py-2 rounded-xl bg-sky-500/15 border border-sky-500/40 flex flex-wrap items-center justify-between gap-2 text-xs">
         <div class="flex items-center gap-2 text-sky-300">
           <i class="fa-solid fa-bolt text-amber-400"></i>
-          <span id="fw-cross-sync-text">检测到硬件引脚表 (<code class="font-mono">pinout.json</code> / <code class="font-mono">bsp_pinout.h</code>) 存在新增或未绑定的外设引脚，建议一键同步生成 C99 驱动并重编译！</span>
+          <span id="fw-cross-sync-text">检测到硬件引脚表 (<code class="font-mono">pinout.json</code> / <code class="font-mono">bsp_pinout.h</code>) 存在新增或未绑定引脚，建议一键同步生成 C99 驱动并重编译！</span>
         </div>
-        <button type="button" onclick="sendQuickCopilotPrompt('firmware', '请根据最新 bsp_pinout.h 中的全部 SSOT 引脚宏，自动补全所有未覆盖引脚的初始化与非阻塞状态机驱动代码，并立即调用 GCC 重新编译验证')" class="px-3 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs shadow">
-          <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> AI 一键同步全引脚驱动并编译
+        <button type="button" onclick="sendQuickCopilotPrompt('firmware', '请根据最新 bsp_pinout.h 中的全部 SSOT 引脚宏，自动补全所有未覆盖引脚的初始化与非阻塞状态机驱动代码，并立即调用 GCC 重新编译验证')" class="px-3 py-1 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs shadow">
+          <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> AI 同步全引脚驱动并编译
         </button>
       </div>
 
-      <!-- 顶部工具栏：AI 引擎与模型选择器 + 共享引脚抽屉 + 固件编译按钮 -->
-      <div class="glass-card rounded-2xl p-5 space-y-4 border border-sky-500/30">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div class="flex items-center gap-2">
-              <h2 class="text-base font-bold text-slate-100">💻 模块二：嵌入式 C 固件工坊 (Embedded C Firmware Studio)</h2>
-              <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-sky-500/20 text-sky-400 border border-sky-500/30 font-mono font-bold">C99 · arm-none-eabi-gcc</span>
-            </div>
-            <p class="text-xs text-slate-400 mt-0.5">与硬件引脚单一事实源 <code class="text-emerald-400">bsp_pinout.h</code> 实时强绑定，支持带行号 C99 在线编辑、引脚宏覆盖率检测、GCC 自动修复重试与一键回滚</p>
+      <!-- 极简高密度单行主工具栏 (Compact Firmware Studio Toolbar) -->
+      <div class="glass-card rounded-xl px-4 py-2.5 space-y-2.5 border border-slate-800/90">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <!-- 左：标题徽章 + 共享引脚抽屉 + Cross-Probe 状态 -->
+          <div class="flex flex-wrap items-center gap-2">
+            <h2 class="text-xs font-extrabold text-slate-100 flex items-center gap-1.5">
+              <i class="fa-solid fa-file-code text-sky-400"></i>
+              <span>④ C99 固件工坊</span>
+            </h2>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-slate-900 text-sky-400 border border-slate-800 font-mono">arm-none-eabi-gcc · C99</span>
+
+            <!-- 共享引脚表 (SSOT Pinout) 速查抽屉 -->
+            <button type="button" onclick="toggleStudioPinoutDrawer('firmware')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-[11px] text-slate-300 border border-slate-700 font-medium flex items-center gap-1 transition">
+              <i class="fa-solid fa-thumbtack text-emerald-400"></i> 📌 SSOT 引脚表 (<code class="font-mono text-emerald-400">bsp_pinout.h</code>)
+            </button>
           </div>
 
-          <div class="flex flex-wrap items-center gap-2">
-            <!-- AI 驱动引擎与模型选择器 -->
-            <div class="flex flex-wrap items-center gap-1.5 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1">
-              <span class="text-[11px] text-slate-400 whitespace-nowrap"><i class="fa-solid fa-microchip text-sky-400 mr-1"></i>AI 引擎:</span>
-              <select id="fw-engine-select" onchange="onStudioEngineChange('firmware')" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-100 font-medium">
-                <option value="llm">⚡ 内置 LLM 模型直驱</option>
-                <option value="cli">🤖 Coding CLI Agent</option>
+          <!-- 右：1 个主视觉 CTA (编译固件 GCC) + 中性暗灰次级动作按钮组 -->
+          <div class="flex flex-wrap items-center gap-1.5">
+            <!-- 主视觉 Primary CTA：GCC 编译 -->
+            <button id="btn-verify-fw" onclick="runDynamicFirmwareVerify()" class="px-3 py-1 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-sm transition">
+              <i class="fa-solid fa-hammer"></i> 编译固件 (GCC)
+            </button>
+            <button type="button" onclick="toggleBottomPanel('simulator'); runFirmwareOnlineSimulation();" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-[11px] text-purple-300 border border-slate-700 font-medium flex items-center gap-1 transition" title="在底部面板运行宿主机 C99 状态机在线仿真">
+              <i class="fa-solid fa-wave-square text-purple-400"></i> 在线仿真 (Sim)
+            </button>
+            <button id="btn-scaffold-fw" onclick="runFirmwareScaffold()" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-[11px] text-slate-300 border border-slate-700 font-medium flex items-center gap-1 transition">
+              <i class="fa-solid fa-wand-magic-sparkles text-slate-400"></i> 重置 C99 骨架
+            </button>
+            <button onclick="openLocalTool('vscode')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-[11px] text-slate-300 border border-slate-700 font-medium flex items-center gap-1 transition">
+              <i class="fa-solid fa-laptop-code text-sky-400"></i> VS Code 打开
+            </button>
+            <button onclick="toggleGlobalCopilotSidebar(true); setGlobalCopilotTarget('firmware');" class="px-2.5 py-1 rounded-lg bg-pink-500/15 hover:bg-pink-500/25 text-pink-300 border border-pink-500/30 font-semibold text-[11px] flex items-center gap-1 transition">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> AI 编程助手
+            </button>
+
+            <!-- 紧凑型 AI 引擎选择器 (保持 DOM 兼容) -->
+            <div class="hidden xl:flex items-center gap-1 bg-slate-950 border border-slate-800 rounded-lg px-2 py-0.5">
+              <select id="fw-engine-select" onchange="onStudioEngineChange('firmware')" class="bg-transparent text-[11px] text-slate-300 focus:outline-none">
+                <option value="llm">⚡ LLM</option>
+                <option value="cli">🤖 CLI</option>
               </select>
-              <select id="fw-llm-model-select" onchange="onStudioEngineChange('firmware')" class="bg-slate-900 border border-sky-500/40 rounded-lg px-2 py-1 text-xs text-sky-300 font-mono">
-                <option value="">默认激活模型</option>
+              <select id="fw-llm-model-select" onchange="onStudioEngineChange('firmware')" class="bg-transparent text-[11px] text-slate-400 font-mono max-w-[110px] focus:outline-none">
+                <option value="">默认模型</option>
               </select>
-              <select id="fw-cli-agent-select" onchange="onStudioEngineChange('firmware')" class="hidden bg-slate-900 border border-amber-500/40 rounded-lg px-2 py-1 text-xs text-amber-300 font-mono">
-                <option value="pi">Pi CLI (极速固件)</option>
-                <option value="claude">Claude Code</option>
-                <option value="codex">Codex CLI</option>
-                <option value="antigravity">Antigravity</option>
+              <select id="fw-cli-agent-select" onchange="onStudioEngineChange('firmware')" class="hidden bg-transparent text-[11px] text-amber-300 font-mono focus:outline-none">
+                <option value="pi">Pi CLI</option>
+                <option value="claude">Claude</option>
+                <option value="codex">Codex</option>
+                <option value="antigravity">AGY</option>
               </select>
             </div>
-
-            <!-- 共享引脚表 (SSOT Pinout) 速查与快改抽屉开关 -->
-            <button type="button" onclick="toggleStudioPinoutDrawer('firmware')" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs text-emerald-300 border border-emerald-500/30 font-semibold flex items-center gap-1.5">
-              <i class="fa-solid fa-thumbtack text-emerald-400"></i> 📌 共享引脚表 (SSOT)
-            </button>
-
-            <button id="btn-scaffold-fw" onclick="runFirmwareScaffold()" class="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 font-semibold text-xs flex items-center gap-1.5">
-              <i class="fa-solid fa-wand-magic-sparkles"></i> 重置 C99 骨架
-            </button>
-            <button id="btn-verify-fw" onclick="runDynamicFirmwareVerify()" class="px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md">
-              <i class="fa-solid fa-hammer"></i> GCC 编译生成 ELF/HEX/BIN
-            </button>
-            <button onclick="openLocalTool('vscode')" class="px-3 py-1.5 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/30 font-semibold text-xs flex items-center gap-1.5 transition">
-              <i class="fa-solid fa-laptop-code text-sky-400"></i> 用 VS Code 打开工程
-            </button>
           </div>
         </div>
 
         <!-- 内嵌可折叠：固件工坊共享引脚表 (SSOT Pinout) 速查与快改抽屉 -->
-        <div id="fw-pinout-drawer" class="hidden p-4 rounded-xl bg-slate-950/90 border border-emerald-500/40 space-y-3">
+        <div id="fw-pinout-drawer" class="hidden p-3 rounded-xl bg-slate-950/95 border border-emerald-500/40 space-y-2.5">
           <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-emerald-400"><i class="fa-solid fa-link mr-1"></i>软硬件共享单一事实源引脚表 (<code class="font-mono">pinout.json</code> ⇄ <code class="font-mono">bsp_pinout.h</code>)</span>
-              <span class="text-[11px] text-slate-400">如果写代码时发现引脚冲突或需调整引脚，可直接在此修改并同步刷新头文件与 PCB</span>
-            </div>
+            <span class="text-xs font-bold text-emerald-400"><i class="fa-solid fa-link mr-1"></i>软硬件共享单一事实源引脚表 (<code class="font-mono">pinout.json</code> ⇄ <code class="font-mono">bsp_pinout.h</code>)</span>
             <div class="flex items-center gap-2">
               <button type="button" onclick="addStudioQuickPinRow('firmware')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700">
                 <i class="fa-solid fa-plus text-emerald-400 mr-1"></i>新增引脚
               </button>
               <button type="button" onclick="saveStudioQuickPinout('firmware', true, true)" class="px-3 py-1 rounded-lg bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs shadow">
-                <i class="fa-solid fa-bolt mr-1"></i>保存引脚表并刷新 bsp_pinout.h + PCB
+                <i class="fa-solid fa-bolt mr-1"></i>保存并刷新 bsp_pinout.h + PCB
               </button>
             </div>
           </div>
-          <div class="max-h-56 overflow-y-auto">
+          <div class="max-h-48 overflow-y-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead>
                 <tr class="border-b border-slate-800 text-[11px] text-slate-400">
@@ -1950,150 +1867,110 @@
         </div>
       </div>
 
-      <!-- 主工作区：左侧 8 列 (Flash/SRAM 进度条 + SSOT 引脚宏覆盖率 + 带行号 C99 在线编辑器) + 右侧 4 列 (💬 嵌入式 C 对话式编程与修正助手) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <!-- 左侧 8 列：嵌入式 C 代码编辑器与编译器控制台 -->
-        <div class="lg:col-span-8 studio-main-col space-y-5">
-          <div class="glass-card rounded-2xl p-5 space-y-4">
-            <!-- Flash / SRAM 资源占用可视化进度条与烧录文件下载 -->
-            <div id="rev-fw-memory-panel" class="hidden p-3.5 rounded-xl bg-slate-950/90 border border-slate-800 space-y-2.5"></div>
-
-            <!-- SSOT 引脚宏 (bsp_pinout.h) 驱动覆盖率检查与外设驱动积木栏 -->
-            <div id="fw-pin-coverage-panel" class="p-3.5 rounded-xl bg-slate-950/90 border border-slate-800 space-y-2"></div>
-
-            <!-- 方案 B：软硬件跨屏双向点击联动检视条 (Cross-Probing Inspector Bar) -->
-            <div id="fw-cross-probe-banner" class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
+      <!-- 主工作区：100% 全宽代码置顶首屏 (水平文件标签栏 + Monaco/原生双模 C99 编辑器 + 底部可折叠编译诊断抽屉) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+        <div class="lg:col-span-12 studio-main-col space-y-3">
+          <!-- 紧凑型 Cross-Probe 双向联动条 + SSOT 引脚宏覆盖率胶囊 -->
+          <div class="glass-card rounded-xl p-3.5 space-y-3 border border-slate-800/90">
+            <div id="fw-cross-probe-banner" class="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs font-mono">
               <div class="flex items-center gap-2 text-emerald-300 truncate">
                 <i class="fa-solid fa-crosshairs text-emerald-400"></i>
-                <span id="fw-cross-probe-text">🔗 Cross-Probe 双向联动已就绪：点击上方/左侧任意引脚自动定位 C 宏，或在代码中点击 PIN_ 宏反查硬件网络</span>
+                <span id="fw-cross-probe-text">🔗 Cross-Probe 双向联动就绪：点击任意引脚胶囊定位 C 宏，或在代码中点击 PIN_ 宏反查硬件网络</span>
               </div>
-              <button type="button" onclick="toggleCoDesignSplitView(true)" class="px-2.5 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[10px] shrink-0">
-                ◫ 开启左右同屏联动
+              <button type="button" onclick="toggleCoDesignSplitView(true)" class="px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 text-[10px] shrink-0">
+                ◫ 左右分屏联动
               </button>
             </div>
 
-            <!-- GCC 编译日志与一键发送给 AI 修复按钮 -->
-            <div class="space-y-1.5">
-              <div class="flex flex-wrap items-center justify-between gap-2">
-                <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                  <i class="fa-solid fa-terminal text-emerald-400"></i> ARM-GCC 交叉编译输出日志
-                  <span id="fw-gcc-error-badge" class="hidden text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 font-mono">检测到编译报错行</span>
-                </span>
-                <button type="button" onclick="sendCompilerLogToCopilot()" class="text-[11px] px-2.5 py-1 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 text-sky-400 border border-sky-500/30 font-semibold flex items-center gap-1">
-                  <i class="fa-solid fa-wand-magic-sparkles"></i> 发送编译日志给右侧 AI 助手分析/修复
-                </button>
+            <!-- SSOT 引脚宏 (bsp_pinout.h) 驱动覆盖率检查栏 -->
+            <div id="fw-pin-coverage-panel" class="px-3 py-2 rounded-lg bg-slate-950/90 border border-slate-800/80 space-y-1.5"></div>
+
+            <!-- 顶部第 1 顺位：水平文件标签栏 (#rev-fw-file-list) + 100% 全宽 C99 代码编辑器 -->
+            <div class="bg-slate-950 rounded-xl p-3 border border-slate-800 space-y-2.5">
+              <!-- 水平文件标签页 + 编辑器操作头 -->
+              <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
+                <!-- 源文件水平标签组 -->
+                <div class="flex flex-wrap items-center gap-1.5" id="rev-fw-file-list"></div>
+
+                <!-- 当前文件状态与操作按钮 -->
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="text-[11px] font-mono font-bold text-amber-400 hidden" id="rev-fw-current-name">bsp_pinout.h</span>
+                  <span id="fw-editor-dirty-badge" class="hidden text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">● 未保存</span>
+                  <span id="fw-editor-line-indicator" class="text-[10px] font-mono text-slate-500">Ln 1, Col 1</span>
+                  <button type="button" id="btn-toggle-monaco-mode" onclick="toggleFirmwareEditorEngine()" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-sky-300 border border-slate-700 font-mono transition" title="在 VS Code Monaco 内核与原生带行号编辑器间切换">
+                    ⚡ Monaco 内核
+                  </button>
+                  <button type="button" onclick="openMonacoDiffModal()" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-indigo-300 border border-slate-700 font-mono transition" title="打开 VS Code Monaco Side-by-Side Diff 变更对比器">
+                    ⇄ Diff 对比
+                  </button>
+                  <button type="button" onclick="saveCurrentFirmwareSource(false)" id="btn-save-fw-file" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-200 text-[11px] border border-slate-700 flex items-center gap-1 transition" title="快捷键 Ctrl+S / Cmd+S">
+                    <i class="fa-solid fa-floppy-disk text-sky-400"></i> 保存
+                  </button>
+                  <button type="button" onclick="saveCurrentFirmwareSource(true)" id="btn-save-compile-fw" class="px-2.5 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-[11px] font-bold flex items-center gap-1 transition">
+                    <i class="fa-solid fa-hammer"></i> 保存并编译
+                  </button>
+                </div>
               </div>
-              <pre id="rev-fw-verify-log" class="p-3 rounded-xl bg-slate-950 border border-emerald-500/30 text-xs font-mono text-emerald-300 whitespace-pre-wrap max-h-44 overflow-y-auto">点击上方「GCC 编译生成 ELF/HEX/BIN」或使用右侧 AI 助手自动编写并验证固件...</pre>
+
+              <!-- VS Code Monaco Editor 实例挂载区 (首屏置顶，加高至 28rem) -->
+              <div id="monaco-fw-editor-wrapper" class="hidden rounded-lg border border-slate-800/90 overflow-hidden bg-slate-950" style="height: 28rem;">
+                <div id="monaco-fw-editor-container" class="w-full h-full"></div>
+              </div>
+
+              <!-- 原生带同步行号槽 (Line Number Gutter) 的代码编辑器容器 (加高至 h-[440px]) -->
+              <div id="native-fw-editor-wrapper" class="relative flex rounded-lg border border-slate-800/90 bg-slate-950 overflow-hidden focus-within:border-sky-500">
+                <pre id="fw-editor-line-numbers" class="select-none py-2.5 px-2 text-right text-[11px] font-mono text-slate-600 bg-slate-900/70 border-r border-slate-800/80 leading-relaxed overflow-hidden" style="min-width: 2.8rem;">1</pre>
+                <textarea id="rev-fw-code-viewer" spellcheck="false" oninput="markFirmwareEditorDirty(); updateFirmwareLineNumbers();" onscroll="syncFirmwareEditorScroll()" onclick="updateFirmwareCursorLine(); crossProbeFromCodeCursor();" onkeyup="updateFirmwareCursorLine(); crossProbeFromCodeCursor();" class="w-full h-[440px] overflow-y-auto text-xs font-mono text-emerald-200 bg-slate-950 p-3 focus:outline-none leading-relaxed resize-y" placeholder="// 选择上方固件源文件标签以在线查看或编辑..."></textarea>
+              </div>
+
+              <div class="flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                <span id="rev-fw-current-path" class="truncate max-w-[420px]">-</span>
+                <span>C99 语法高亮 & PIN_ 宏跨屏联动 · 按 Ctrl+S 保存</span>
+              </div>
             </div>
 
-            <!-- 源码文件树 + VS Code Monaco C99 在线代码编辑器 (含原生带行号双模同步) -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div class="space-y-1.5 max-h-[450px] overflow-y-auto" id="rev-fw-file-list"></div>
-              <div class="md:col-span-2 bg-slate-950 rounded-xl p-3 border border-slate-800 flex flex-col justify-between space-y-2">
-                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <span class="text-[11px] font-mono font-bold text-amber-400" id="rev-fw-current-name">bsp_pinout.h</span>
-                    <span id="fw-editor-dirty-badge" class="hidden text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">● 已修改</span>
-                    <span id="fw-editor-line-indicator" class="text-[10px] font-mono text-slate-500">Ln 1, Col 1</span>
-                    <button type="button" id="btn-toggle-monaco-mode" onclick="toggleFirmwareEditorEngine()" class="text-[10px] px-2 py-0.5 rounded bg-sky-500/15 hover:bg-sky-500/25 text-sky-300 border border-sky-500/30 font-mono transition" title="在 VS Code Monaco 内核与原生带行号编辑器间切换">
-                      ⚡ Monaco 内核
-                    </button>
-                    <button type="button" onclick="openMonacoDiffModal()" class="text-[10px] px-2 py-0.5 rounded bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30 font-mono transition" title="打开 VS Code Monaco Side-by-Side Diff 变更对比器">
-                      ⇄ Diff 对比
-                    </button>
-                  </div>
-                  <div class="flex items-center gap-1.5">
-                    <button type="button" onclick="saveCurrentFirmwareSource(false)" id="btn-save-fw-file" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] border border-slate-700 flex items-center gap-1 transition" title="快捷键 Ctrl+S / Cmd+S">
-                      <i class="fa-solid fa-floppy-disk text-sky-400"></i> 保存文件
-                    </button>
-                    <button type="button" onclick="saveCurrentFirmwareSource(true)" id="btn-save-compile-fw" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[11px] border border-emerald-500/40 font-semibold flex items-center gap-1 transition">
-                      <i class="fa-solid fa-hammer text-emerald-400"></i> 保存并重编译 ELF
-                    </button>
-                  </div>
+            <!-- 可折叠次级抽屉：ARM-GCC 编译输出日志 + Flash/SRAM 资源占用详情 -->
+            <details class="group rounded-xl bg-slate-950/90 border border-slate-800 overflow-hidden">
+              <summary class="px-3.5 py-2 cursor-pointer flex items-center justify-between text-xs font-semibold text-slate-300 hover:bg-slate-900/60 select-none">
+                <div class="flex items-center gap-2">
+                  <i class="fa-solid fa-terminal text-emerald-400"></i>
+                  <span>ARM-GCC 编译输出日志 & Flash/SRAM 内存占用明细</span>
+                  <span id="fw-gcc-error-badge" class="hidden text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40 font-mono">检测到编译报错行</span>
                 </div>
-                <!-- VS Code Monaco Editor 实例挂载区 (自动加载 C99 语法高亮、引脚宏自动补全与 GCC 波浪线报错) -->
-                <div id="monaco-fw-editor-wrapper" class="hidden rounded-lg border border-slate-800/90 overflow-hidden bg-slate-950" style="height: 24rem;">
-                  <div id="monaco-fw-editor-container" class="w-full h-full"></div>
+                <div class="flex items-center gap-2">
+                  <button type="button" onclick="event.preventDefault(); sendCompilerLogToCopilot();" class="text-[11px] px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 font-medium">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>发送日志给 AI 修复
+                  </button>
+                  <i class="fa-solid fa-chevron-down text-[10px] text-slate-500 transition-transform group-open:rotate-180"></i>
                 </div>
-                <!-- 原生带同步行号槽 (Line Number Gutter) 的代码编辑器容器 (与 Monaco 实时双向同步) -->
-                <div id="native-fw-editor-wrapper" class="relative flex rounded-lg border border-slate-800/90 bg-slate-950 overflow-hidden focus-within:border-sky-500">
-                  <pre id="fw-editor-line-numbers" class="select-none py-2.5 px-2 text-right text-[11px] font-mono text-slate-600 bg-slate-900/70 border-r border-slate-800/80 leading-relaxed overflow-hidden" style="min-width: 2.8rem;">1</pre>
-                  <textarea id="rev-fw-code-viewer" spellcheck="false" oninput="markFirmwareEditorDirty(); updateFirmwareLineNumbers();" onscroll="syncFirmwareEditorScroll()" onclick="updateFirmwareCursorLine(); crossProbeFromCodeCursor();" onkeyup="updateFirmwareCursorLine(); crossProbeFromCodeCursor();" class="w-full h-96 overflow-y-auto text-[11px] font-mono text-emerald-200 bg-slate-950 p-2.5 focus:outline-none leading-relaxed resize-y" placeholder="// 选择左侧固件源文件以在线查看或编辑..."></textarea>
-                </div>
-                <div class="flex items-center justify-between text-[10px] text-slate-500 font-mono">
-                  <span id="rev-fw-current-path" class="truncate max-w-[340px]">-</span>
-                  <span>支持 C99 语法高亮 & PIN_ 宏双向联动 · 按 Ctrl+S 快速保存</span>
-                </div>
+              </summary>
+              <div class="p-3 border-t border-slate-800 space-y-3">
+                <div id="rev-fw-memory-panel" class="hidden p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2"></div>
+                <pre id="rev-fw-verify-log" class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-emerald-300 whitespace-pre-wrap max-h-40 overflow-y-auto">点击上方「编译固件 (GCC)」或使用右侧 AI 编程助手自动编写并验证固件...</pre>
               </div>
-            </div>
+            </details>
           </div>
 
           <!-- 软硬件协同流水线交付验收报告预览 -->
-          <div id="rev-delivery-report-card" class="hidden glass-card rounded-2xl p-5 space-y-3 border border-emerald-500/30">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <h3 class="text-sm font-bold text-emerald-400 flex items-center gap-2">
+          <div id="rev-delivery-report-card" class="hidden glass-card rounded-xl p-4 space-y-3 border border-emerald-500/30">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <h3 class="text-xs font-bold text-emerald-400 flex items-center gap-2">
                 <i class="fa-solid fa-file-signature"></i> 工程软硬件双闭环交付验收报告 (docs/PIPELINE_DELIVERY_REPORT.md)
               </h3>
-              <button onclick="switchTab('agents')" class="text-xs px-3 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30">
-                重新运行 5 阶段协同流水线
+              <button onclick="switchTab('agents')" class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-slate-700">
+                重新运行流水线
               </button>
             </div>
-            <pre id="rev-delivery-report-pre" class="max-h-72 overflow-y-auto text-xs font-mono text-slate-200 whitespace-pre-wrap leading-relaxed bg-slate-950 p-4 rounded-xl border border-slate-800"></pre>
+            <pre id="rev-delivery-report-pre" class="max-h-60 overflow-y-auto text-xs font-mono text-slate-200 whitespace-pre-wrap leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800"></pre>
           </div>
         </div>
 
-        <!-- 右侧 4 列：💬 嵌入式 C 固件对话式编程与修正助手 (Firmware Interactive Copilot) -->
-        <div class="lg:col-span-4 studio-inner-copilot glass-card rounded-2xl p-5 border-2 border-sky-500/40 flex flex-col justify-between space-y-3 sticky top-20">
-          <div class="space-y-2.5">
-            <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <div>
-                <h3 class="text-sm font-extrabold text-slate-100 flex items-center gap-1.5">
-                  <i class="fa-solid fa-comments text-sky-400"></i> C 固件对话式编程与修正助手
-                </h3>
-                <p id="fw-copilot-engine-hint" class="text-[10px] text-slate-400 mt-0.5 font-mono">当前驱动: ⚡ 内置 LLM · 支持 Diff 预览与一键回滚</p>
-              </div>
-              <button type="button" onclick="clearCopilotChat('firmware')" class="text-[11px] px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border border-slate-700" title="清空当前对话记录">
-                <i class="fa-solid fa-trash-can"></i> 清空
-              </button>
-            </div>
-
-            <!-- 快捷编程与修正指令胶囊 -->
-            <div class="space-y-1.5">
-              <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">点击快捷指令或直接描述外设驱动/报错：</div>
-              <div class="flex flex-wrap gap-1.5">
-                <button type="button" onclick="sendQuickCopilotPrompt('firmware', '请根据 bsp_pinout.h 中定义的全部引脚宏，在状态机中实现 100% 引脚绑定、非阻塞式按键消抖与一阶 EMA ADC 滤波，并立即调用 GCC 重新编译')" class="text-[11px] px-2.5 py-1 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 text-sky-400 border border-sky-500/30 transition text-left">
-                  🪄 全引脚宏绑定 + 消抖与滤波
-                </button>
-                <button type="button" onclick="sendQuickCopilotPrompt('firmware', '请检查并修复当前 C 固件源码中的任何编译警告或语法错误，确保 -Wall -Wextra 零警告通过')" class="text-[11px] px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/30 transition text-left">
-                  🔧 诊断并修复 GCC 编译报错
-                </button>
-                <button type="button" onclick="sendQuickCopilotPrompt('firmware', '请在主循环中完善传感器超限报警鎖定、PWM 间歇驱动与按键消音恢复状态机，并重新编译统计 Flash/SRAM')" class="text-[11px] px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 text-amber-400 border border-amber-500/30 transition text-left">
-                  🚨 完善报警锁定与消音状态机
-                </button>
-                <button type="button" onclick="sendQuickCopilotPrompt('firmware', '请核对当前 C 源码引用的引脚宏是否与 bsp_pinout.h 中的 SSOT 定义 100% 匹配')" class="text-[11px] px-2.5 py-1 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 text-purple-400 border border-purple-500/30 transition text-left">
-                  🔌 核对 bsp_pinout.h 引脚宏覆盖率
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- 对话消息流 -->
-          <div id="fw-copilot-messages" class="h-[440px] overflow-y-auto rounded-xl bg-slate-950/90 border border-slate-800 p-3 space-y-3 text-xs">
-            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 leading-relaxed">
-              👋 您好！我是 <strong>嵌入式 C 固件对话助手</strong>。我已实时加载当前工程的 <code class="text-emerald-400">bsp_pinout.h</code>、左侧选中的 C 源码以及 <code class="text-sky-400">arm-none-eabi-gcc</code> 编译器输出。<br>
-              修改后会自动触发 <strong>GCC 编译验证与错误自动重试闭环</strong>，并提供 <strong>代码 Diff 对比</strong> 与 <strong>一键撤销回滚</strong>！
-            </div>
-          </div>
-
-          <!-- 底部输入框 -->
-          <div class="space-y-2 pt-1">
-            <div class="flex gap-2">
-              <textarea id="fw-copilot-input" rows="2" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendCopilotMessage('firmware');}" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-sky-500 resize-none" placeholder="输入 C 固件开发或报错修复指令 (例如：增加按键消抖和低压报警逻辑并重编译)..."></textarea>
-              <button type="button" id="btn-send-fw-copilot" onclick="sendCopilotMessage('firmware')" class="px-4 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs shrink-0 flex items-center justify-center shadow-md">
-                <i class="fa-solid fa-paper-plane mr-1"></i> 发送
-              </button>
-            </div>
-          </div>
+        <!-- 隐藏式内部 Copilot 挂载点 (已收拢至右侧全局 AI Copilot 抽屉，保留 DOM ID 供 app.js 后台同步) -->
+        <div class="lg:col-span-4 studio-inner-copilot hidden">
+          <p id="fw-copilot-engine-hint"></p>
+          <div id="fw-copilot-messages"></div>
+          <textarea id="fw-copilot-input"></textarea>
+          <button type="button" id="btn-send-fw-copilot"></button>
         </div>
       </div>
     </section>
@@ -2270,9 +2147,9 @@
     </main>
 
     <!-- ==================================================================== -->
-    <!-- 区域 ④：VS Code 底部综合诊断与终端面板 (Bottom Panel · Ctrl+J)          -->
+    <!-- 区域 ④：VS Code 底部综合诊断与终端面板 (Bottom Panel · Ctrl+J · 默认智能收起) -->
     <!-- ==================================================================== -->
-    <div id="vscode-bottom-panel" class="h-52 border-t border-slate-800/90 bg-slate-950/95 flex flex-col shrink-0 z-30">
+    <div id="vscode-bottom-panel" class="hidden h-52 border-t border-slate-800/90 bg-slate-950/95 flex flex-col shrink-0 z-30">
       <!-- 底部面板标签页头 -->
       <div class="px-4 py-1.5 border-b border-slate-800/80 flex flex-wrap items-center justify-between gap-2 select-none">
         <div class="flex items-center gap-4 text-[11px] font-bold uppercase tracking-wider">

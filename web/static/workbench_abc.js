@@ -601,3 +601,68 @@ if (typeof buildCommandPaletteCatalog === 'function') {
     return [...extraCmds, ...baseItems];
   };
 }
+
+// ============================================================================
+// UI/UX 重构增强：支持 PCB 4 合 1 零滚动子标签 ('3d' | '2d_pcb' | '2d_sch' | 'bom')
+// 以及按流向智能折叠底部诊断面板，释放 +45% 垂直可视空间
+// ============================================================================
+window.switchPcbCanvasView = function (viewMode = '3d') {
+  currentPcbCanvasView = viewMode;
+  const pane3d = document.getElementById('pcb-canvas-pane-3d');
+  const pane2d = document.getElementById('pcb-canvas-pane-2d');
+  const paneSch = document.getElementById('pcb-canvas-pane-sch');
+  const paneBom = document.getElementById('pcb-canvas-pane-bom');
+
+  const btn3d = document.getElementById('btn-pcb-canvas-3d');
+  const btn2d = document.getElementById('btn-pcb-canvas-2d');
+  const btnSch = document.getElementById('btn-pcb-canvas-sch');
+  const btnBom = document.getElementById('btn-pcb-canvas-bom');
+
+  if (pane3d) pane3d.classList.toggle('hidden', viewMode !== '3d');
+  if (pane2d) pane2d.classList.toggle('hidden', viewMode !== '2d_pcb');
+  if (paneSch) paneSch.classList.toggle('hidden', viewMode !== '2d_sch');
+  if (paneBom) paneBom.classList.toggle('hidden', viewMode !== 'bom');
+
+  const activeCls = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 text-slate-950 shadow transition flex items-center gap-1.5';
+  const inactiveCls = 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-slate-300 hover:text-white border border-slate-800 transition flex items-center gap-1.5';
+
+  if (btn3d) btn3d.className = viewMode === '3d' ? activeCls : inactiveCls;
+  if (btn2d) btn2d.className = viewMode === '2d_pcb' ? activeCls : inactiveCls;
+  if (btnSch) btnSch.className = viewMode === '2d_sch' ? activeCls : inactiveCls;
+  if (btnBom) btnBom.className = viewMode === 'bom' ? activeCls : inactiveCls;
+
+  if ((viewMode === '2d_pcb' || viewMode === '2d_sch') && typeof refresh2dSvgViews === 'function') {
+    refresh2dSvgViews();
+  }
+};
+
+if (typeof switchTab === 'function') {
+  const _origSwitchTab = switchTab;
+  window.switchTab = function (tabId) {
+    _origSwitchTab(tabId);
+    const cleanTitles = {
+      dashboard: '① 项目工作台 (Project Workspace)',
+      intake: '② 规格与引脚定义 (SSOT PinMux)',
+      pcb: '③ PCB 硬件工坊 (KiCad / 嘉立创 JLC)',
+      firmware: '④ C99 固件工坊 (Embedded C99 IDE)',
+      agents: '⚡ 全自动协同流水线 (5-Stage Pipeline)',
+      distiller: '🧩 Skill 知识蒸馏市场 (Extensions)',
+      config: '⚙️ 引擎与模型配置 (Settings)'
+    };
+    const topTitleEl = document.getElementById('top-view-title');
+    if (topTitleEl && cleanTitles[tabId]) {
+      topTitleEl.textContent = cleanTitles[tabId];
+    }
+    // 在非代码/非画布模块默认收起底部诊断台，最大化首屏垂直面积
+    const btmPanel = document.getElementById('vscode-bottom-panel');
+    if (btmPanel && ['dashboard', 'intake', 'distiller', 'config'].includes(tabId)) {
+      btmPanel.classList.add('hidden');
+      bottomPanelVisible = false;
+    }
+    // 切换到固件工坊且 Monaco 已激活时自动触发 layout 自适应全宽
+    if (tabId === 'firmware' && typeof monacoFwEditor !== 'undefined' && monacoFwEditor) {
+      setTimeout(() => monacoFwEditor.layout(), 60);
+    }
+  };
+}
+
