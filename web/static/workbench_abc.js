@@ -1127,7 +1127,7 @@ window.toggleSidebarSection = function (sectionId) {
 };
 
 function restoreSidebarSectionsState() {
-  ['core-flow', 'ai-eco', 'local-bridge'].forEach(sectionId => {
+  ['core-flow', 'ai-eco', 'local-bridge', 'user-guide'].forEach(sectionId => {
     try {
       const saved = localStorage.getItem(`ai_pcb_sidebar_sec_${sectionId}`);
       if (saved === 'collapsed') {
@@ -1142,6 +1142,83 @@ function restoreSidebarSectionsState() {
     } catch (e) {}
   });
 }
+
+// ============================================================================
+// 9. 侧边栏「使用说明与设计指南」交互控制器 (PCB 设计流程图 + PCB 设计说明 + C99 固件说明)
+// ============================================================================
+window.openUserGuideSection = function (sectionKey = 'all') {
+  if (typeof switchTab === 'function') {
+    switchTab('guide');
+  }
+  // 同步侧边栏子按钮激活高亮
+  ['tab-guide', 'tab-guide-pcb', 'tab-guide-c99'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.classList.remove('active');
+      el.classList.add('text-slate-400');
+    }
+  });
+  const activeSidebarId = sectionKey === 'pcb'
+    ? 'tab-guide-pcb'
+    : sectionKey === 'c99'
+      ? 'tab-guide-c99'
+      : 'tab-guide';
+  const activeSidebarBtn = document.getElementById(activeSidebarId);
+  if (activeSidebarBtn) {
+    activeSidebarBtn.classList.add('active');
+    activeSidebarBtn.classList.remove('text-slate-400');
+  }
+
+  // 显示全部模块但根据用户点击的子项高亮并平滑滚动定位
+  filterGuideSections('all', sectionKey);
+  if (sectionKey === 'pcb' || sectionKey === 'c99' || sectionKey === 'flowchart') {
+    const targetId = sectionKey === 'pcb'
+      ? 'guide-sec-pcb'
+      : sectionKey === 'c99'
+        ? 'guide-sec-c99'
+        : 'guide-sec-flowchart';
+    setTimeout(() => {
+      const targetEl = document.getElementById(targetId);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        targetEl.classList.add('cross-probe-highlight');
+        setTimeout(() => targetEl.classList.remove('cross-probe-highlight'), 2400);
+      }
+    }, 80);
+  } else {
+    const scrollArea = document.getElementById('app-main-scroll-area');
+    if (scrollArea) scrollArea.scrollTop = 0;
+  }
+};
+
+window.filterGuideSections = function (mode = 'all', activePillOverride = null) {
+  const pillKey = activePillOverride || mode;
+  const pills = ['all', 'flowchart', 'pcb', 'c99', 'quickstart'];
+  pills.forEach(k => {
+    const btn = document.getElementById(`guide-pill-${k}`);
+    if (!btn) return;
+    if (k === pillKey) {
+      btn.className = 'px-3 py-1.5 rounded-xl bg-sky-500 text-slate-950 font-bold text-xs shadow transition flex items-center gap-1.5';
+    } else {
+      btn.className = 'px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-medium transition flex items-center gap-1.5';
+    }
+  });
+
+  const sections = {
+    flowchart: document.getElementById('guide-sec-flowchart'),
+    pcb: document.getElementById('guide-sec-pcb'),
+    c99: document.getElementById('guide-sec-c99'),
+    quickstart: document.getElementById('guide-sec-quickstart')
+  };
+  Object.entries(sections).forEach(([k, el]) => {
+    if (!el) return;
+    if (mode === 'all') {
+      el.classList.remove('hidden');
+    } else {
+      el.classList.toggle('hidden', k !== mode);
+    }
+  });
+};
 
 document.addEventListener('DOMContentLoaded', () => {
   restoreSidebarSectionsState();

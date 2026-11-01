@@ -427,6 +427,44 @@
       background: rgba(2, 132, 199, 0.1);
       color: #0284c7;
     }
+
+    /* 使用说明流程图与代码块深浅色自适应样式 */
+    .guide-flowchart-wrap {
+      background: radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.08), transparent 45%),
+                  radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.08), transparent 45%),
+                  #090f1d;
+    }
+    html:not(.dark) .guide-flowchart-wrap {
+      background: radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.07), transparent 45%),
+                  radial-gradient(circle at 80% 80%, rgba(2, 132, 199, 0.07), transparent 45%),
+                  #f8fafc !important;
+      border-color: #cbd5e1 !important;
+    }
+    html:not(.dark) #guide-pcb-c99-flowchart-svg .svg-lane-bg {
+      fill: #ffffff !important;
+      stroke-width: 1.5px;
+    }
+    html:not(.dark) #guide-pcb-c99-flowchart-svg .svg-node-box {
+      fill: #f8fafc !important;
+    }
+    html:not(.dark) #guide-pcb-c99-flowchart-svg .svg-text-primary {
+      fill: #0f172a !important;
+    }
+    html:not(.dark) #guide-pcb-c99-flowchart-svg .svg-text-secondary {
+      fill: #475569 !important;
+    }
+    #guide-pcb-c99-flowchart-svg .svg-clickable-node {
+      cursor: pointer;
+      transition: filter 0.18s ease, transform 0.18s ease;
+    }
+    #guide-pcb-c99-flowchart-svg .svg-clickable-node:hover {
+      filter: brightness(1.18) drop-shadow(0 4px 12px rgba(56, 189, 248, 0.25));
+    }
+    html:not(.dark) .guide-code-dark {
+      background-color: #0f172a !important;
+      color: #e2e8f0 !important;
+      border-color: #1e293b !important;
+    }
   </style>
   <!-- VS Code Monaco Editor AMD Loader (异步按需加载，离线自动回退原生带行号编辑器) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js" defer></script>
@@ -622,6 +660,40 @@
                 <span class="sidebar-label truncate">引擎与模型配置</span>
               </div>
               <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-mono">CFG</span>
+            </button>
+          </div>
+
+          <button type="button" onclick="toggleSidebarSection('user-guide')" class="sidebar-section-title w-full px-2 pt-2.5 pb-1 rounded-lg hover:bg-slate-800/40 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:text-amber-400 flex items-center justify-between transition cursor-pointer select-none" title="点击折叠/展开「使用说明 (PCB流程图与C语言设计指南)」模块">
+            <span class="flex items-center gap-1.5">
+              <i id="sidebar-chevron-user-guide" class="fa-solid fa-chevron-down text-[9px] text-amber-400 transition-transform"></i>
+              <span>使用说明 (User Guide)</span>
+            </span>
+            <span class="text-[9px] font-mono text-amber-400">DOCS</span>
+          </button>
+
+          <div id="sidebar-sec-user-guide" class="space-y-1">
+            <button onclick="openUserGuideSection('all')" id="tab-guide" data-tip-title="使用说明与设计流程图" data-tip-badge="GUIDE" data-tip-desc="图文详解 PCB 硬件设计流程图、SSOT 引脚联动、KiCad/嘉立创规范与 C99 固件开发全流程" class="tab-btn w-full px-3 py-2 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="📖 查看 PCB 设计流程图、PCB 设计说明与 C 语言固件开发完整手册">
+              <div class="flex items-center gap-2.5 truncate">
+                <i class="fa-solid fa-book-open-reader text-sm w-4 text-center text-amber-400"></i>
+                <span class="sidebar-label truncate">📖 设计流程图与总说明</span>
+              </div>
+              <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 font-mono">GUIDE</span>
+            </button>
+
+            <button onclick="openUserGuideSection('pcb')" id="tab-guide-pcb" data-tip-title="PCB 硬件设计说明" data-tip-badge="PCB" data-tip-desc="从需求蒸馏、SSOT 引脚分配、KiCad DRC 自愈到嘉立创 SMT 基础库与 Gerber 导出实操指南" class="tab-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="📐 查看 PCB 硬件设计详细步骤与嘉立创 DFM 量产设计说明">
+              <div class="flex items-center gap-2.5 truncate">
+                <i class="fa-solid fa-sitemap text-xs w-4 text-center text-emerald-400"></i>
+                <span class="sidebar-label truncate">📐 PCB 硬件设计说明</span>
+              </div>
+              <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono">PCB</span>
+            </button>
+
+            <button onclick="openUserGuideSection('c99')" id="tab-guide-c99" data-tip-title="C 语言固件设计说明" data-tip-badge="C99" data-tip-desc="嵌入式 C99 五层架构、bsp_pinout.h 引脚宏规范、ARM-GCC 交叉编译与在线状态机波形仿真指南" class="tab-btn w-full px-3 py-1.5 rounded-r-xl text-xs font-medium flex items-center justify-between gap-2.5 text-slate-400 hover:text-slate-100" title="💻 查看 C 语言 (C99) 嵌入式固件开发规范与在线状态机仿真说明">
+              <div class="flex items-center gap-2.5 truncate">
+                <i class="fa-solid fa-microchip text-xs w-4 text-center text-sky-400"></i>
+                <span class="sidebar-label truncate">💻 C 语言固件设计说明</span>
+              </div>
+              <span class="sidebar-step-badge text-[10px] px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-400 font-mono">C99</span>
             </button>
           </div>
         </nav>
@@ -2243,6 +2315,655 @@
 
           <!-- 技能 Markdown 内容与蒸馏实时日志阅读器 -->
           <pre id="distill-log" class="text-xs font-mono text-slate-200 bg-slate-950 rounded-xl p-4 border border-slate-800 flex-1 min-h-[460px] max-h-[600px] overflow-y-auto whitespace-pre-wrap leading-relaxed">点击左侧任意 Skill 插件卡片查看其「SKILL.md / 参数速查卡 / 经典设计模式」，或在上方输入主流社区链接一键安装新插件...</pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- 8. 平台使用说明：PCB 硬件设计流程图 & C99 嵌入式固件开发指南 (#pane-guide) -->
+    <!-- ================================================================== -->
+    <section id="pane-guide" class="hidden space-y-6 pane-animate-in">
+      <!-- 顶部导览 Banner 与章节过滤栏 -->
+      <div class="glass-card rounded-2xl p-6 border border-amber-500/30 space-y-4">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div class="space-y-1.5">
+            <div class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-[11px] font-mono text-amber-300">
+              <i class="fa-solid fa-compass"></i> OFFICIAL USER MANUAL &amp; CO-DESIGN BLUEPRINT
+            </div>
+            <h2 class="text-xl font-extrabold text-slate-100 flex items-center gap-2.5">
+              <span>📖 平台使用说明：PCB 硬件设计流程图 &amp; C 语言 (C99) 固件开发指南</span>
+            </h2>
+            <p class="text-xs text-slate-400 max-w-4xl leading-relaxed">
+              欢迎使用 <strong class="text-sky-300">XterAI-PCB 软硬件协同研发平台</strong>！本指南通过一张<strong>全景双泳道交互式流程图</strong>及分步实操手册，带您快速掌握从「需求提炼 → SSOT 引脚锁定 → KiCad/嘉立创 PCB 设计与 DRC 自愈 → C99 裸机固件编写、ARM-GCC 编译与逻辑分析仪在线仿真 → 全套生产交付包导出」的完整使用方法。<strong class="text-emerald-300">点击流程图中任意节点或下方步骤按钮，即可一键跳转至对应模块实操。</strong>
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="promptCreateNewProject()" class="px-3.5 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs shadow flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> 从模板新建工程体验
+            </button>
+            <button type="button" onclick="toggleCoDesignSplitView(true)" class="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-bold text-xs flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-table-columns"></i> 开启 PCB + C语言 左右分屏
+            </button>
+          </div>
+        </div>
+
+        <!-- 章节快速切换胶囊栏 -->
+        <div class="flex flex-wrap items-center gap-2 pt-3 border-t border-slate-800/80">
+          <span class="text-[11px] font-mono text-slate-400 mr-1">快速定位章节:</span>
+          <button type="button" id="guide-pill-all" onclick="filterGuideSections('all')" class="px-3 py-1.5 rounded-xl bg-sky-500 text-slate-950 font-bold text-xs shadow transition flex items-center gap-1.5">
+            <i class="fa-solid fa-layer-group"></i> 全部完整说明
+          </button>
+          <button type="button" id="guide-pill-flowchart" onclick="filterGuideSections('flowchart')" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-medium transition flex items-center gap-1.5">
+            <i class="fa-solid fa-diagram-project text-amber-400"></i> ① PCB &amp; C语言协同设计流程图
+          </button>
+          <button type="button" id="guide-pill-pcb" onclick="filterGuideSections('pcb')" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-medium transition flex items-center gap-1.5">
+            <i class="fa-solid fa-compass-drafting text-emerald-400"></i> ② PCB 硬件设计详细说明
+          </button>
+          <button type="button" id="guide-pill-c99" onclick="filterGuideSections('c99')" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-medium transition flex items-center gap-1.5">
+            <i class="fa-solid fa-file-code text-sky-400"></i> ③ C 语言 (C99) 固件设计说明
+          </button>
+          <button type="button" id="guide-pill-quickstart" onclick="filterGuideSections('quickstart')" class="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-xs font-medium transition flex items-center gap-1.5">
+            <i class="fa-solid fa-bolt text-purple-400"></i> ④ 极速上手模式与快捷键速查
+          </button>
+        </div>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- 章节一：PCB 硬件设计 & C语言固件协同全流程图 (交互式双泳道 SVG 工程蓝图) -->
+      <!-- ================================================================ -->
+      <div id="guide-sec-flowchart" class="glass-card rounded-2xl p-6 space-y-5 border border-emerald-500/30">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div>
+            <h3 class="text-base font-extrabold text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-sitemap text-emerald-400"></i>
+              <span>一、 PCB 硬件设计 &amp; C 语言嵌入式固件协同全流程图（点击图中节点可直达对应工坊）</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">
+              上泳道为 <strong>PCB 硬件工程主线（KiCad 10 / 嘉立创 JLC）</strong>，下泳道为 <strong>C99 嵌入式固件工程主线（ARM-GCC / 状态机沙箱）</strong>，中间通过 <strong>SSOT 单一事实源</strong> 实现引脚与网表 100% 实时同步。
+            </p>
+          </div>
+          <span class="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+            💡 提示：点击图中任意方框即可跳转对应功能
+          </span>
+        </div>
+
+        <!-- 矢量交互式双泳道流程图容器 -->
+        <div class="guide-flowchart-wrap rounded-2xl border border-slate-800 p-3 overflow-x-auto">
+          <svg id="guide-pcb-c99-flowchart-svg" viewBox="0 0 1160 540" class="w-full min-w-[980px] h-auto select-none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrow-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981"/>
+              </marker>
+              <marker id="arrow-sky" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8"/>
+              </marker>
+              <marker id="arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b"/>
+              </marker>
+              <marker id="arrow-rose" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 1 L 10 5 L 0 9 z" fill="#f43f5e"/>
+              </marker>
+            </defs>
+
+            <!-- ==================== 上泳道：PCB 硬件设计流程 ==================== -->
+            <rect class="svg-lane-bg" x="15" y="14" width="1130" height="196" rx="14" fill="#0b1528" stroke="#10b981" stroke-opacity="0.45" stroke-width="1.5"/>
+            <rect x="28" y="24" width="275" height="24" rx="6" fill="#10b981" fill-opacity="0.18"/>
+            <text x="40" y="40" fill="#34d399" font-size="12" font-weight="bold" font-family="monospace">📐 泳道 A：PCB 硬件设计全流程 (KiCad 10 &amp; 嘉立创 JLC)</text>
+
+            <!-- 节点 P1：需求输入与工程创建 -->
+            <g class="svg-clickable-node" onclick="switchTab('dashboard')">
+              <rect class="svg-node-box" x="30" y="60" width="190" height="112" rx="10" fill="#111c33" stroke="#10b981" stroke-width="1.8"/>
+              <rect x="40" y="70" width="58" height="18" rx="4" fill="#10b981" fill-opacity="0.22"/>
+              <text x="46" y="83" fill="#34d399" font-size="10" font-weight="bold" font-family="monospace">STEP P1</text>
+              <text class="svg-text-primary" x="40" y="104" fill="#f1f5f9" font-size="12.5" font-weight="bold">① 需求蒸馏 / 模板创建</text>
+              <text class="svg-text-secondary" x="40" y="122" fill="#94a3b8" font-size="10.5">• 5大行业硬件模板一键初始化</text>
+              <text class="svg-text-secondary" x="40" y="138" fill="#94a3b8" font-size="10.5">• 上传文档由 Qwen3.8-27B 提炼</text>
+              <text x="40" y="158" fill="#34d399" font-size="10" font-family="monospace">👉 点击进入「① 项目工作台」</text>
+            </g>
+
+            <!-- 箭头 P1 -> P2 -->
+            <line x1="220" y1="116" x2="248" y2="116" stroke="#10b981" stroke-width="2.2" marker-end="url(#arrow-emerald)"/>
+
+            <!-- 节点 P2：SSOT 规格与引脚分配 -->
+            <g class="svg-clickable-node" onclick="switchTab('intake')">
+              <rect class="svg-node-box" x="252" y="60" width="200" height="112" rx="10" fill="#111c33" stroke="#f59e0b" stroke-width="2"/>
+              <rect x="262" y="70" width="58" height="18" rx="4" fill="#f59e0b" fill-opacity="0.22"/>
+              <text x="268" y="83" fill="#fbbf24" font-size="10" font-weight="bold" font-family="monospace">STEP P2</text>
+              <text class="svg-text-primary" x="262" y="104" fill="#f1f5f9" font-size="12.5" font-weight="bold">② 机械规格与引脚分配</text>
+              <text class="svg-text-secondary" x="262" y="122" fill="#94a3b8" font-size="10.5">• 设板长/板宽(mm)、2/4层、供电</text>
+              <text class="svg-text-secondary" x="262" y="138" fill="#94a3b8" font-size="10.5">• MCU引脚物理复用冲突主动拦截</text>
+              <text x="262" y="158" fill="#fbbf24" font-size="10" font-family="monospace">👉 点击进入「② 规格与引脚」</text>
+            </g>
+
+            <!-- 箭头 P2 -> P3 -->
+            <line x1="452" y1="116" x2="480" y2="116" stroke="#10b981" stroke-width="2.2" marker-end="url(#arrow-emerald)"/>
+
+            <!-- 节点 P3：原理图与 PCB 布局布线 -->
+            <g class="svg-clickable-node" onclick="switchTab('pcb')">
+              <rect class="svg-node-box" x="484" y="60" width="205" height="112" rx="10" fill="#111c33" stroke="#10b981" stroke-width="1.8"/>
+              <rect x="494" y="70" width="58" height="18" rx="4" fill="#10b981" fill-opacity="0.22"/>
+              <text x="500" y="83" fill="#34d399" font-size="10" font-weight="bold" font-family="monospace">STEP P3</text>
+              <text class="svg-text-primary" x="494" y="104" fill="#f1f5f9" font-size="12.5" font-weight="bold">③ 原理图与 PCB 布局布线</text>
+              <text class="svg-text-secondary" x="494" y="122" fill="#94a3b8" font-size="10.5">• 生成 .kicad_sch 与 .kicad_pcb</text>
+              <text class="svg-text-secondary" x="494" y="138" fill="#94a3b8" font-size="10.5">• 3D 光追 / 2D 铜皮 / 原理图预览</text>
+              <text x="494" y="158" fill="#34d399" font-size="10" font-family="monospace">👉 点击进入「③ PCB 工坊」</text>
+            </g>
+
+            <!-- 箭头 P3 -> P4 -->
+            <line x1="689" y1="116" x2="717" y2="116" stroke="#10b981" stroke-width="2.2" marker-end="url(#arrow-emerald)"/>
+
+            <!-- 节点 P4：KiCad DRC 审查与 AI 自愈闭环 -->
+            <g class="svg-clickable-node" onclick="switchTab('pcb')">
+              <rect class="svg-node-box" x="721" y="60" width="198" height="112" rx="10" fill="#111c33" stroke="#10b981" stroke-width="1.8"/>
+              <rect x="731" y="70" width="76" height="18" rx="4" fill="#10b981" fill-opacity="0.22"/>
+              <text x="737" y="83" fill="#34d399" font-size="10" font-weight="bold" font-family="monospace">STEP P4 · DRC</text>
+              <text class="svg-text-primary" x="731" y="104" fill="#f1f5f9" font-size="12.5" font-weight="bold">④ KiCad DRC &amp; AI 自愈</text>
+              <text class="svg-text-secondary" x="731" y="122" fill="#94a3b8" font-size="10.5">• 线宽≥8mil / 安全间距≥6mil检查</text>
+              <text class="svg-text-secondary" x="731" y="138" fill="#94a3b8" font-size="10.5">• 发现违规 → 一键 AI 冲突自愈</text>
+              <text x="731" y="158" fill="#34d399" font-size="10" font-family="monospace">✅ 达成 0 违规 / 0 未连飞线</text>
+            </g>
+
+            <!-- DRC 冲突自愈回流环 (P4 顶部回流至 P3) -->
+            <path d="M 820 60 C 820 34, 586 34, 586 60" fill="none" stroke="#f43f5e" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arrow-rose)"/>
+            <rect x="635" y="25" width="142" height="18" rx="4" fill="#f43f5e" fill-opacity="0.18"/>
+            <text x="642" y="38" fill="#fda4af" font-size="9.5" font-family="monospace">违规&gt;0: AI 自动重构版图</text>
+
+            <!-- 箭头 P4 -> P5 -->
+            <line x1="919" y1="116" x2="947" y2="116" stroke="#10b981" stroke-width="2.2" marker-end="url(#arrow-emerald)"/>
+
+            <!-- 节点 P5：立创 BOM 优选与 Gerber 导出 -->
+            <g class="svg-clickable-node" onclick="switchTab('pcb')">
+              <rect class="svg-node-box" x="951" y="60" width="180" height="112" rx="10" fill="#111c33" stroke="#10b981" stroke-width="2"/>
+              <rect x="961" y="70" width="68" height="18" rx="4" fill="#10b981" fill-opacity="0.25"/>
+              <text x="967" y="83" fill="#34d399" font-size="10" font-weight="bold" font-family="monospace">STEP P5 · JLC</text>
+              <text class="svg-text-primary" x="961" y="104" fill="#f1f5f9" font-size="12.5" font-weight="bold">⑤ 嘉立创制板与贴片</text>
+              <text class="svg-text-secondary" x="961" y="122" fill="#94a3b8" font-size="10.5">• 智能优选立创 Basic 基础库</text>
+              <text class="svg-text-secondary" x="961" y="138" fill="#94a3b8" font-size="10.5">• 导出 Gerber + BOM + CPL</text>
+              <text x="961" y="158" fill="#34d399" font-size="10" font-family="monospace">📦 直接上传嘉立创打样投产</text>
+            </g>
+
+            <!-- ==================== 中枢泳道：SSOT 单一事实源同步桥 ==================== -->
+            <rect class="svg-lane-bg" x="15" y="226" width="1130" height="82" rx="12" fill="#17130a" stroke="#f59e0b" stroke-opacity="0.55" stroke-dasharray="6 4" stroke-width="1.5"/>
+            <text x="35" y="255" fill="#fbbf24" font-size="12" font-weight="bold" font-family="monospace">🔗 核心枢纽：SSOT 软硬件单一事实源同步总线 (spec.json + pinout.json ⇄ firmware/Drivers/bsp_pinout.h)</text>
+            <text class="svg-text-secondary" x="35" y="276" fill="#cbd5e1" font-size="11">• 改引脚只需在「② 规格与引脚」修改一次：系统同时更新 PCB 原理图网表与 C99 头文件宏定义，彻底消除“硬件改了引脚、C代码忘改宏”事故！</text>
+            <text class="svg-text-secondary" x="35" y="294" fill="#38bdf8" font-size="11">• 开启顶部「◫ 分屏」后支持跨屏双向高亮 (Cross-Probing)：点击左侧 PCB 引脚自动高亮右侧 C 语言宏，点击 C 语言 PIN_* 宏反向定位硬件焊盘。</text>
+
+            <!-- 垂直跨泳道同步箭头：P2 (SSOT) -> C1 (bsp_pinout.h) -->
+            <path d="M 352 172 L 352 362" fill="none" stroke="#f59e0b" stroke-width="2.5" marker-end="url(#arrow-amber)"/>
+            <rect x="275" y="192" width="154" height="20" rx="5" fill="#f59e0b"/>
+            <text x="283" y="206" fill="#090f1d" font-size="10" font-weight="bold" font-family="monospace">自动生成 bsp_pinout.h ⬇</text>
+
+            <!-- 垂直跨泳道联动箭头：P3 (PCB) <-> C2 (Monaco C99) -->
+            <path d="M 586 172 L 586 362" fill="none" stroke="#38bdf8" stroke-width="2.2" stroke-dasharray="4 3" marker-start="url(#arrow-emerald)" marker-end="url(#arrow-sky)"/>
+            <rect x="504" y="192" width="166" height="20" rx="5" fill="#0284c7"/>
+            <text x="512" y="206" fill="#ffffff" font-size="10" font-weight="bold" font-family="monospace">◫ 分屏跨屏双向高亮联动 ⇅</text>
+
+            <!-- 垂直汇总箭头：P5 (Gerber) -> C5 (全套 ZIP 归档) -->
+            <path d="M 1041 172 L 1041 362" fill="none" stroke="#10b981" stroke-width="2.2" marker-end="url(#arrow-emerald)"/>
+
+            <!-- ==================== 下泳道：C 语言 (C99) 嵌入式固件开发流程 ==================== -->
+            <rect class="svg-lane-bg" x="15" y="324" width="1130" height="198" rx="14" fill="#0b1528" stroke="#38bdf8" stroke-opacity="0.45" stroke-width="1.5"/>
+            <rect x="28" y="334" width="320" height="24" rx="6" fill="#38bdf8" fill-opacity="0.18"/>
+            <text x="40" y="350" fill="#38bdf8" font-size="12" font-weight="bold" font-family="monospace">💻 泳道 B：C 语言 (C99) 嵌入式固件设计全流程 (ARM-GCC &amp; 在线沙箱仿真)</text>
+
+            <!-- 节点 C1：自动生成 bsp_pinout.h 硬件抽象层 -->
+            <g class="svg-clickable-node" onclick="switchTab('intake')">
+              <rect class="svg-node-box" x="252" y="368" width="200" height="118" rx="10" fill="#111c33" stroke="#f59e0b" stroke-width="1.8"/>
+              <rect x="262" y="378" width="58" height="18" rx="4" fill="#f59e0b" fill-opacity="0.22"/>
+              <text x="268" y="391" fill="#fbbf24" font-size="10" font-weight="bold" font-family="monospace">STEP C1</text>
+              <text class="svg-text-primary" x="262" y="412" fill="#f1f5f9" font-size="12.5" font-weight="bold">① 自动生成 bsp_pinout.h</text>
+              <text class="svg-text-secondary" x="262" y="430" fill="#94a3b8" font-size="10.5">• 生成 PIN_&lt;NET&gt;_PORT / MASK</text>
+              <text class="svg-text-secondary" x="262" y="446" fill="#94a3b8" font-size="10.5">• 生成 g_bsp_pinout_table[]</text>
+              <text x="262" y="468" fill="#fbbf24" font-size="10" font-family="monospace">🔒 100% 确定性生成·免手写</text>
+            </g>
+
+            <!-- 左侧说明卡片：C99 五层标准架构概览 -->
+            <g class="svg-clickable-node" onclick="switchTab('firmware')">
+              <rect class="svg-node-box" x="30" y="368" width="190" height="118" rx="10" fill="#111c33" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4 2"/>
+              <text x="42" y="390" fill="#38bdf8" font-size="11" font-weight="bold" font-family="monospace">📂 C99 固件目录结构</text>
+              <text class="svg-text-secondary" x="42" y="408" fill="#cbd5e1" font-size="10" font-family="monospace">├─ Drivers/bsp_pinout.h</text>
+              <text class="svg-text-secondary" x="42" y="424" fill="#cbd5e1" font-size="10" font-family="monospace">├─ Inc/app_config.h</text>
+              <text class="svg-text-secondary" x="42" y="440" fill="#cbd5e1" font-size="10" font-family="monospace">├─ App/app_state_machine.c</text>
+              <text class="svg-text-secondary" x="42" y="456" fill="#cbd5e1" font-size="10" font-family="monospace">├─ App/main.c</text>
+              <text class="svg-text-secondary" x="42" y="472" fill="#cbd5e1" font-size="10" font-family="monospace">└─ Makefile &amp; stm32_flash.ld</text>
+            </g>
+
+            <!-- 箭头 C1 -> C2 -->
+            <line x1="452" y1="427" x2="480" y2="427" stroke="#38bdf8" stroke-width="2.2" marker-end="url(#arrow-sky)"/>
+
+            <!-- 节点 C2：C99 状态机脚手架与在线编码 -->
+            <g class="svg-clickable-node" onclick="switchTab('firmware')">
+              <rect class="svg-node-box" x="484" y="368" width="205" height="118" rx="10" fill="#111c33" stroke="#38bdf8" stroke-width="1.8"/>
+              <rect x="494" y="378" width="58" height="18" rx="4" fill="#38bdf8" fill-opacity="0.22"/>
+              <text x="500" y="391" fill="#38bdf8" font-size="10" font-weight="bold" font-family="monospace">STEP C2</text>
+              <text class="svg-text-primary" x="494" y="412" fill="#f1f5f9" font-size="12.5" font-weight="bold">② C99 状态机与在线编码</text>
+              <text class="svg-text-secondary" x="494" y="430" fill="#94a3b8" font-size="10.5">• 一键同步 100% 引脚覆盖脚手架</text>
+              <text class="svg-text-secondary" x="494" y="446" fill="#94a3b8" font-size="10.5">• Monaco 编辑器 + @pinout AI 编程</text>
+              <text x="494" y="468" fill="#38bdf8" font-size="10" font-family="monospace">👉 点击进入「④ C99 固件工坊」</text>
+            </g>
+
+            <!-- 箭头 C2 -> C3 -->
+            <line x1="689" y1="427" x2="717" y2="427" stroke="#38bdf8" stroke-width="2.2" marker-end="url(#arrow-sky)"/>
+
+            <!-- 节点 C3：ARM-GCC 交叉编译与内存体检 -->
+            <g class="svg-clickable-node" onclick="switchTab('firmware')">
+              <rect class="svg-node-box" x="721" y="368" width="198" height="118" rx="10" fill="#111c33" stroke="#38bdf8" stroke-width="1.8"/>
+              <rect x="731" y="378" width="76" height="18" rx="4" fill="#38bdf8" fill-opacity="0.22"/>
+              <text x="737" y="391" fill="#38bdf8" font-size="10" font-weight="bold" font-family="monospace">STEP C3 · GCC</text>
+              <text class="svg-text-primary" x="731" y="412" fill="#f1f5f9" font-size="12.5" font-weight="bold">③ ARM-GCC 裸机交叉编译</text>
+              <text class="svg-text-secondary" x="731" y="430" fill="#94a3b8" font-size="10.5">• 生成 .elf / .hex / .bin 烧录文件</text>
+              <text class="svg-text-secondary" x="731" y="446" fill="#94a3b8" font-size="10.5">• 审计 Flash / SRAM 内存占用率</text>
+              <text x="731" y="468" fill="#38bdf8" font-size="10" font-family="monospace">🔨 0 Warning / 100% 引脚覆盖</text>
+            </g>
+
+            <!-- 箭头 C3 -> C4 -->
+            <line x1="919" y1="410" x2="947" y2="410" stroke="#38bdf8" stroke-width="2.2" marker-end="url(#arrow-sky)"/>
+
+            <!-- 节点 C4 + C5：宿主机在线沙箱仿真与全套交付包导出 -->
+            <g class="svg-clickable-node" onclick="switchTab('firmware'); toggleBottomPanel('simulator'); runFirmwareOnlineSimulation();">
+              <rect class="svg-node-box" x="951" y="368" width="180" height="56" rx="8" fill="#191233" stroke="#a855f7" stroke-width="1.8"/>
+              <text class="svg-text-primary" x="961" y="390" fill="#e9d5ff" font-size="11.5" font-weight="bold">④ 🔮 C99 状态机在线仿真</text>
+              <text class="svg-text-secondary" x="961" y="408" fill="#cbd5e1" font-size="10">滑块注入 ➔ 12-Tick 波形 &amp; UART</text>
+            </g>
+            <g class="svg-clickable-node" onclick="exportAllInOneBundle()">
+              <rect class="svg-node-box" x="951" y="430" width="180" height="56" rx="8" fill="#0d2622" stroke="#10b981" stroke-width="1.8"/>
+              <text class="svg-text-primary" x="961" y="452" fill="#6ee7b7" font-size="11.5" font-weight="bold">⑤ 📦 导出全套交付包 ZIP</text>
+              <text class="svg-text-secondary" x="961" y="470" fill="#cbd5e1" font-size="10">Gerber+BOM+KiCad+.hex/.elf</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- 流程图下方快捷跳转按钮排 -->
+        <div class="grid grid-cols-2 md:grid-cols-6 gap-2.5 pt-1">
+          <button type="button" onclick="switchTab('dashboard')" class="p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/40 text-left transition group">
+            <div class="text-[10px] font-mono text-sky-400">STEP 1</div>
+            <div class="text-xs font-bold text-slate-100 group-hover:text-sky-300 mt-0.5">① 项目工作台 →</div>
+          </button>
+          <button type="button" onclick="switchTab('intake')" class="p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-amber-500/40 text-left transition group">
+            <div class="text-[10px] font-mono text-amber-400">STEP 2 (SSOT)</div>
+            <div class="text-xs font-bold text-slate-100 group-hover:text-amber-300 mt-0.5">② 规格与引脚 →</div>
+          </button>
+          <button type="button" onclick="switchTab('pcb')" class="p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/40 text-left transition group">
+            <div class="text-[10px] font-mono text-emerald-400">STEP 3 (PCB)</div>
+            <div class="text-xs font-bold text-slate-100 group-hover:text-emerald-300 mt-0.5">③ PCB 硬件工坊 →</div>
+          </button>
+          <button type="button" onclick="switchTab('firmware')" class="p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/40 text-left transition group">
+            <div class="text-[10px] font-mono text-sky-400">STEP 4 (C99)</div>
+            <div class="text-xs font-bold text-slate-100 group-hover:text-sky-300 mt-0.5">④ C99 固件工坊 →</div>
+          </button>
+          <button type="button" onclick="switchTab('firmware'); toggleBottomPanel('simulator'); runFirmwareOnlineSimulation();" class="p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-purple-500/40 text-left transition group">
+            <div class="text-[10px] font-mono text-purple-400">STEP 5 (SIM)</div>
+            <div class="text-xs font-bold text-slate-100 group-hover:text-purple-300 mt-0.5">🔮 状态机在线仿真 →</div>
+          </button>
+          <button type="button" onclick="switchTab('agents')" class="p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-teal-500/40 text-left transition group">
+            <div class="text-[10px] font-mono text-teal-400">AUTO PIPELINE</div>
+            <div class="text-xs font-bold text-slate-100 group-hover:text-teal-300 mt-0.5">⚡ 5阶段自动构建 →</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- 章节二：PCB 硬件设计详细使用说明与嘉立创 DFM 量产设计规范            -->
+      <!-- ================================================================ -->
+      <div id="guide-sec-pcb" class="glass-card rounded-2xl p-6 space-y-6 border border-emerald-500/30">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div>
+            <h3 class="text-base font-extrabold text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-compass-drafting text-emerald-400"></i>
+              <span>二、 PCB 硬件设计详细使用说明（从需求建工、KiCad 版图到嘉立创 SMT 量产投产）</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">
+              按照以下 4 个步骤操作，即使没有复杂的 EDA 脚本经验，也能快速完成具备 <strong>0 DRC 违规</strong>、符合嘉立创量产工艺的电路板设计。
+            </p>
+          </div>
+          <button type="button" onclick="switchTab('pcb')" class="px-3.5 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow transition">
+            <i class="fa-solid fa-arrow-right"></i> 立即打开「③ PCB 硬件工坊」
+          </button>
+        </div>
+
+        <!-- PCB 4 步实操卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Step 1 -->
+          <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-xs font-mono font-bold">PCB 第 1 步 · 建立硬件工程</span>
+              <button type="button" onclick="openNewProjectModal()" class="text-xs text-sky-400 hover:underline font-semibold">打开新建工程向导 →</button>
+            </div>
+            <h4 class="text-sm font-bold text-slate-100">选择行业预设模板 或 上传自然语言需求书</h4>
+            <ul class="text-xs text-slate-300 space-y-1.5 leading-relaxed list-disc pl-4">
+              <li><strong>方式 A（最快，推荐新手）</strong>：点击顶部导航栏 <code class="text-sky-300">+ 新建</code> 或左上角工程树旁的文件夹加号，从 <strong>5 大行业模板</strong>（温湿度烟雾传感报警节点、BLDC 电机驱动、ESP32-S3 物联网节点、超低功耗穿戴设备、自定义空白板）中选择一个，点击「立即创建」即可自动生成全套原理图、PCB 与固件。</li>
+              <li><strong>方式 B（AI 需求蒸馏）</strong>：进入 <strong>「② 规格与引脚 (SSOT)」</strong>，上传 <code class="text-amber-300">.md / .txt / .pdf / .docx</code> 需求文档，由本地 <code class="text-sky-300">Qwen3.8-27B</code> 大模型自动提炼主控芯片、外设器件清单与推荐引脚分配。</li>
+            </ul>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-xs font-mono font-bold">PCB 第 2 步 · 锁定机械规格与引脚 (SSOT)</span>
+              <button type="button" onclick="switchTab('intake')" class="text-xs text-amber-400 hover:underline font-semibold">前往 ② 规格与引脚 →</button>
+            </div>
+            <h4 class="text-sm font-bold text-slate-100">设定板框尺寸 / 层数 / 电源拓扑并通过引脚冲突预检</h4>
+            <ul class="text-xs text-slate-300 space-y-1.5 leading-relaxed list-disc pl-4">
+              <li><strong>机械与电源参数</strong>：在「② 规格与引脚」中填写电路板长宽（如 <code class="text-emerald-300">65.0 × 45.0 mm</code>）、板层数（<code class="text-emerald-300">2层双面板</code> 或 <code class="text-emerald-300">4层含内电层</code>）、供电输入（如 USB Type-C 5V 转 LDO 3.3V）。</li>
+              <li><strong>物理引脚冲突拦截</strong>：在引脚映射表中编辑 <code class="text-amber-300">引脚号 (如 PA0)</code>、<code class="text-amber-300">网络名 (如 ADC_SMOKE)</code> 与 <code class="text-amber-300">方向/外设功能</code>。若同一物理引脚被分配给两个不同网络，系统会立即标红拦截。</li>
+              <li><strong>一键锁定同步</strong>：点击「保存并锁定 SSOT」，系统同时写入 <code class="text-sky-300">spec.json</code>、<code class="text-sky-300">pinout.json</code> 并自动生成 C 头文件 <code class="text-emerald-300">bsp_pinout.h</code>。</li>
+            </ul>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 text-xs font-mono font-bold">PCB 第 3 步 · 2D/3D 检视与 DRC 规则自愈</span>
+              <button type="button" onclick="switchTab('pcb')" class="text-xs text-emerald-400 hover:underline font-semibold">前往 ③ PCB 硬件工坊 →</button>
+            </div>
+            <h4 class="text-sm font-bold text-slate-100">零滚动切换 3D 光追 / 2D 走线 / 原理图，一键 DRC 冲突自愈</h4>
+            <ul class="text-xs text-slate-300 space-y-1.5 leading-relaxed list-disc pl-4">
+              <li><strong>多视图实时预览</strong>：在「③ PCB 硬件工坊」画布上方可随时切换 <code class="text-emerald-300">📦 3D 渲染预览 (Top/Bottom 正反面)</code>、<code class="text-emerald-300">🟩 2D PCB 走线图</code>、<code class="text-emerald-300">📄 原理图 (SCH)</code>。</li>
+              <li><strong>KiCad 官方 DRC 与 AI 自愈</strong>：点击工具栏 <code class="text-sky-300">运行 DRC 检查</code> 调用本机 KiCad 10 CLI 审计线距、孔径与未连接飞线；若存在违规，点击 <code class="text-emerald-300">✨ AI 自动冲突自愈</code> 即可自动重排走线与退让间距直至 <strong>0 DRC 违规</strong>。</li>
+              <li><strong>自然语言修改版图</strong>：打开右侧 <code class="text-pink-300">AI 助手</code>（挂载 <code class="text-pink-300">@pinout @drc</code>），直接输入如<em>“把电路板尺寸改为 70x50mm 并把蜂鸣器移到板边 (55, 20)”</em>，AI 将自动修改版图并重跑 DRC。</li>
+            </ul>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-0.5 rounded-md bg-sky-500/20 text-sky-300 text-xs font-mono font-bold">PCB 第 4 步 · 嘉立创 BOM 优选与制板包导出</span>
+              <button type="button" onclick="switchTab('pcb'); if(typeof switchPcbCanvasView==='function') switchPcbCanvasView('bom');" class="text-xs text-sky-400 hover:underline font-semibold">查看立创 BOM 表 →</button>
+            </div>
+            <h4 class="text-sm font-bold text-slate-100">智能替换嘉立创 SMT 基础库 (Basic) 省换料费，导出 Gerber 投产</h4>
+            <ul class="text-xs text-slate-300 space-y-1.5 leading-relaxed list-disc pl-4">
+              <li><strong>立创 SMT 基础库优化</strong>：切换到画布的 <code class="text-amber-300">📋 立创 BOM 与贴片表</code> 视图，点击 <code class="text-emerald-300">⚡ 智能优选立创基础库</code>，系统会自动将常用阻容感与芯片匹配为嘉立创 <strong>Basic（基础库）</strong> 编号（如 <code class="text-sky-300">C25804</code>），每减少一款扩展库（Extended）器件即可在 SMT 打样时节省 ¥20 换料费。</li>
+              <li><strong>一键导出投产制板包</strong>：点击 <code class="text-emerald-300">📦 导出嘉立创 Gerber+BOM+CPL</code>，在 <code class="text-slate-300">hardware/out/</code> 下生成标准 <code class="text-emerald-300">*_JLCPCB_Gerber.zip</code>、BOM 表与贴片坐标表，可直接上传嘉立创下单助手生产。</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 硬件工程师速查：PCB DFM 与 EMC 核心设计说明表 (源自 324 页《嘉立创 PCB 智造实战指南》) -->
+        <div class="p-4 rounded-xl bg-slate-900/70 border border-slate-800 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="text-xs font-extrabold text-emerald-300 flex items-center gap-2">
+              <i class="fa-solid fa-shield-halved"></i>
+              <span>附：PCB 硬件设计 DFM 量产工艺与 EMC 规范说明（提炼自平台内置《嘉立创 PCB 智造实战指南》Skill）</span>
+            </div>
+            <button type="button" onclick="switchTab('distiller')" class="text-[11px] font-mono text-indigo-300 hover:underline">
+              查看 324 页全书蒸馏 Skill 详情 →
+            </button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-slate-800 text-[11px] text-slate-400 bg-slate-950/60">
+                  <th class="py-2 px-3">设计维度</th>
+                  <th class="py-2 px-3">推荐设计值 (Standard)</th>
+                  <th class="py-2 px-3">嘉立创经济工艺极限 (Min Limit)</th>
+                  <th class="py-2 px-3">工程设计说明与防坑要点</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                <tr>
+                  <td class="py-2 px-3 font-bold text-emerald-300">信号线宽 / 线距</td>
+                  <td class="py-2 px-3 font-mono">8~10 mil (0.20~0.254 mm)</td>
+                  <td class="py-2 px-3 font-mono text-amber-300">≥ 6 mil (0.15 mm)</td>
+                  <td class="py-2 px-3">常规 MCU GPIO、I2C、SPI、UART 信号统一用 10mil；避免低于 6mil 以免增加制板特价附加费或蚀刻断线风险。</td>
+                </tr>
+                <tr>
+                  <td class="py-2 px-3 font-bold text-emerald-300">电源主干线宽</td>
+                  <td class="py-2 px-3 font-mono">20~40 mil (0.50~1.00 mm)</td>
+                  <td class="py-2 px-3 font-mono text-amber-300">≥ 15 mil (0.38 mm)</td>
+                  <td class="py-2 px-3">1oz (35μm) 铜厚下按 <code class="text-sky-300">1mm 线宽 ≈ 1A</code> 温升 10°C 估算；5V/3.3V 主电源干线建议 ≥24mil 或直接铺铜连接。</td>
+                </tr>
+                <tr>
+                  <td class="py-2 px-3 font-bold text-emerald-300">过孔尺寸 (Via)</td>
+                  <td class="py-2 px-3 font-mono">内径 0.3mm / 外径 0.6mm</td>
+                  <td class="py-2 px-3 font-mono text-amber-300">内径 ≥ 0.2mm / 外径 ≥ 0.45mm</td>
+                  <td class="py-2 px-3">双面板与四层板通用免费过孔推荐 <code class="text-sky-300">0.3mm/0.6mm</code>；大电流换层时必须打 2~4 个并联过孔降低寄生电感。</td>
+                </tr>
+                <tr>
+                  <td class="py-2 px-3 font-bold text-emerald-300">板边与孔距净空</td>
+                  <td class="py-2 px-3 font-mono">铜皮距板边 ≥ 0.4~0.5 mm</td>
+                  <td class="py-2 px-3 font-mono text-amber-300">锣边 ≥ 0.3mm / V-Cut ≥ 0.4mm</td>
+                  <td class="py-2 px-3">防止拼板 V-Cut 切割或 CNC 铣边时切伤内层/表层铜皮导致电源对地短路；安装孔周围预留禁布区。</td>
+                </tr>
+                <tr>
+                  <td class="py-2 px-3 font-bold text-emerald-300">电源去耦与晶振 EMC</td>
+                  <td class="py-2 px-3 font-mono">100nF 距 VDD 引脚 &lt; 2 mm</td>
+                  <td class="py-2 px-3 font-mono text-emerald-300">45° 走线 + 包地法拉第笼</td>
+                  <td class="py-2 px-3">电源线须「先经过 100nF 去耦电容再进芯片引脚」；高速晶振下方禁止走任何信号线，周围打屏蔽地孔形成法拉第笼。</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- 章节三：C 语言 (C99) 嵌入式固件设计详细使用说明                       -->
+      <!-- ================================================================ -->
+      <div id="guide-sec-c99" class="glass-card rounded-2xl p-6 space-y-6 border border-sky-500/30">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div>
+            <h3 class="text-base font-extrabold text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-file-code text-sky-400"></i>
+              <span>三、 C 语言 (C99) 嵌入式固件设计详细说明（五层架构、SSOT 宏规范、编译与在线仿真）</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">
+              本平台采用工业级 <strong>C99 裸机非阻塞有限状态机 (FSM) + SSOT 硬件抽象层解耦架构</strong>，同一套 C 代码既可由 <code class="text-sky-300">arm-none-eabi-gcc</code> 编译烧录至真机 MCU，又可在浏览器内一键运行状态机波形仿真。
+            </p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="switchTab('firmware')" class="px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow transition">
+              <i class="fa-solid fa-code"></i> 立即打开「④ C99 固件工坊」
+            </button>
+            <button type="button" onclick="switchTab('firmware'); toggleBottomPanel('simulator'); runFirmwareOnlineSimulation();" class="px-3 py-1.5 rounded-xl bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/40 font-bold text-xs flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-wave-square"></i> 打开 🔮 状态机仿真器
+            </button>
+          </div>
+        </div>
+
+        <!-- 1. C99 固件工程五层文件架构说明表 -->
+        <div class="space-y-2.5">
+          <h4 class="text-xs font-extrabold uppercase tracking-wider text-sky-300 flex items-center gap-2">
+            <i class="fa-solid fa-folder-tree"></i> 1. 嵌入式 C 语言工程五层文件架构说明（点击左上角 EXPLORER 文件树可直接预览）
+          </h4>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-slate-800 text-[11px] text-slate-400 bg-slate-950/60">
+                  <th class="py-2 px-3">工程文件路径</th>
+                  <th class="py-2 px-3">架构分层</th>
+                  <th class="py-2 px-3">维护方式</th>
+                  <th class="py-2 px-3">核心内容与 C 语言开发职责</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/60 text-slate-300">
+                <tr>
+                  <td class="py-2 px-3 font-mono font-bold text-amber-300">firmware/Drivers/bsp_pinout.h</td>
+                  <td class="py-2 px-3">SSOT 硬件抽象层 (BSP)</td>
+                  <td class="py-2 px-3"><span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px] font-mono">平台全自动生成</span></td>
+                  <td class="py-2 px-3">定义全部引脚宏 <code class="text-sky-300">PIN_&lt;NET&gt;_PORT</code>、<code class="text-sky-300">PIN_&lt;NET&gt;_PIN</code>、<code class="text-sky-300">PIN_&lt;NET&gt;_PIN_INDEX</code>、描述符数组 <code class="text-emerald-300">g_bsp_pinout_table[]</code> 及读写内联函数。<strong>请勿手改硬编码引脚，统一在「② 规格与引脚」修改后自动同步。</strong></td>
+                </tr>
+                <tr>
+                  <td class="py-2 px-3 font-mono font-bold text-sky-300">firmware/Inc/app_config.h</td>
+                  <td class="py-2 px-3">系统参数与状态枚举层</td>
+                  <td class="py-2 px-3"><span class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 text-[10px] font-mono">用户 / Copilot 可编辑</span></td>
+                  <td class="py-2 px-3">定义传感器报警阈值（如烟雾 ADC 毫伏阈值、高温阈值）、消抖计数阈值、状态机枚举 <code class="text-sky-300">app_fsm_state_t</code>（正常态 / 报警锁存态 / 消音降级态）及上下文结构体 <code class="text-sky-300">app_fsm_ctx_t</code>。</td>
+                </tr>
+                <tr>
+                  <td class="py-2 px-3 font-mono font-bold text-emerald-300">firmware/App/app_state_machine.c</td>
+                  <td class="py-2 px-3">核心业务状态机层 (FSM)</td>
+                  <td class="py-2 px-3"><span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono">核心业务主战场</span></td>
+                  <td class="py-2 px-3">实现 <code class="text-emerald-300">App_FSM_Init()</code>、<code class="text-emerald-300">App_FSM_Step()</code> 与 <code class="text-emerald-300">App_Sync_All_SSOT_Pins()</code>。负责传感器消抖采样、三态迁移判定、声光报警 PWM/GPIO 输出及全量 SSOT 引脚状态同步。</td>
+                </tr>
+                <tr>
+                  <td class="py-2 px-3 font-mono font-bold text-purple-300">firmware/App/main.c</td>
+                  <td class="py-2 px-3">裸机启动与主循环调度层</td>
+                  <td class="py-2 px-3"><span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[10px] font-mono">脚手架 + 双模入口</span></td>
+                  <td class="py-2 px-3">包含 Cortex-M 中断向量表 <code class="text-purple-300">Reset_Handler</code>、寄存器级 GPIO 时钟使能、裸机 <code class="text-purple-300">while(1)</code> 主循环，同时内置 <code class="text-amber-300">#ifdef HOST_SIMULATION</code> 沙箱仿真 JSON 波形输出入口。</td>
+                </tr>
+                <tr>
+                  <td class="py-2 px-3 font-mono font-bold text-slate-200">firmware/Makefile &amp; stm32_flash.ld</td>
+                  <td class="py-2 px-3">GCC 构建与链接脚本层</td>
+                  <td class="py-2 px-3"><span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px] font-mono">自动适配 MCU</span></td>
+                  <td class="py-2 px-3">配置 <code class="text-sky-300">arm-none-eabi-gcc -std=c99 -Os -Wall</code> 编译参数，以及目标 MCU 的 <code class="text-emerald-300">FLASH</code> 与 <code class="text-emerald-300">RAM</code> 起始地址和容量大小，生成 <code class="text-sky-300">.elf / .hex / .bin / .map</code>。</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2. C 语言编程规范与正反例代码对照 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- 左：SSOT 引脚宏调用黄金准则 -->
+          <div class="p-4 rounded-xl bg-slate-950/90 border border-slate-800 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-emerald-300">✅ 准则一：100% 使用 bsp_pinout.h 引脚宏（禁止硬编码引脚）</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300">SSOT 100% 覆盖率要求</span>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              平台在编译固件时会自动扫描 <code class="text-emerald-300">app_state_machine.c</code> 与 <code class="text-emerald-300">main.c</code> 中对 <code class="text-amber-300">PIN_&lt;NET&gt;_*</code> 宏的引用情况并计算<strong>「引脚宏覆盖率」</strong>。请始终通过 SSOT 宏操作硬件：
+            </p>
+            <pre class="guide-code-dark text-[11px] font-mono rounded-xl p-3 bg-slate-900 border border-slate-800 text-slate-200 overflow-x-auto leading-relaxed">/* ❌ 错误写法：硬编码端口与引脚号（硬件一旦改脚，固件立刻失效） */
+GPIOA_ODR |= (1U &lt;&lt; 4);
+
+/* ✅ 正确写法：包含 bsp_pinout.h 并使用 SSOT 自动生成的符号宏 */
+#include "../Drivers/bsp_pinout.h"
+
+/* 1. 直接通过 PIN_&lt;网络名&gt;_PIN_INDEX 操作虚拟/物理电平 */
+#ifdef PIN_LED_ALARM_PIN_INDEX
+  BSP_Pin_Write(PIN_LED_ALARM_PIN_INDEX, 1U);   /* 置高报警灯 */
+#endif
+#ifdef PIN_KEY_MUTE_PIN_INDEX
+  uint8_t key = BSP_Pin_Read(PIN_KEY_MUTE_PIN_INDEX); /* 读取消音键 */
+#endif
+
+/* 2. 或使用自动生成的端口与位掩码宏配置底层寄存器 */
+/* PIN_LED_ALARM_PORT -&gt; "PA", PIN_LED_ALARM_MASK -&gt; (1UL &lt;&lt; 4) */</pre>
+          </div>
+
+          <!-- 右：非阻塞三态有限状态机 (FSM) 编写模板 -->
+          <div class="p-4 rounded-xl bg-slate-950/90 border border-slate-800 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-sky-300">⚡ 准则二：采用非阻塞三态有限状态机（禁用长延时死循环）</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-500/15 text-sky-300">实时响应 + 在线可仿真</span>
+            </div>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              为保证传感器采样、按键消抖与报警输出的实时性，并在底部 <code class="text-purple-300">🔮 SIMULATOR</code> 中输出 12-Tick 逻辑分析仪波形，请使用 <code class="text-sky-300">App_FSM_Step()</code> 周期性步进架构：
+            </p>
+            <pre class="guide-code-dark text-[11px] font-mono rounded-xl p-3 bg-slate-900 border border-slate-800 text-slate-200 overflow-x-auto leading-relaxed">void App_FSM_Step(app_fsm_ctx_t *ctx, uint16_t adc_mv, int16_t temp_c, uint8_t key_mute) {
+  ctx-&gt;tick_count++;
+  bool hazard = (adc_mv &gt;= APP_SMOKE_ALARM_THRESHOLD_MV) || (temp_c &gt;= 55);
+
+  switch (ctx-&gt;state) {
+    case STATE_NORMAL:          /* 正常监测态：绿灯闪烁，蜂鸣器关 */
+      if (hazard &amp;&amp; (++ctx-&gt;debounce_cnt &gt;= 2U)) {
+        ctx-&gt;state = STATE_ALARM_LATCHED; /* 连续超标确认 -&gt; 锁存报警 */
+      }
+      break;
+    case STATE_ALARM_LATCHED:   /* 超标报警锁存态：红灯亮 + 蜂鸣器高频鸣叫 */
+      if (key_mute) ctx-&gt;state = STATE_ALARM_MUTED; /* 按下消音键 -&gt; 静音态 */
+      break;
+    case STATE_ALARM_MUTED:     /* 手动消音降级态：保留红灯警示，关闭蜂鸣器 */
+      if (!hazard) ctx-&gt;state = STATE_NORMAL;       /* 险情解除 -&gt; 恢复正常 */
+      break;
+  }
+}</pre>
+          </div>
+        </div>
+
+        <!-- 3. C99 固件工坊四步实操流程卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3.5">
+          <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
+            <div class="text-[11px] font-mono font-bold text-amber-400">STEP C1 · 脚手架同步</div>
+            <div class="text-xs font-bold text-slate-100">点击「🔄 同步脚手架」</div>
+            <p class="text-[11px] text-slate-400 leading-relaxed">
+              当您在「② 规格与引脚」新增或修改了任何引脚后，进入「④ C99 固件工坊」点击右上角 <code class="text-amber-300">同步脚手架</code>，系统会自动将全部新引脚宏绑定至 <code class="text-sky-300">app_state_machine.c</code>，立即达成 <strong>100% 引脚覆盖率</strong>。
+            </p>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
+            <div class="text-[11px] font-mono font-bold text-sky-400">STEP C2 · 在线编码与跨屏联动</div>
+            <div class="text-xs font-bold text-slate-100">Monaco 编辑 + ◫ 分屏联动</div>
+            <p class="text-[11px] text-slate-400 leading-relaxed">
+              在固件文件标签栏切换 <code class="text-sky-300">app_state_machine.c / main.c / bsp_pinout.h</code> 在线编辑并按 <code class="text-emerald-300">⌘S / Ctrl+S</code> 保存。开启顶部 <code class="text-emerald-300">◫ 分屏</code> 后，点击代码中的 <code class="text-amber-300">PIN_*</code> 宏即可反向高亮左侧 PCB 引脚。
+            </p>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
+            <div class="text-[11px] font-mono font-bold text-emerald-400">STEP C3 · ARM-GCC 交叉编译</div>
+            <div class="text-xs font-bold text-slate-100">点击「🔨 编译固件」</div>
+            <p class="text-[11px] text-slate-400 leading-relaxed">
+              一键调用本机 <code class="text-sky-300">arm-none-eabi-gcc</code> 裸机编译生成 <code class="text-emerald-300">.elf / .hex / .bin</code>，自动计算 MCU <strong>Flash 与 SRAM 占用百分比</strong>。若有语法报错，可直接让右侧 <code class="text-pink-300">@gcc AI 助手</code> 自动修复。
+            </p>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-1.5">
+            <div class="text-[11px] font-mono font-bold text-purple-400">STEP C4 · 在线波形仿真</div>
+            <div class="text-xs font-bold text-slate-100">点击「🔮 仿真」调测状态机</div>
+            <p class="text-[11px] text-slate-400 leading-relaxed">
+              打开底部 <code class="text-purple-300">🔮 SIMULATOR</code> 面板，点击 <code class="text-emerald-300">正常</code> / <code class="text-rose-300">超标报警</code> / <code class="text-amber-300">消音锁存</code> 预设或拖动传感器滑块，实时观测 <strong>12-Tick 引脚逻辑分析仪高低电平波形</strong>与虚拟串口日志。
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================ -->
+      <!-- 章节四：极速上手三大工作模式与全局快捷键速查表                     -->
+      <!-- ================================================================ -->
+      <div id="guide-sec-quickstart" class="glass-card rounded-2xl p-6 space-y-5 border border-purple-500/30">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div>
+            <h3 class="text-base font-extrabold text-slate-100 flex items-center gap-2">
+              <i class="fa-solid fa-bolt text-purple-400"></i>
+              <span>四、 三大高效研发模式与全局 AI Copilot / 快捷键速查表</span>
+            </h3>
+            <p class="text-xs text-slate-400 mt-0.5">
+              您可以根据项目阶段自由选择「全自动流水线一键生成」、「右侧 AI 助手对话式协同」或「分步精细化定制」。
+            </p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl bg-slate-950/80 border border-teal-500/30 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-teal-300">🚀 模式一：5 阶段全自动协同流水线</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-teal-500/15 text-teal-300">一键闭环</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              点击顶部右侧蓝色按钮 <code class="text-sky-300">⚡ 全自动构建</code>（或侧边栏「全自动协同流水线」），平台将依次自动执行：<strong>① SSOT 引脚锁存 ➔ ② PCB 自动生成与 2D/3D 渲染 ➔ ③ KiCad DRC 审查与冲突自愈 ➔ ④ C99 固件脚手架与 ARM-GCC 编译 ➔ ⑤ 生产交付包归档</strong>。
+            </p>
+            <button type="button" onclick="switchTab('agents')" class="w-full py-1.5 rounded-lg bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-500/40 text-xs font-bold transition">
+              前往全自动协同流水线 →
+            </button>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-950/80 border border-pink-500/30 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-pink-300">🤖 模式二：右侧全局 AI Copilot 对话修改</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-pink-500/15 text-pink-300">自动快照保护</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">
+              点击顶部 <code class="text-pink-300">AI 助手</code> 打开右侧边栏，点亮 <code class="text-pink-300">@pinout @drc @gcc @skill</code> 上下文胶囊，用自然语言下达跨模态指令（如改板框尺寸、移动元器件、补全 C99 消抖与滤波代码）。每次修改前系统<strong>自动创建工程快照</strong>，随时可点击 <code class="text-indigo-300">Diff</code> 审查或一键无损回滚。
+            </p>
+            <button type="button" onclick="toggleGlobalCopilotSidebar(true)" class="w-full py-1.5 rounded-lg bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 border border-pink-500/40 text-xs font-bold transition">
+              立即唤醒右侧全局 AI 助手 →
+            </button>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-950/80 border border-indigo-500/30 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-indigo-300">⌨️ 模式三：VS Code 快捷键与本地桥接</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/15 text-indigo-300">极客效率</span>
+            </div>
+            <ul class="text-xs text-slate-300 space-y-1 font-mono">
+              <li>• <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-sky-300">⌘P / Ctrl+P</kbd>：打开命令面板与文件搜索</li>
+              <li>• <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-sky-300">Ctrl+B</kbd>：折叠/展开左侧导航栏 (悬浮看详情)</li>
+              <li>• <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-sky-300">Ctrl+J</kbd>：打开/收起底部诊断与状态机仿真器</li>
+              <li>• <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-sky-300">⌘S / Ctrl+S</kbd>：保存当前 C99 源码并触发验证</li>
+              <li>• 侧边栏「本地桌面工具桥接」可一键唤起本机 <strong>KiCad 10</strong> 或 <strong>VS Code</strong>。</li>
+            </ul>
+          </div>
         </div>
       </div>
     </section>

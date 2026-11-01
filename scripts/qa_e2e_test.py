@@ -157,6 +157,17 @@ def run_all_tests():
         "index.html / app.js / workbench_abc.js 均已实现 0 LAB7 残留", ms_js1
     )
 
+    guide_ids = [
+        "sidebar-sec-user-guide", "tab-guide", "tab-guide-pcb", "tab-guide-c99",
+        "pane-guide", "guide-pcb-c99-flowchart-svg", "guide-sec-pcb", "guide-sec-c99"
+    ]
+    missing_guide = [gid for gid in guide_ids if f'id="{gid}"' not in html_txt]
+    record_check(
+        "Stage 01", "侧边栏「使用说明」模块 (PCB双泳道流程图 + PCB设计说明 + C语言固件说明)",
+        len(missing_guide) == 0 and "window.openUserGuideSection" in wb_js,
+        f"缺失节点: {missing_guide or '无 (流程图 SVG + PCB说明 + C99说明全部就绪)'}", 1
+    )
+
     # =========================================================================
     # Stage 02: 环境探针、本地 vLLM (Qwen3.8-27B) 连通性与 Antigravity 默认 Agent
     # =========================================================================

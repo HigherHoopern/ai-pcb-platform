@@ -90,7 +90,8 @@ const VIEW_TITLE_MAP = {
   firmware: '<i class="fa-solid fa-file-code text-sky-400"></i> 💻 模块二：嵌入式 C 固件工坊 (C99 IDE / ARM-GCC + 对话式编程)',
   agents: '<i class="fa-solid fa-diagram-project text-teal-400"></i> 🤖 5 阶段全自动协同流水线 & Agent 调度台',
   distiller: '<i class="fa-solid fa-book-bookmark text-indigo-400"></i> 📚 知识库智能蒸馏工坊 (Book-to-Skill)',
-  config: '<i class="fa-solid fa-sliders text-purple-400"></i> ⚙️ 多模型服务商与 Coding Agent 配置中心'
+  config: '<i class="fa-solid fa-sliders text-purple-400"></i> ⚙️ 多模型服务商与 Coding Agent 配置中心',
+  guide: '<i class="fa-solid fa-book-open-reader text-amber-400"></i> 📖 平台使用说明：PCB 硬件设计流程图 & C99 嵌入式固件开发指南'
 };
 
 function switchTab(tabId) {
@@ -99,7 +100,7 @@ function switchTab(tabId) {
   if (typeof coDesignSplitActive !== 'undefined' && coDesignSplitActive && tabId !== 'pcb' && tabId !== 'firmware') {
     toggleCoDesignSplitView(false);
   }
-  ['dashboard', 'config', 'intake', 'pcb', 'firmware', 'agents', 'distiller'].forEach(t => {
+  ['dashboard', 'config', 'intake', 'pcb', 'firmware', 'agents', 'distiller', 'guide'].forEach(t => {
     const el = document.getElementById(`pane-${t}`);
     if (el) {
       el.classList.add('hidden');
@@ -114,6 +115,13 @@ function switchTab(tabId) {
     if (actBtn) actBtn.classList.remove('active');
     const edTab = document.getElementById(`edtab-${t}`);
     if (edTab) edTab.classList.remove('active');
+  });
+  ['tab-guide-pcb', 'tab-guide-c99'].forEach(subId => {
+    const subBtn = document.getElementById(subId);
+    if (subBtn) {
+      subBtn.classList.remove('active');
+      subBtn.classList.add('text-slate-400');
+    }
   });
   const targetPane = document.getElementById(`pane-${tabId}`);
   if (targetPane) {
