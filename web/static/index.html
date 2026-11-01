@@ -552,7 +552,7 @@
       <!-- 1B. VS Code 左上角工程文件资源管理器 (Top-Left Project File Explorer) -->
       <div id="vscode-explorer-section" class="sidebar-label px-2.5 py-2 border-b border-slate-800/90 bg-white dark:bg-slate-950/30 space-y-1.5">
         <div class="px-1.5 py-0.5 flex items-center justify-between text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-          <button type="button" onclick="toggleExplorerTreeCollapse()" class="flex items-center gap-1.5 hover:text-sky-400 transition">
+          <button type="button" onclick="toggleExplorerTreeCollapse()" class="flex items-center gap-1.5 hover:text-sky-400 transition cursor-pointer" title="点击展开完整工程目录树并自动折叠下方其他模块">
             <i id="explorer-chevron-icon" class="fa-solid fa-chevron-down text-[9px] text-sky-400"></i>
             <span>EXPLORER · 工程文件目录</span>
           </button>
@@ -571,11 +571,11 @@
 
         <!-- 当前工程快速切换器 (VS Code Workspace Root Header) -->
         <div class="px-1">
-          <select id="sidebar-project-select" onchange="activateProject(this.value)" class="w-full bg-white dark:bg-slate-900/90 border border-slate-800 hover:border-sky-500/40 rounded-lg px-2 py-1 text-[11px] font-mono font-bold text-amber-300 focus:outline-none focus:border-sky-500 truncate cursor-pointer" title="点击切换当前工作空间工程"></select>
+          <select id="sidebar-project-select" onchange="activateProject(this.value); if(window.focusFullExplorerTree) window.focusFullExplorerTree();" class="w-full bg-white dark:bg-slate-900/90 border border-slate-800 hover:border-sky-500/40 rounded-lg px-2 py-1 text-[11px] font-mono font-bold text-amber-300 focus:outline-none focus:border-sky-500 truncate cursor-pointer" title="点击切换当前工作空间工程"></select>
         </div>
 
-        <!-- 递归多级工程目录文件树 (点击任意文件即可在线预览或编辑) -->
-        <div id="vscode-explorer-tree" class="max-h-60 overflow-y-auto space-y-0.5 pr-1 select-none bg-white dark:bg-transparent">
+        <!-- 递归多级工程目录文件树 (点击任意文件即可在线预览或编辑，支持无截断完整展示) -->
+        <div id="vscode-explorer-tree" class="max-h-none overflow-y-auto space-y-0.5 pr-1 select-none bg-white dark:bg-transparent">
           <div class="text-[11px] text-slate-500 px-2 py-2 italic">正在扫描工程目录文件树...</div>
         </div>
       </div>
@@ -583,7 +583,7 @@
       <!-- 2. 研发主工作流导航菜单 (4 步核心研发闭环 + AI 加速与扩展，支持按模块折叠) -->
       <div class="p-2.5 space-y-1">
         <!-- 折叠态专用：左上角第一个图标即为“展开并查看工程文件目录树” -->
-        <button type="button" id="btn-collapsed-explorer" onclick="toggleSidebar(); document.getElementById('vscode-explorer-tree')?.classList.remove('hidden');" data-tip-title="EXPLORER · 工程文件目录" data-tip-badge="TREE" data-tip-desc="点击展开左上角 VS Code 工程文件树，浏览并在线预览 hardware / firmware / docs 全部文件" class="sidebar-action-btn hidden w-full px-3 py-2 rounded-r-xl text-xs font-medium items-center justify-center text-amber-400 hover:text-amber-300">
+        <button type="button" id="btn-collapsed-explorer" onclick="toggleSidebar(); if(window.focusFullExplorerTree) window.focusFullExplorerTree();" data-tip-title="EXPLORER · 工程文件目录" data-tip-badge="TREE" data-tip-desc="点击展开左上角完整工程文件目录树，并自动折叠下方其他模块" class="sidebar-action-btn hidden w-full px-3 py-2 rounded-r-xl text-xs font-medium items-center justify-center text-amber-400 hover:text-amber-300">
           <i class="fa-solid fa-folder-tree text-sm w-4 text-center text-amber-400"></i>
         </button>
 

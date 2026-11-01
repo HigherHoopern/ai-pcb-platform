@@ -779,7 +779,7 @@ if (document.readyState === 'loading') {
 // VS Code 左上角多级工程文件资源管理器 (Hierarchical Explorer Tree)
 // 与通用文件在线预览/编辑器 (Universal File Previewer)
 // ============================================================================
-let explorerCollapsedDirs = new Set(['hardware/out/gerber', 'firmware/build']);
+let explorerCollapsedDirs = new Set();
 let explorerAllCollapsed = false;
 let currentPreviewFileData = null;
 let currentCsvShowSource = false;
@@ -816,6 +816,14 @@ window.toggleExplorerFolder = function (relPath, evt) {
   } else {
     explorerCollapsedDirs.add(relPath);
   }
+  if (typeof window.collapseAllSidebarModules === 'function') {
+    window.collapseAllSidebarModules();
+  }
+  const tree = document.getElementById('vscode-explorer-tree');
+  if (tree) {
+    tree.classList.remove('hidden', 'max-h-60');
+    tree.classList.add('max-h-none');
+  }
   if (typeof activeProjectDetail !== 'undefined' && activeProjectDetail) {
     window.renderWorkbenchExplorerTree(activeProjectDetail);
   }
@@ -825,6 +833,14 @@ window.toggleAllExplorerFolders = function () {
   explorerAllCollapsed = !explorerAllCollapsed;
   if (!explorerAllCollapsed) {
     explorerCollapsedDirs.clear();
+    if (typeof window.collapseAllSidebarModules === 'function') {
+      window.collapseAllSidebarModules();
+    }
+    const tree = document.getElementById('vscode-explorer-tree');
+    if (tree) {
+      tree.classList.remove('hidden', 'max-h-60');
+      tree.classList.add('max-h-none');
+    }
   } else if (typeof activeProjectDetail !== 'undefined' && activeProjectDetail?.file_tree) {
     const collectDirs = (nodes) => {
       (nodes || []).forEach(n => {
@@ -1109,35 +1125,107 @@ window.closeVscodeFilePreviewModal = function () {
 };
 
 // ============================================================================
-// 8. 侧边栏模块分组折叠控制 (核心研发流程 / AI 自动化与插件生态 / 本地桌面工具桥接)
+// 8. 侧边栏模块分组折叠控制 & 点击「工程文件目录」自动折叠其他模块并展开完整目录树
 // ============================================================================
-window.toggleSidebarSection = function (sectionId) {
+const ALL_SIDEBAR_SECTIONS = ['core-flow', 'ai-eco', 'user-guide', 'local-bridge'];
+
+window.setSidebarSectionCollapsed = function (sectionId, collapsed) {
   const secEl = document.getElementById(`sidebar-sec-${sectionId}`);
   const chevEl = document.getElementById(`sidebar-chevron-${sectionId}`);
   if (!secEl) return;
-
-  const isCollapsed = secEl.classList.toggle('hidden');
+  secEl.classList.toggle('hidden', Boolean(collapsed));
   if (chevEl) {
-    chevEl.classList.toggle('fa-chevron-down', !isCollapsed);
-    chevEl.classList.toggle('fa-chevron-right', isCollapsed);
+    chevEl.classList.toggle('fa-chevron-down', !collapsed);
+    chevEl.classList.toggle('fa-chevron-right', Boolean(collapsed));
   }
   try {
-    localStorage.setItem(`ai_pcb_sidebar_sec_${sectionId}`, isCollapsed ? 'collapsed' : 'expanded');
+    localStorage.setItem(`ai_pcb_sidebar_sec_${sectionId}`, collapsed ? 'collapsed' : 'expanded');
   } catch (e) {}
 };
 
+window.collapseAllSidebarModules = function () {
+  ALL_SIDEBAR_SECTIONS.forEach(secId => {
+    window.setSidebarSectionCollapsed(secId, true);
+  });
+};
+
+window.focusFullExplorerTree = function () {
+  const tree = document.getElementById('vscode-explorer-tree');
+  const icon = document.getElementById('explorer-chevron-icon');
+  const sb = document.getElementById('app-sidebar');
+
+  // 1. 自动折叠下方全部其他模块 (核心研发流程 / AI 自动化 / 使用说明 / 本地工具桥接)
+  window.collapseAllSidebarModules();
+
+  // 2. 展开工程文件树并解除高度限制，同时展开全部子文件夹以显示完整目录树
+  if (tree) {
+    tree.classList.remove('hidden', 'max-h-60');
+    tree.classList.add('max-h-none');
+  }
+  if (icon) {
+    icon.className = 'fa-solid fa-chevron-down text-[9px] text-sky-400';
+  }
+  explorerCollapsedDirs.clear();
+  explorerAllCollapsed = false;
+  if (typeof activeProjectDetail !== 'undefined' && activeProjectDetail) {
+    window.renderWorkbenchExplorerTree(activeProjectDetail);
+  }
+  if (sb) {
+    sb.scrollTop = 0;
+  }
+};
+
+window.toggleExplorerTreeCollapse = function () {
+  const tree = document.getElementById('vscode-explorer-tree');
+  const icon = document.getElementById('explorer-chevron-icon');
+  if (!tree) return;
+
+  const isTreeHidden = tree.classList.contains('hidden');
+  const hasOtherModuleExpanded = ALL_SIDEBAR_SECTIONS.some(secId => {
+    const el = document.getElementById(`sidebar-sec-${secId}`);
+    return el && !el.classList.contains('hidden');
+  });
+  const hasCollapsedSubdirs = explorerCollapsedDirs.size > 0;
+
+  // 若当前目录树处于隐藏状态、或下方仍有其他模块未折叠、或有子文件夹未完全展开 -> 自动折叠其他模块并展开完整目录树
+  if (isTreeHidden || hasOtherModuleExpanded || hasCollapsedSubdirs) {
+    window.focusFullExplorerTree();
+  } else {
+    // 再次点击则收起工程文件树，并自动恢复展开「核心研发流程」方便导航
+    tree.classList.add('hidden');
+    if (icon) {
+      icon.className = 'fa-solid fa-chevron-right text-[9px] text-slate-400';
+    }
+    window.setSidebarSectionCollapsed('core-flow', false);
+  }
+};
+
+window.toggleSidebarSection = function (sectionId) {
+  const secEl = document.getElementById(`sidebar-sec-${sectionId}`);
+  if (!secEl) return;
+
+  const willCollapse = !secEl.classList.contains('hidden');
+  window.setSidebarSectionCollapsed(sectionId, willCollapse);
+
+  // 当用户展开下方任一功能模块时，自动收起上方庞大的完整目录树，避免将模块顶出可视区
+  if (!willCollapse) {
+    const tree = document.getElementById('vscode-explorer-tree');
+    const icon = document.getElementById('explorer-chevron-icon');
+    if (tree && !tree.classList.contains('hidden')) {
+      tree.classList.add('hidden');
+      if (icon) {
+        icon.className = 'fa-solid fa-chevron-right text-[9px] text-slate-400';
+      }
+    }
+  }
+};
+
 function restoreSidebarSectionsState() {
-  ['core-flow', 'ai-eco', 'local-bridge', 'user-guide'].forEach(sectionId => {
+  ALL_SIDEBAR_SECTIONS.forEach(sectionId => {
     try {
       const saved = localStorage.getItem(`ai_pcb_sidebar_sec_${sectionId}`);
       if (saved === 'collapsed') {
-        const secEl = document.getElementById(`sidebar-sec-${sectionId}`);
-        const chevEl = document.getElementById(`sidebar-chevron-${sectionId}`);
-        if (secEl) secEl.classList.add('hidden');
-        if (chevEl) {
-          chevEl.classList.remove('fa-chevron-down');
-          chevEl.classList.add('fa-chevron-right');
-        }
+        window.setSidebarSectionCollapsed(sectionId, true);
       }
     } catch (e) {}
   });
