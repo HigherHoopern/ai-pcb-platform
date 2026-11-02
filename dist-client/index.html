@@ -363,25 +363,31 @@
       padding: 0.75rem;
       background: rgba(15, 23, 42, 0.35);
     }
-    /* UI/UX 布局：默认左 8 列主画布 + 右 4 列「💬 用户设计反馈与智能体互动窗口」同屏常驻；当开启右侧全局抽屉时自动收拢避免双栏重复 */
-    body.global-copilot-open .studio-main-col {
+    /* UI/UX 布局：主画布与编辑器 100% 全宽 (12 列)，「✨ AI 设计精修」统一收敛至右侧可自由折叠/展开的侧边栏 (#vscode-copilot-sidebar) */
+    .studio-main-col {
       grid-column: span 12 / span 12 !important;
     }
-    body.global-copilot-open .studio-inner-copilot {
+    .studio-inner-copilot {
       display: none !important;
     }
-    #app-main-scroll-area.codesign-split-active .studio-main-col,
-    #app-main-scroll-area.codesign-split-active .studio-inner-copilot {
-      grid-column: span 12 / span 12 !important;
-      display: block !important;
+    /* 右侧「✨ AI 设计精修」侧边栏与右侧边缘折叠把手样式 */
+    #vscode-copilot-sidebar {
+      width: 24rem;
+      transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
-    @keyframes feedbackHighlightPulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
-      50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.18); }
+    html:not(.dark) #vscode-copilot-sidebar {
+      background-color: #ffffff !important;
+      border-left-color: #cbd5e1 !important;
+      box-shadow: -4px 0 20px rgba(15, 23, 42, 0.06);
     }
-    .feedback-box-highlight {
-      animation: feedbackHighlightPulse 1.1s ease-in-out 2;
-      border-color: #10b981 !important;
+    html:not(.dark) #global-copilot-messages {
+      background-color: #f8fafc !important;
+    }
+    html:not(.dark) #right-sidebar-edge-handle {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+      box-shadow: -2px 0 12px rgba(15, 23, 42, 0.08);
     }
     /* 固件水平文件标签栏样式 */
     #rev-fw-file-list > button {
@@ -833,9 +839,9 @@
             <i class="fa-solid fa-wave-square text-slate-400"></i>
             <span class="hidden xl:inline">仿真/诊断</span>
           </button>
-          <button type="button" id="btn-header-copilot" onclick="openContextualFeedbackWindow()" class="px-2.5 py-1 rounded text-[11px] font-bold text-pink-300 hover:text-white bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/30 flex items-center gap-1.5 transition" title="打开设计问题反馈窗口 / 全局 AI 智能体改版助手 (@pinout @drc @gcc)">
-            <i class="fa-solid fa-comment-medical text-pink-400"></i>
-            <span class="hidden xl:inline">💬 提出反馈 / AI 改版</span>
+          <button type="button" id="btn-header-copilot" onclick="toggleGlobalCopilotSidebar()" class="px-2.5 py-1 rounded text-[11px] font-bold text-pink-300 hover:text-white bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/30 flex items-center gap-1.5 transition" title="展开/折叠右侧「✨ AI 设计精修」侧边栏（针对 PCB 版图或 C99 程序提出修改要求，自动闭环验证）">
+            <i class="fa-solid fa-wand-magic-sparkles text-pink-400"></i>
+            <span class="hidden xl:inline">✨ AI 设计精修</span>
           </button>
         </div>
 
@@ -1550,59 +1556,15 @@
           <div class="lg:col-span-6 bg-slate-950 rounded-xl p-3.5 border border-slate-800 space-y-2">
             <div class="flex items-center justify-between text-xs border-b border-slate-800 pb-1.5">
               <span class="font-bold text-amber-300"><i class="fa-solid fa-file-signature mr-1.5"></i>软硬件双闭环交付验收报告 (PIPELINE_DELIVERY_REPORT.md)</span>
-              <button onclick="switchTab('pcb')" class="text-[11px] px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">前往 PCB / 固件工坊</button>
+              <div class="flex items-center gap-1.5">
+                <button type="button" onclick="openRefinementSidebar('both')" class="text-[11px] px-2.5 py-0.5 rounded bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 border border-pink-500/30 font-bold">
+                  ✨ AI 设计精修
+                </button>
+                <button onclick="switchTab('pcb')" class="text-[11px] px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">前往 PCB / 固件工坊</button>
+              </div>
             </div>
             <pre id="orch-report-pre" class="h-64 overflow-y-auto text-[11px] font-mono text-slate-200 whitespace-pre-wrap leading-relaxed">流水线完成后将在此自动生成签署报告...</pre>
           </div>
-        </div>
-
-        <!-- 流水线产出审查与用户设计反馈互动台 (Pipeline Design Review & Agent Iterative Feedback Console) -->
-        <div id="pipeline-feedback-console" class="bg-slate-950/90 rounded-2xl p-4 border border-pink-500/35 space-y-3">
-          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
-            <div class="flex items-center gap-2">
-              <span class="w-7 h-7 rounded-lg bg-pink-500/20 border border-pink-500/40 flex items-center justify-center text-pink-300">
-                <i class="fa-solid fa-comment-medical text-xs"></i>
-              </span>
-              <div>
-                <h3 class="text-xs font-extrabold text-slate-100">💬 全案设计审查反馈窗口：发现 PCB 或 C 程序有问题？直接向智能体提修改建议</h3>
-                <p class="text-[11px] text-slate-400">选择要修改的模块，输入问题或优化需求，智能体将自动更新版图或重写 C99 代码并重跑 DRC / GCC 验收。</p>
-              </div>
-            </div>
-            <div class="inline-flex rounded-lg bg-slate-900 p-0.5 border border-slate-800 text-[11px]">
-              <button type="button" id="pipe-fb-target-pcb" onclick="setPipelineFeedbackTarget('pcb')" class="px-2.5 py-1 rounded-md font-bold bg-emerald-500 text-slate-950 transition">
-                📐 反馈修改 PCB 电路板
-              </button>
-              <button type="button" id="pipe-fb-target-fw" onclick="setPipelineFeedbackTarget('firmware')" class="px-2.5 py-1 rounded-md font-medium text-slate-400 hover:text-slate-100 transition">
-                💻 反馈修改 C99 固件程序
-              </button>
-              <button type="button" id="pipe-fb-target-both" onclick="setPipelineFeedbackTarget('both')" class="px-2.5 py-1 rounded-md font-medium text-slate-400 hover:text-slate-100 transition">
-                🔄 软硬件同步修改
-              </button>
-            </div>
-          </div>
-
-          <div class="flex flex-wrap gap-1.5">
-            <button type="button" onclick="fillPipelineFeedbackTemplate('PCB 板框尺寸需要改为 65x45mm，四角倒角 R2.0mm，并重新规划器件布局与 3D 渲染', 'pcb')" class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-slate-800 transition">
-              📐 模板：修改板框尺寸与元件布局
-            </button>
-            <button type="button" onclick="fillPipelineFeedbackTemplate('当前 PCB 走线或间距存在问题，请自动诊断并自愈全部 DRC 违规，重新生成嘉立创 Gerber', 'pcb')" class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-amber-300 border border-slate-800 transition">
-              🩺 模板：修复 PCB 走线与 DRC 冲突
-            </button>
-            <button type="button" onclick="fillPipelineFeedbackTemplate('C99 固件报警阈值需要调整为温度 55°C 触发报警，并补全所有未绑定引脚的驱动与消抖逻辑，重新 GCC 编译', 'firmware')" class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-sky-300 border border-slate-800 transition">
-              💻 模板：修改 C99 报警阈值与引脚驱动
-            </button>
-            <button type="button" onclick="fillPipelineFeedbackTemplate('新增一路 PB0 继电器控制引脚 (RELAY_CTRL)，同步更新 pinout.json、重绘 PCB 并在 C99 状态机中增加超温闭合继电器逻辑', 'both')" class="text-[11px] px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-pink-300 border border-slate-800 transition">
-              🔄 模板：新增外设引脚并软硬件同步重构
-            </button>
-          </div>
-
-          <div class="flex flex-col md:flex-row gap-2.5 items-stretch">
-            <textarea id="pipeline-feedback-input" rows="2" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){submitPipelineDesignFeedback();}" placeholder="在此输入您对当前生成的 PCB 电路板或 C99 固件程序的反馈意见（支持按 Ctrl/⌘+Enter 直接发送给智能体执行更新）..." class="flex-1 bg-slate-900 border border-slate-700 focus:border-pink-500 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none resize-none"></textarea>
-            <button type="button" id="btn-submit-pipeline-feedback" onclick="submitPipelineDesignFeedback()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-400 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-pink-500/20 flex items-center justify-center gap-2 whitespace-nowrap transition">
-              <i class="fa-solid fa-paper-plane"></i> 提交反馈并更新设计
-            </button>
-          </div>
-          <div id="pipeline-feedback-status" class="hidden text-xs font-mono text-emerald-300 bg-slate-900/90 border border-emerald-500/30 rounded-xl p-2.5"></div>
         </div>
       </div>
 
@@ -1923,8 +1885,8 @@
                 <button onclick="openLocalTool('easyeda')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 font-medium text-xs flex items-center gap-1.5 transition">
                   <i class="fa-solid fa-cloud-arrow-up text-sky-400"></i> 嘉立创导入
                 </button>
-                <button onclick="focusStudioFeedbackBox('pcb')" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-bold text-xs flex items-center gap-1 transition" title="定位到右侧 PCB 设计问题反馈与智能体改板窗口">
-                  <i class="fa-solid fa-comment-medical"></i> 💬 提反馈让 AI 改板
+                <button onclick="openRefinementSidebar('pcb')" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-bold text-xs flex items-center gap-1 transition" title="展开右侧「✨ AI 设计精修」侧边栏并切换至 PCB 改板模式">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i> ✨ AI 改板精修
                 </button>
               </div>
             </div>
@@ -2146,8 +2108,8 @@
             <button onclick="openLocalTool('vscode')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-[11px] text-slate-300 border border-slate-700 font-medium flex items-center gap-1 transition">
               <i class="fa-solid fa-laptop-code text-sky-400"></i> VS Code 打开
             </button>
-            <button onclick="focusStudioFeedbackBox('firmware')" class="px-2.5 py-1 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 font-bold text-[11px] flex items-center gap-1 transition" title="定位到右侧 C99 程序问题反馈与智能体改码窗口">
-              <i class="fa-solid fa-comment-medical"></i> 💬 提反馈让 AI 改代码
+            <button onclick="openRefinementSidebar('firmware')" class="px-2.5 py-1 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 font-bold text-[11px] flex items-center gap-1 transition" title="展开右侧「✨ AI 设计精修」侧边栏并切换至 C99 固件改码模式">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> ✨ AI 改码精修
             </button>
 
             <!-- 紧凑型 AI 引擎选择器 (保持 DOM 兼容) -->
@@ -3172,22 +3134,21 @@ GPIOA_ODR |= (1U &lt;&lt; 4);
 
           <div class="p-4 rounded-xl bg-slate-950/80 border border-pink-500/30 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-extrabold text-pink-300">💬 模式二：用户设计反馈窗口 &amp; AI 智能体迭代改版</span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-pink-500/15 text-pink-300">多处反馈入口 + 快照回滚</span>
+              <span class="text-xs font-extrabold text-pink-300">✨ 模式二：右侧「AI 设计精修」可折叠侧边栏</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-pink-500/15 text-pink-300">自由展开/折叠 · 快照回滚</span>
             </div>
             <p class="text-xs text-slate-300 leading-relaxed">
-              当设计出的 <strong>PCB 电路板</strong> 或 <strong>C99 固件程序</strong> 有问题时，您可以在以下任意反馈窗口直接向智能体提出修改建议：<br>
-              1. <strong>③ PCB 硬件工坊右侧</strong>：常驻「💬 PCB 设计反馈与 AI 改板窗口」（调尺寸、挪器件、修 DRC、换立创料号）<br>
-              2. <strong>④ C99 固件工坊右侧</strong>：常驻「💬 C99 程序反馈与 AI 改码窗口」（修 GCC 报错、改阈值状态机、补漏写引脚）<br>
-              3. <strong>⑤ 全自动流水线下方</strong>：「💬 全案设计审查反馈窗口」支持 PCB + C99 软硬件联动迭代修改<br>
-              4. <strong>顶部「💬 提出反馈 / AI 改版」</strong>：随时唤醒当前工坊反馈框或全局 Copilot，每次修改自动生成快照与 Diff！
+              当生成的 <strong>PCB 电路板</strong> 或 <strong>C99 固件程序</strong> 不符合要求时，随时点击顶部或屏幕右侧边缘的 <code class="text-pink-300">✨ AI 设计精修</code> 展开右侧边栏：<br>
+              • <strong>📐 PCB 改板精修</strong>：调整板框尺寸、移动元器件坐标、修复 DRC 间距违规、一键替换立创基础库；<br>
+              • <strong>💻 C99 改码精修</strong>：修复 GCC 编译报错、调整报警阈值与状态机、补全漏写引脚宏驱动；<br>
+              • <strong>🔄 软硬件联动</strong>：同时修改引脚表、重绘 PCB 并同步重写 C99 固件，每次修改自动备份快照并支持 <strong>Side-by-Side Diff</strong> 与一键撤销回滚！
             </p>
             <div class="grid grid-cols-2 gap-2 pt-1">
-              <button type="button" onclick="switchTab('pcb'); setTimeout(() => focusStudioFeedbackBox('pcb'), 120);" class="py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold transition">
-                📐 去提 PCB 改板反馈 →
+              <button type="button" onclick="openRefinementSidebar('pcb')" class="py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold transition">
+                📐 展开 PCB 改板精修 →
               </button>
-              <button type="button" onclick="switchTab('firmware'); setTimeout(() => focusStudioFeedbackBox('firmware'), 120);" class="py-1.5 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 text-[11px] font-bold transition">
-                💻 去提 C99 改码反馈 →
+              <button type="button" onclick="openRefinementSidebar('firmware')" class="py-1.5 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 text-[11px] font-bold transition">
+                💻 展开 C99 改码精修 →
               </button>
             </div>
           </div>
@@ -3355,91 +3316,123 @@ GPIOA_ODR |= (1U &lt;&lt; 4);
   </div>
 
   <!-- ==================================================================== -->
-  <!-- 区域 ⑤：方案 A · VS Code 右侧全局 AI Copilot 统一侧边栏 (Secondary Side Bar) -->
+  <!-- 右侧边缘常驻折叠/展开把手 (#right-sidebar-edge-handle)                     -->
   <!-- ==================================================================== -->
-  <aside id="vscode-copilot-sidebar" class="hidden w-88 border-l border-slate-800/90 bg-slate-950/95 flex flex-col shrink-0 select-none z-40">
-    <!-- 顶部标题栏 + 领域切换 -->
+  <button type="button" id="right-sidebar-edge-handle" onclick="toggleGlobalCopilotSidebar()" class="fixed right-0 top-1/2 -translate-y-1/2 z-50 px-1.5 py-3.5 rounded-l-xl bg-slate-900/95 hover:bg-pink-500/20 border border-r-0 border-pink-500/40 text-pink-300 shadow-xl flex flex-col items-center gap-1.5 transition cursor-pointer select-none" title="展开/收起右侧「✨ AI 设计精修」侧边栏">
+    <i id="right-sidebar-edge-icon" class="fa-solid fa-chevron-left text-[10px] text-pink-400"></i>
+    <span class="text-[10px] font-extrabold tracking-widest" style="writing-mode: vertical-rl;">✨ AI 设计精修</span>
+  </button>
+
+  <!-- ==================================================================== -->
+  <!-- 区域 ⑤：右侧可折叠「✨ AI 设计精修」统一侧边栏 (#vscode-copilot-sidebar)     -->
+  <!-- ==================================================================== -->
+  <aside id="vscode-copilot-sidebar" class="hidden w-96 border-l border-slate-800/90 bg-slate-950/95 flex flex-col shrink-0 select-none z-40">
+    <!-- 1. 顶部标题栏 + Diff / 清空 / 折叠开关 -->
     <div class="px-3.5 py-2.5 border-b border-slate-800/80 flex items-center justify-between bg-slate-900/60">
       <div class="flex items-center gap-2">
-        <span class="w-2 h-2 rounded-full bg-pink-400 animate-pulse"></span>
-        <span class="text-xs font-extrabold tracking-wider text-slate-100 uppercase">XterAI Global Copilot</span>
+        <span class="w-6 h-6 rounded-lg bg-gradient-to-br from-pink-500/25 to-indigo-500/25 border border-pink-500/40 flex items-center justify-center text-pink-400">
+          <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+        </span>
+        <div>
+          <div class="text-xs font-extrabold tracking-wide text-slate-100 flex items-center gap-1.5">
+            <span>✨ AI 设计精修</span>
+            <span class="px-1.5 py-0.2 rounded bg-pink-500/15 text-pink-300 text-[9px] font-mono">可折叠边栏</span>
+          </div>
+          <p class="text-[10px] text-slate-400 font-mono">PCB 改板 · C99 改码 · 自动 DRC/GCC 验证</p>
+        </div>
       </div>
       <div class="flex items-center gap-1">
-        <button type="button" onclick="openMonacoDiffModal()" class="px-2 py-0.5 rounded bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 text-[10px] font-mono" title="打开 VS Code Side-by-Side Diff 对比模态框">
-          Diff
+        <button type="button" onclick="openMonacoDiffModal()" class="px-2 py-1 rounded bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 text-[10px] font-mono" title="打开 VS Code Side-by-Side Diff 并排对比审查器">
+          ⇄ Diff
         </button>
-        <button type="button" onclick="toggleGlobalCopilotSidebar(false)" class="w-6 h-6 rounded hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center" title="收起右侧全局 Copilot 面板">
-          <i class="fa-solid fa-xmark text-xs"></i>
+        <button type="button" onclick="clearGlobalRefinementHistory()" class="w-6 h-6 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-300 flex items-center justify-center" title="清空当前精修对话历史">
+          <i class="fa-regular fa-trash-can text-[11px]"></i>
+        </button>
+        <button type="button" onclick="toggleGlobalCopilotSidebar(false)" class="px-2 py-1 rounded bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-[10px] font-bold flex items-center gap-1" title="折叠收起右侧边栏，释放 100% 画布宽度">
+          <span>收起</span>
+          <i class="fa-solid fa-angles-right text-[10px]"></i>
         </button>
       </div>
     </div>
 
-    <!-- 协同目标模式选择器 (Auto / PCB / Firmware) -->
+    <!-- 2. 精修目标模块切换器 (智能识别 / PCB 改板 / C99 改码 / 软硬件联动) -->
     <div class="px-3 py-2 border-b border-slate-800/70 bg-slate-950 flex items-center justify-between gap-1 text-[11px]">
-      <span class="text-slate-400 font-mono">派发通道:</span>
-      <div class="flex items-center gap-1 bg-slate-900 p-0.5 rounded-lg border border-slate-800">
-        <button type="button" id="gcop-target-auto" onclick="setGlobalCopilotTarget('auto')" class="px-2 py-0.5 rounded-md bg-pink-500 text-slate-950 font-bold text-[10px] transition">智能路由</button>
-        <button type="button" id="gcop-target-pcb" onclick="setGlobalCopilotTarget('pcb')" class="px-2 py-0.5 rounded-md text-slate-400 hover:text-white text-[10px] transition">🎨 PCB</button>
-        <button type="button" id="gcop-target-fw" onclick="setGlobalCopilotTarget('firmware')" class="px-2 py-0.5 rounded-md text-slate-400 hover:text-white text-[10px] transition">💻 C99</button>
+      <span class="text-slate-400 font-mono text-[10px] shrink-0">精修对象:</span>
+      <div class="grid grid-cols-4 gap-1 bg-slate-900 p-0.5 rounded-lg border border-slate-800 flex-1">
+        <button type="button" id="gcop-target-auto" onclick="setGlobalCopilotTarget('auto')" class="px-1.5 py-1 rounded-md bg-pink-500 text-slate-950 font-bold text-[10px] transition text-center">🎯 智能</button>
+        <button type="button" id="gcop-target-pcb" onclick="setGlobalCopilotTarget('pcb')" class="px-1.5 py-1 rounded-md text-slate-400 hover:text-white text-[10px] transition text-center">📐 PCB</button>
+        <button type="button" id="gcop-target-fw" onclick="setGlobalCopilotTarget('firmware')" class="px-1.5 py-1 rounded-md text-slate-400 hover:text-white text-[10px] transition text-center">💻 C99</button>
+        <button type="button" id="gcop-target-both" onclick="setGlobalCopilotTarget('both')" class="px-1.5 py-1 rounded-md text-slate-400 hover:text-white text-[10px] transition text-center">🔄 联动</button>
       </div>
     </div>
 
-    <!-- @ 跨模态上下文胶囊栏 (Context Pills) -->
-    <div class="px-3 py-2 border-b border-slate-800/70 bg-slate-900/30 space-y-1.5">
-      <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono">
-        <span>@ 跨模态上下文挂载 (点击激活注入 Prompt):</span>
-        <span id="gcop-active-pills-count" class="text-pink-300 font-bold">3 已挂载</span>
+    <!-- 3. 修改方向标签栏 (点击自动填入精修问题方向) -->
+    <div class="px-3 py-2 border-b border-slate-800/70 bg-slate-900/40 space-y-1.5">
+      <div class="flex items-center justify-between text-[10px] text-slate-400">
+        <span id="gcop-category-title" class="font-bold">① 点击修改方向标签（快速附加到输入框）：</span>
+        <span id="gcop-active-mode-hint" class="text-emerald-400 font-mono">PCB / C99 自适应</span>
       </div>
+      <div id="gcop-category-tags" class="flex flex-wrap gap-1">
+        <button type="button" onclick="appendGlobalRefinementTag('【板框与尺寸调整】', 'pcb')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-emerald-500/20 text-emerald-300 border border-slate-700 text-[10px] transition">📐 板框/尺寸</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【元件位置与布局优化】', 'pcb')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-sky-500/20 text-sky-300 border border-slate-700 text-[10px] transition">📍 器件布局</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【走线间距与DRC修复】', 'pcb')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-rose-500/20 text-rose-300 border border-slate-700 text-[10px] transition">⚡ 走线/DRC</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【GCC编译报错修复】', 'firmware')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-amber-500/20 text-amber-300 border border-slate-700 text-[10px] transition">🔨 编译修复</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【状态机与报警阈值调整】', 'firmware')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-indigo-500/20 text-indigo-300 border border-slate-700 text-[10px] transition">🔄 状态机/阈值</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【补全漏写引脚C99驱动】', 'firmware')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-purple-500/20 text-purple-300 border border-slate-700 text-[10px] transition">📌 引脚驱动</button>
+      </div>
+    </div>
+
+    <!-- 4. @ 跨模态上下文胶囊栏 (Context Pills) -->
+    <div class="px-3 py-1.5 border-b border-slate-800/70 bg-slate-900/20 flex items-center justify-between gap-1">
       <div class="flex flex-wrap gap-1">
-        <button type="button" id="gcop-pill-pinout" onclick="toggleCopilotContextPill('pinout')" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-pink-500/20 text-pink-300 border border-pink-500/40 transition">
-          @pinout
-        </button>
-        <button type="button" id="gcop-pill-drc" onclick="toggleCopilotContextPill('drc')" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-pink-500/20 text-pink-300 border border-pink-500/40 transition">
-          @drc
-        </button>
-        <button type="button" id="gcop-pill-gcc" onclick="toggleCopilotContextPill('gcc')" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-pink-500/20 text-pink-300 border border-pink-500/40 transition">
-          @gcc
-        </button>
-        <button type="button" id="gcop-pill-bom" onclick="toggleCopilotContextPill('bom')" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-slate-900 text-slate-400 border border-slate-700 transition">
-          @bom
-        </button>
-        <button type="button" id="gcop-pill-skill" onclick="toggleCopilotContextPill('skill')" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-slate-900 text-slate-400 border border-slate-700 transition">
-          @skill
-        </button>
+        <button type="button" id="gcop-pill-pinout" onclick="toggleCopilotContextPill('pinout')" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-pink-500/20 text-pink-300 border border-pink-500/40 transition" title="自动附带 SSOT 引脚定义表">@pinout</button>
+        <button type="button" id="gcop-pill-drc" onclick="toggleCopilotContextPill('drc')" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-pink-500/20 text-pink-300 border border-pink-500/40 transition" title="自动附带 KiCad DRC 检查结果">@drc</button>
+        <button type="button" id="gcop-pill-gcc" onclick="toggleCopilotContextPill('gcc')" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-pink-500/20 text-pink-300 border border-pink-500/40 transition" title="自动附带 ARM-GCC 编译日志">@gcc</button>
+        <button type="button" id="gcop-pill-bom" onclick="toggleCopilotContextPill('bom')" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-slate-900 text-slate-400 border border-slate-700 transition" title="自动附带嘉立创 BOM 选型表">@bom</button>
+        <button type="button" id="gcop-pill-skill" onclick="toggleCopilotContextPill('skill')" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-slate-900 text-slate-400 border border-slate-700 transition" title="自动附带已激活的 PCB/STM32 知识库">@skill</button>
       </div>
+      <span id="gcop-active-pills-count" class="text-[10px] font-mono text-pink-300 font-bold shrink-0">3 已挂载</span>
     </div>
 
-    <!-- 统一对话消息流 -->
+    <!-- 5. 统一精修对话与执行动作流 -->
     <div id="global-copilot-messages" class="flex-1 overflow-y-auto p-3 space-y-2.5 text-xs select-text">
-      <div class="p-3 rounded-xl bg-slate-900/90 border border-pink-500/30 text-slate-200 leading-relaxed">
-        <div class="font-bold text-pink-300 mb-1 flex items-center justify-between">
-          <span><i class="fa-solid fa-robot mr-1"></i> XterAI 统一软硬件 Copilot</span>
-          <span class="text-[10px] font-mono text-slate-400">@pinout @drc @gcc</span>
+      <div class="p-3 rounded-xl bg-slate-900/90 border border-pink-500/30 text-slate-200 leading-relaxed space-y-1.5">
+        <div class="font-bold text-pink-300 flex items-center justify-between">
+          <span><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> ✨ AI 设计精修台已就绪</span>
+          <span class="text-[10px] font-mono text-slate-400">快照保护 + Diff</span>
         </div>
-        已启用 VS Code 全局右侧 Copilot 助手！在左侧无论是单页签还是 <b>◫ 软硬件分屏</b>，均可在此直接输入指令修改 PCB 布局、调整引脚或重构 C99 固件，并支持 <b>Side-by-Side Diff</b> 审查。
+        <p class="text-[11px] text-slate-300 leading-relaxed">
+          当生成的 <b>PCB 电路板</b> 或 <b>C99 固件程序</b> 不符合要求时，直接在此输入修改需求：<br>
+          • <b>改 PCB</b>：调板框尺寸、移动器件坐标、自愈 DRC 违规、替换立创基础库；<br>
+          • <b>改 C99</b>：修复编译报错、调整报警阈值、补全漏写引脚驱动与消抖逻辑；<br>
+          • 每次修改前自动创建快照，支持随时点击 <b>并排 Diff</b> 或 <b>撤销回滚</b>！
+        </p>
       </div>
     </div>
 
-    <!-- 快捷跨模态指令胶囊 -->
-    <div class="px-3 py-1.5 border-t border-slate-800/80 flex flex-wrap gap-1 bg-slate-950">
-      <button type="button" onclick="sendGlobalCopilotQuickPrompt('检查当前 @pinout 与 @gcc，补全所有未覆盖的引脚宏初始化与消抖逻辑')" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-slate-800">
-        ✨ 补全全部引脚 C99 驱动
+    <!-- 6. 快捷精修指令胶囊 -->
+    <div id="gcop-quick-prompts" class="px-3 py-1.5 border-t border-slate-800/80 flex flex-wrap gap-1 bg-slate-950">
+      <button type="button" onclick="sendGlobalCopilotQuickPrompt('请将 PCB 板框尺寸调整为 65x45mm，四角倒角 R2.0mm，重新自动布局走线并刷新 3D 渲染', 'pcb')" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-slate-800">
+        📐 改板框 65×45mm 并重绘
       </button>
-      <button type="button" onclick="sendGlobalCopilotQuickPrompt('结合 @drc 与 @pinout，把蜂鸣器放到板边 (50, 20) 并重新规划走线')" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-sky-300 border border-slate-800">
-        📐 优化蜂鸣器位置与走线
+      <button type="button" onclick="sendGlobalCopilotQuickPrompt('请结合 @drc 自动诊断并自愈当前 PCB 全部间距违规与未连接飞线', 'pcb')" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-amber-300 border border-slate-800">
+        🩺 自动修复全部 DRC 违规
       </button>
-      <button type="button" onclick="openMonacoDiffModal()" class="text-[10px] px-2 py-0.5 rounded bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30">
-        🔍 查看最近代码 Diff
+      <button type="button" onclick="sendGlobalCopilotQuickPrompt('检查当前 @pinout 与 @gcc，补全所有未覆盖的引脚宏初始化与 20ms 消抖逻辑并重新编译', 'firmware')" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-sky-300 border border-slate-800">
+        💻 补全全引脚 C99 驱动并编译
+      </button>
+      <button type="button" onclick="sendCompilerLogToGlobalRefinement()" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-rose-300 border border-slate-800">
+        🔨 发送 GCC 日志修复报错
       </button>
     </div>
 
-    <!-- 底部输入框 -->
+    <!-- 7. 底部精修需求输入框 -->
     <div class="p-3 border-t border-slate-800 bg-slate-900/60 space-y-2">
-      <textarea id="global-copilot-input" rows="3" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){sendGlobalCopilotMessage();}" placeholder="输入指令（支持自动携带上方激活的 @pinout/@drc/@gcc 上下文，⌘+Enter 发送）..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-pink-500 resize-none"></textarea>
+      <textarea id="global-copilot-input" rows="3" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){sendGlobalCopilotMessage();}" placeholder="输入您的 PCB 或 C99 修改要求（如：把蜂鸣器移到板边、修改报警温度阈值、修复 DRC 报错... 按 ⌘/Ctrl+Enter 执行）" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-pink-500 resize-none"></textarea>
       <div class="flex items-center justify-between gap-2">
         <span id="global-copilot-status" class="text-[10px] font-mono text-slate-400 truncate">Ready · 自动快照保护</span>
         <button type="button" id="btn-global-copilot-send" onclick="sendGlobalCopilotMessage()" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-400 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-pink-500/20">
-          <i class="fa-solid fa-paper-plane text-[10px]"></i> 发送指令
+          <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i> 执行设计精修
         </button>
       </div>
     </div>

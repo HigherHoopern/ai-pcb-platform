@@ -1,4 +1,4 @@
-/* Xter AI-PCB Commercial Client Build | File: workbench_abc.js | SHA256: 703920b1422f9826 | Core Python & 324p Skills Strictly Excluded */
+/* Xter AI-PCB Commercial Client Build | File: workbench_abc.js | SHA256: 33c17a00b67e6aef | Core Python & 324p Skills Strictly Excluded */
 let globalCopilotOpen = false;
 let globalCopilotTarget = 'auto'; // 'auto' | 'pcb' | 'firmware'
 let activeCopilotPills = {
@@ -34,19 +34,33 @@ function toggleGlobalCopilotSidebar(forceState = null) {
   const sidebar = document.getElementById('vscode-copilot-sidebar');
   const headerBtn = document.getElementById('btn-header-copilot');
   const actBtn = document.getElementById('act-btn-copilot');
+  const edgeHandle = document.getElementById('right-sidebar-edge-handle');
+  const edgeIcon = document.getElementById('right-sidebar-edge-icon');
   if (!sidebar) return;
   globalCopilotOpen = (forceState !== null) ? Boolean(forceState) : !globalCopilotOpen;
   sidebar.classList.toggle('hidden', !globalCopilotOpen);
   document.body.classList.toggle('global-copilot-open', globalCopilotOpen);
+  if (edgeHandle) {
+    edgeHandle.style.right = globalCopilotOpen ? '24rem' : '0px';
+    edgeHandle.title = globalCopilotOpen ? '收起右侧「✨ AI 设计精修」侧边栏' : '展开右侧「✨ AI 设计精修」侧边栏';
+  }
+  if (edgeIcon) {
+    edgeIcon.className = globalCopilotOpen
+      ? 'fa-solid fa-chevron-right text-[10px] text-pink-400'
+      : 'fa-solid fa-chevron-left text-[10px] text-pink-400';
+  }
   if (headerBtn) {
     headerBtn.className = globalCopilotOpen
-      ? 'px-2.5 py-1 rounded-lg bg-pink-500 text-slate-950 font-bold text-xs transition flex items-center gap-1.5 shadow'
-      : 'px-2.5 py-1 rounded-lg bg-pink-500/15 hover:bg-pink-500/25 text-pink-300 border border-pink-500/30 text-xs font-bold transition flex items-center gap-1.5';
+      ? 'px-2.5 py-1 rounded text-[11px] font-bold bg-pink-500 text-slate-950 transition flex items-center gap-1.5 shadow'
+      : 'px-2.5 py-1 rounded text-[11px] font-bold text-pink-300 hover:text-white bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/30 flex items-center gap-1.5 transition';
   }
   if (actBtn) {
     actBtn.classList.toggle('text-pink-400', globalCopilotOpen);
     actBtn.classList.toggle('bg-slate-900/90', globalCopilotOpen);
   }
+  try {
+    localStorage.setItem('ai_pcb_refinement_sidebar_open', globalCopilotOpen ? '1' : '0');
+  } catch (e) {}
   setTimeout(() => {
     if (typeof layoutMonacoEditorIfVisible === 'function') {
       layoutMonacoEditorIfVisible();
@@ -58,15 +72,83 @@ function setGlobalCopilotTarget(target) {
   const map = {
     auto: 'gcop-target-auto',
     pcb: 'gcop-target-pcb',
-    firmware: 'gcop-target-fw'
+    firmware: 'gcop-target-fw',
+    both: 'gcop-target-both'
   };
   Object.entries(map).forEach(([k, id]) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.className = (k === globalCopilotTarget)
-      ? 'px-2 py-0.5 rounded-md bg-pink-500 text-slate-950 font-bold text-[10px] transition'
-      : 'px-2 py-0.5 rounded-md text-slate-400 hover:text-white text-[10px] transition';
+      ? 'px-1.5 py-1 rounded-md bg-pink-500 text-slate-950 font-bold text-[10px] transition text-center shadow'
+      : 'px-1.5 py-1 rounded-md text-slate-400 hover:text-white text-[10px] transition text-center';
   });
+  renderRefinementContextualSuggestions(globalCopilotTarget);
+}
+function renderRefinementContextualSuggestions(target) {
+  const tagsBox = document.getElementById('gcop-category-tags');
+  const quickBox = document.getElementById('gcop-quick-prompts');
+  const hintEl = document.getElementById('gcop-active-mode-hint');
+  if (hintEl) {
+    const labels = {
+      auto: '智能识别模块',
+      pcb: '📐 PCB 改板模式',
+      firmware: '💻 C99 改码模式',
+      both: '🔄 软硬件同步精修'
+    };
+    hintEl.textContent = labels[target] || '自适应';
+  }
+  if (tagsBox) {
+    if (target === 'pcb') {
+      tagsBox.innerHTML = `
+        <button type="button" onclick="appendGlobalRefinementTag('【板框与尺寸调整】', 'pcb')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-emerald-500/20 text-emerald-300 border border-slate-700 text-[10px] transition">📐 板框/尺寸</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【元件位置与布局优化】', 'pcb')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-sky-500/20 text-sky-300 border border-slate-700 text-[10px] transition">📍 器件布局</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【走线间距与DRC修复】', 'pcb')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-rose-500/20 text-rose-300 border border-slate-700 text-[10px] transition">⚡ 走线/DRC违规</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【引脚增删与接口修改】', 'pcb')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-amber-500/20 text-amber-300 border border-slate-700 text-[10px] transition">📌 引脚/接口</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【嘉立创SMT基础库优化】', 'pcb')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-purple-500/20 text-purple-300 border border-slate-700 text-[10px] transition">🏭 立创BOM换料</button>
+      `;
+    } else if (target === 'firmware') {
+      tagsBox.innerHTML = `
+        <button type="button" onclick="appendGlobalRefinementTag('【GCC编译报错修复】', 'firmware')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-rose-500/20 text-rose-300 border border-slate-700 text-[10px] transition">🔨 编译报错修复</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【状态机与报警阈值调整】', 'firmware')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-sky-500/20 text-sky-300 border border-slate-700 text-[10px] transition">🔄 状态机/阈值</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【补全漏写引脚C99驱动】', 'firmware')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-emerald-500/20 text-emerald-300 border border-slate-700 text-[10px] transition">📌 漏写引脚驱动</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【按键消抖与时序优化】', 'firmware')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-amber-500/20 text-amber-300 border border-slate-700 text-[10px] transition">⏱️ 消抖/时序</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【在线仿真波形修正】', 'firmware')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-purple-500/20 text-purple-300 border border-slate-700 text-[10px] transition">🔮 仿真波形</button>
+      `;
+    } else {
+      tagsBox.innerHTML = `
+        <button type="button" onclick="appendGlobalRefinementTag('【板框与尺寸调整】', 'pcb')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-emerald-500/20 text-emerald-300 border border-slate-700 text-[10px] transition">📐 板框/尺寸</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【元件位置与布局优化】', 'pcb')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-sky-500/20 text-sky-300 border border-slate-700 text-[10px] transition">📍 器件布局</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【走线间距与DRC修复】', 'pcb')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-rose-500/20 text-rose-300 border border-slate-700 text-[10px] transition">⚡ 走线/DRC</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【GCC编译报错修复】', 'firmware')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-amber-500/20 text-amber-300 border border-slate-700 text-[10px] transition">🔨 编译修复</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【状态机与报警阈值调整】', 'firmware')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-indigo-500/20 text-indigo-300 border border-slate-700 text-[10px] transition">🔄 状态机/阈值</button>
+        <button type="button" onclick="appendGlobalRefinementTag('【补全漏写引脚C99驱动】', 'firmware')" class="px-2 py-0.5 rounded-md bg-slate-900 hover:bg-purple-500/20 text-purple-300 border border-slate-700 text-[10px] transition">📌 引脚驱动</button>
+      `;
+    }
+  }
+  if (quickBox) {
+    if (target === 'pcb') {
+      quickBox.innerHTML = `
+        <button type="button" onclick="sendGlobalCopilotQuickPrompt('请将 PCB 板框尺寸调整为 65x45mm，四角倒角 R2.0mm，重新自动布局走线并刷新 3D 渲染', 'pcb')" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-slate-800">📐 改板框 65×45mm 并重绘</button>
+        <button type="button" onclick="sendGlobalCopilotQuickPrompt('请结合 @drc 自动诊断并自愈当前 PCB 全部间距违规与未连接飞线', 'pcb')" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-amber-300 border border-slate-800">🩺 自动自愈全部 DRC 冲突</button>
+        <button type="button" onclick="sendGlobalCopilotQuickPrompt('把蜂鸣器与报警灯移到板边 (50, 20) 附近并重新规划 45° 走线', 'pcb')" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-sky-300 border border-slate-800">📍 移动蜂鸣器至板边</button>
+        <button type="button" onclick="sendGlobalCopilotQuickPrompt('将 BOM 中所有扩展库阻容器件替换为嘉立创 SMT 基础库 (Basic) 器件', 'pcb')" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-purple-300 border border-slate-800">🏭 全转嘉立创基础库</button>
+      `;
+    } else if (target === 'firmware') {
+      quickBox.innerHTML = `
+        <button type="button" onclick="sendGlobalCopilotQuickPrompt('检查当前 @pinout 与 @gcc，补全所有未覆盖的引脚宏初始化与 20ms 消抖逻辑并重新编译', 'firmware')" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-slate-800">✨ 补全 100% 引脚驱动并编译</button>
+        <button type="button" onclick="sendGlobalCopilotQuickPrompt('将温度报警阈值改为 55.0°C、低压阈值改为 3000mV，更新状态机代码并调用 GCC 重新编译', 'firmware')" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-sky-300 border border-slate-800">🌡️ 调整温湿度/电压报警阈值</button>
+        <button type="button" onclick="sendCompilerLogToGlobalRefinement()" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-rose-300 border border-slate-800">🔨 发送 GCC 日志修复报错</button>
+        <button type="button" onclick="openMonacoDiffModal()" class="text-[10px] px-2 py-0.5 rounded bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 border border-indigo-500/30">🔍 查看代码并排 Diff</button>
+      `;
+    } else {
+      quickBox.innerHTML = `
+        <button type="button" onclick="sendGlobalCopilotQuickPrompt('请将 PCB 板框尺寸调整为 65x45mm，四角倒角 R2.0mm，重新自动布局走线并刷新 3D 渲染', 'pcb')" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-slate-800">📐 改板框 65×45mm 并重绘</button>
+        <button type="button" onclick="sendGlobalCopilotQuickPrompt('请结合 @drc 自动诊断并自愈当前 PCB 全部间距违规与未连接飞线', 'pcb')" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-amber-300 border border-slate-800">🩺 自动修复全部 DRC 违规</button>
+        <button type="button" onclick="sendGlobalCopilotQuickPrompt('检查当前 @pinout 与 @gcc，补全所有未覆盖的引脚宏初始化与 20ms 消抖逻辑并重新编译', 'firmware')" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-sky-300 border border-slate-800">💻 补全全引脚 C99 驱动并编译</button>
+        <button type="button" onclick="sendCompilerLogToGlobalRefinement()" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-rose-300 border border-slate-800">🔨 发送 GCC 日志修复报错</button>
+      `;
+    }
+  }
 }
 function toggleCopilotContextPill(pillName) {
   if (!(pillName in activeCopilotPills)) return;
@@ -119,7 +201,9 @@ function resolveGlobalCopilotModule(promptText) {
     lower.includes('消抖') ||
     lower.includes('初始化') ||
     lower.includes('驱动') ||
-    lower.includes('代码')
+    lower.includes('代码') ||
+    lower.includes('阈值') ||
+    lower.includes('编译')
   ) {
     return 'firmware';
   }
@@ -132,7 +216,8 @@ function resolveGlobalCopilotModule(promptText) {
     lower.includes('立创') ||
     lower.includes('bom') ||
     lower.includes('位置') ||
-    lower.includes('坐标')
+    lower.includes('坐标') ||
+    lower.includes('尺寸')
   ) {
     return 'pcb';
   }
@@ -142,7 +227,10 @@ function resolveGlobalCopilotModule(promptText) {
   }
   return 'pcb';
 }
-async function sendGlobalCopilotQuickPrompt(promptText) {
+async function sendGlobalCopilotQuickPrompt(promptText, targetOverride = null) {
+  if (targetOverride) {
+    setGlobalCopilotTarget(targetOverride);
+  }
   const input = document.getElementById('global-copilot-input');
   if (input) input.value = promptText;
   await sendGlobalCopilotMessage();
@@ -153,20 +241,23 @@ async function sendGlobalCopilotMessage() {
   const statusEl = document.getElementById('global-copilot-status');
   const box = document.getElementById('global-copilot-messages');
   if (!input || !input.value.trim()) {
-    showToast('请输入全局 Copilot 指令', 'warn');
+    showToast('请先输入您的 PCB 或 C99 设计精修要求', 'warn');
     return;
   }
   const rawText = input.value.trim();
   input.value = '';
-  const targetModule = resolveGlobalCopilotModule(rawText);
+  const modulesToRun = globalCopilotTarget === 'both'
+    ? ['pcb', 'firmware']
+    : [resolveGlobalCopilotModule(rawText)];
   const ctxHeader = buildGlobalCopilotContextSummary();
   const activePillsArr = Object.entries(activeCopilotPills).filter(([, v]) => v).map(([k]) => `@${k}`);
+  const targetBadge = modulesToRun.length > 1 ? 'PCB + C99 联动' : (modulesToRun[0] === 'firmware' ? 'C99 固件精修' : 'PCB 改板精修');
   if (box) {
     const userDiv = document.createElement('div');
     userDiv.className = 'flex flex-col items-end';
     userDiv.innerHTML = `
       <div class="max-w-[92%] rounded-2xl rounded-tr-sm px-3 py-2 bg-pink-600 text-white text-xs leading-relaxed shadow">
-        <div class="text-[10px] font-mono text-pink-200 mb-0.5">${escapeHtml(activePillsArr.join(' '))} → [${targetModule.toUpperCase()}]</div>
+        <div class="text-[10px] font-mono text-pink-200 mb-0.5">${escapeHtml(activePillsArr.join(' '))} → [${escapeHtml(targetBadge)}]</div>
         ${escapeHtml(rawText)}
       </div>
     `;
@@ -174,37 +265,39 @@ async function sendGlobalCopilotMessage() {
     box.scrollTop = box.scrollHeight;
   }
   if (sendBtn) sendBtn.disabled = true;
-  if (statusEl) statusEl.innerText = `正在调度 ${targetModule.toUpperCase()} Agent 执行...`;
+  if (statusEl) statusEl.innerText = `正在执行 [${targetBadge}]...`;
   try {
-    const moduleInput = document.getElementById(targetModule === 'firmware' ? 'fw-copilot-input' : 'pcb-copilot-input');
-    if (moduleInput) {
-      moduleInput.value = ctxHeader ? `${rawText}\n${ctxHeader}` : rawText;
-    }
-    await sendCopilotMessage(targetModule);
-    const hist = copilotHistory[targetModule] || [];
-    const lastReply = hist[hist.length - 1];
-    if (box && lastReply && lastReply.role !== 'user') {
-      const aiDiv = document.createElement('div');
-      aiDiv.className = 'p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 text-xs space-y-1.5';
-      const actionsHtml = (lastReply.actions_taken || [])
-        .map(a => `<div class="text-[11px] text-emerald-400 font-medium">${escapeHtml(a)}</div>`)
-        .join('');
-      aiDiv.innerHTML = `
-        <div class="flex items-center justify-between text-[10px] font-mono text-pink-300">
-          <span>🤖 ${targetModule === 'firmware' ? 'C99 Firmware Agent' : 'PCB Layout Agent'}</span>
-          <span>${escapeHtml(lastReply.timestamp || '')}</span>
-        </div>
-        ${actionsHtml ? `<div class="p-2 rounded bg-emerald-500/10 border border-emerald-500/30 space-y-0.5">${actionsHtml}</div>` : ''}
-        <div class="whitespace-pre-wrap">${formatSimpleMarkdown(lastReply.content || '')}</div>
-        <div class="flex flex-wrap gap-1.5 pt-1.5 border-t border-slate-800">
-          <button type="button" onclick="openMonacoDiffModal('${lastReply.snapshot_id || ''}')" class="px-2 py-0.5 rounded bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 text-[10px] font-mono">
-            <i class="fa-solid fa-code-compare"></i> 并排 Diff 审查
-          </button>
-          ${lastReply.snapshot_id ? `<button type="button" onclick="rollbackCopilotSnapshot('${lastReply.snapshot_id}', '${targetModule}')" class="px-2 py-0.5 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-[10px] font-mono"><i class="fa-solid fa-rotate-left"></i> 撤销回滚</button>` : ''}
-        </div>
-      `;
-      box.appendChild(aiDiv);
-      box.scrollTop = box.scrollHeight;
+    for (const targetModule of modulesToRun) {
+      const moduleInput = document.getElementById(targetModule === 'firmware' ? 'fw-copilot-input' : 'pcb-copilot-input');
+      if (moduleInput) {
+        moduleInput.value = ctxHeader ? `${rawText}\n${ctxHeader}` : rawText;
+      }
+      await sendCopilotMessage(targetModule);
+      const hist = copilotHistory[targetModule] || [];
+      const lastReply = hist[hist.length - 1];
+      if (box && lastReply && lastReply.role !== 'user') {
+        const aiDiv = document.createElement('div');
+        aiDiv.className = 'p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-200 text-xs space-y-1.5';
+        const actionsHtml = (lastReply.actions_taken || [])
+          .map(a => `<div class="text-[11px] text-emerald-400 font-medium">${escapeHtml(a)}</div>`)
+          .join('');
+        aiDiv.innerHTML = `
+          <div class="flex items-center justify-between text-[10px] font-mono text-pink-300">
+            <span>✨ ${targetModule === 'firmware' ? 'C99 固件精修 Agent' : 'PCB 版图精修 Agent'}</span>
+            <span>${escapeHtml(lastReply.timestamp || '')}</span>
+          </div>
+          ${actionsHtml ? `<div class="p-2 rounded bg-emerald-500/10 border border-emerald-500/30 space-y-0.5">${actionsHtml}</div>` : ''}
+          <div class="whitespace-pre-wrap">${formatSimpleMarkdown(lastReply.content || '')}</div>
+          <div class="flex flex-wrap gap-1.5 pt-1.5 border-t border-slate-800">
+            <button type="button" onclick="openMonacoDiffModal('${lastReply.snapshot_id || ''}')" class="px-2 py-0.5 rounded bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 text-[10px] font-mono">
+              <i class="fa-solid fa-code-compare"></i> 并排 Diff 审查
+            </button>
+            ${lastReply.snapshot_id ? `<button type="button" onclick="rollbackCopilotSnapshot('${lastReply.snapshot_id}', '${targetModule}')" class="px-2 py-0.5 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-[10px] font-mono"><i class="fa-solid fa-rotate-left"></i> 撤销回滚</button>` : ''}
+          </div>
+        `;
+        box.appendChild(aiDiv);
+        box.scrollTop = box.scrollHeight;
+      }
     }
   } finally {
     if (sendBtn) sendBtn.disabled = false;
@@ -1127,176 +1220,69 @@ window.filterGuideSections = function (mode = 'all', activePillOverride = null) 
 };
 document.addEventListener('DOMContentLoaded', () => {
   restoreSidebarSectionsState();
+  try {
+    const savedOpen = localStorage.getItem('ai_pcb_refinement_sidebar_open');
+    if (savedOpen === '1') {
+      toggleGlobalCopilotSidebar(true);
+    }
+  } catch (e) {}
 });
-let pipelineFeedbackTarget = 'pcb'; // 'pcb' | 'firmware' | 'both'
-window.focusStudioFeedbackBox = function (module = 'pcb') {
-  const isFw = module === 'firmware';
-  if (globalCopilotOpen && typeof toggleGlobalCopilotSidebar === 'function') {
-    toggleGlobalCopilotSidebar(false);
-  }
-  const consoleEl = document.getElementById(isFw ? 'fw-feedback-console' : 'pcb-feedback-console');
-  const inputEl = document.getElementById(isFw ? 'fw-copilot-input' : 'pcb-copilot-input');
-  if (consoleEl) {
-    consoleEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    consoleEl.classList.remove('feedback-box-highlight');
-    void consoleEl.offsetWidth; // trigger reflow
-    consoleEl.classList.add('feedback-box-highlight');
-    setTimeout(() => consoleEl.classList.remove('feedback-box-highlight'), 2400);
-  }
+window.openRefinementSidebar = function (target = 'auto') {
+  toggleGlobalCopilotSidebar(true);
+  setGlobalCopilotTarget(target);
+  const inputEl = document.getElementById('global-copilot-input');
   if (inputEl) {
-    setTimeout(() => inputEl.focus(), 120);
+    setTimeout(() => inputEl.focus(), 100);
   }
+};
+window.focusStudioFeedbackBox = function (module = 'pcb') {
+  window.openRefinementSidebar(module === 'firmware' ? 'firmware' : 'pcb');
 };
 window.openContextualFeedbackWindow = function () {
-  const pcbPane = document.getElementById('pane-pcb');
-  const fwPane = document.getElementById('pane-firmware');
-  const agentsPane = document.getElementById('pane-agents');
-  if (pcbPane && !pcbPane.classList.contains('hidden') && !coDesignSplitActive) {
-    const inputEl = document.getElementById('pcb-copilot-input');
-    if (document.activeElement !== inputEl && !globalCopilotOpen) {
-      window.focusStudioFeedbackBox('pcb');
-      if (typeof showToast === 'function') {
-        showToast('已定位到右侧「💬 PCB 设计反馈与 AI 改板窗口」，可直接输入改板意见！', 'info');
-      }
-      return;
-    }
-  }
-  if (fwPane && !fwPane.classList.contains('hidden') && !coDesignSplitActive) {
-    const inputEl = document.getElementById('fw-copilot-input');
-    if (document.activeElement !== inputEl && !globalCopilotOpen) {
-      window.focusStudioFeedbackBox('firmware');
-      if (typeof showToast === 'function') {
-        showToast('已定位到右侧「💬 C99 程序反馈与 AI 改码窗口」，可直接输入改码意见！', 'info');
-      }
-      return;
-    }
-  }
-  if (agentsPane && !agentsPane.classList.contains('hidden')) {
-    const pipeConsole = document.getElementById('pipeline-feedback-console');
-    const pipeInput = document.getElementById('pipeline-feedback-input');
-    if (pipeConsole && document.activeElement !== pipeInput) {
-      pipeConsole.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      pipeConsole.classList.remove('feedback-box-highlight');
-      void pipeConsole.offsetWidth;
-      pipeConsole.classList.add('feedback-box-highlight');
-      setTimeout(() => pipeConsole.classList.remove('feedback-box-highlight'), 2400);
-      if (pipeInput) setTimeout(() => pipeInput.focus(), 150);
-      if (typeof showToast === 'function') {
-        showToast('已定位到「💬 全案设计审查反馈窗口」，可针对 PCB 或 C99 提出修改建议！', 'info');
-      }
-      return;
-    }
-  }
   toggleGlobalCopilotSidebar();
 };
-window.appendFeedbackCategoryTag = function (module, tagText) {
-  const isFw = module === 'firmware';
-  const inputEl = document.getElementById(isFw ? 'fw-copilot-input' : 'pcb-copilot-input');
+window.appendGlobalRefinementTag = function (tagText, targetOverride = null) {
+  if (targetOverride) {
+    setGlobalCopilotTarget(targetOverride);
+  }
+  const inputEl = document.getElementById('global-copilot-input');
   if (!inputEl) return;
   const cur = inputEl.value.trim();
   if (!cur) {
-    inputEl.value = tagText;
+    inputEl.value = `${tagText} `;
   } else if (!cur.includes(tagText)) {
     inputEl.value = `${tagText} ${cur}`;
   }
   inputEl.focus();
   inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length);
 };
-window.setPipelineFeedbackTarget = function (target = 'pcb') {
-  pipelineFeedbackTarget = target;
-  const btnMap = {
-    pcb: {
-      id: 'pipe-fb-target-pcb',
-      active: 'px-2.5 py-1 rounded-md bg-emerald-500 text-slate-950 font-bold transition flex items-center gap-1 shadow',
-      inactive: 'px-2.5 py-1 rounded-md text-slate-400 hover:text-white transition flex items-center gap-1'
-    },
-    firmware: {
-      id: 'pipe-fb-target-fw',
-      active: 'px-2.5 py-1 rounded-md bg-sky-500 text-slate-950 font-bold transition flex items-center gap-1 shadow',
-      inactive: 'px-2.5 py-1 rounded-md text-slate-400 hover:text-white transition flex items-center gap-1'
-    },
-    both: {
-      id: 'pipe-fb-target-both',
-      active: 'px-2.5 py-1 rounded-md bg-pink-500 text-slate-950 font-bold transition flex items-center gap-1 shadow',
-      inactive: 'px-2.5 py-1 rounded-md text-slate-400 hover:text-white transition flex items-center gap-1'
-    }
-  };
-  Object.entries(btnMap).forEach(([k, cfg]) => {
-    const el = document.getElementById(cfg.id);
-    if (el) el.className = (k === target) ? cfg.active : cfg.inactive;
-  });
+window.sendCompilerLogToGlobalRefinement = async function () {
+  toggleGlobalCopilotSidebar(true);
+  setGlobalCopilotTarget('firmware');
+  const logEl = document.getElementById('rev-fw-verify-log');
+  const rawLog = (logEl ? logEl.innerText : '').trim();
+  const prompt = rawLog
+    ? `【GCC编译报错修复】请分析以下 ARM-GCC 编译输出日志，修复或优化当前 C99 源码并重新编译验证：\n${rawLog.slice(0, 600)}`
+    : `【GCC编译报错修复】请检查当前 C99 固件源码与 bsp_pinout.h 的一致性，执行交叉编译验证并汇报 Flash/SRAM 占用`;
+  await sendGlobalCopilotQuickPrompt(prompt, 'firmware');
 };
-window.fillPipelineFeedbackTemplate = function (templateText, target = 'pcb') {
-  window.setPipelineFeedbackTarget(target);
-  const inputEl = document.getElementById('pipeline-feedback-input');
-  if (inputEl) {
-    inputEl.value = templateText;
-    inputEl.focus();
+window.clearGlobalRefinementHistory = async function () {
+  const box = document.getElementById('global-copilot-messages');
+  if (box) {
+    box.innerHTML = `
+      <div class="p-3 rounded-xl bg-slate-900/90 border border-pink-500/30 text-slate-200 leading-relaxed space-y-1.5">
+        <div class="font-bold text-pink-300 flex items-center justify-between">
+          <span><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> ✨ AI 设计精修台已重置</span>
+          <span class="text-[10px] font-mono text-slate-400">快照保护 + Diff</span>
+        </div>
+        <p class="text-[11px] text-slate-300 leading-relaxed">
+          历史对话已清空。您可以随时针对 <b>PCB 电路板</b> 或 <b>C99 固件程序</b> 提出新的修改要求！
+        </p>
+      </div>
+    `;
   }
-};
-window.submitPipelineDesignFeedback = async function () {
-  const inputEl = document.getElementById('pipeline-feedback-input');
-  const submitBtn = document.getElementById('btn-submit-pipeline-feedback');
-  const logBox = document.getElementById('pipeline-feedback-result-log');
-  if (!inputEl || !inputEl.value.trim()) {
-    if (typeof showToast === 'function') showToast('请先输入您的 PCB 或 C99 设计反馈建议！', 'warn');
-    if (inputEl) inputEl.focus();
-    return;
-  }
-  const rawFeedback = inputEl.value.trim();
-  const origBtnHtml = submitBtn ? submitBtn.innerHTML : '';
-  if (submitBtn) {
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI 智能体正在迭代更新设计...';
-  }
-  if (logBox) {
-    logBox.classList.remove('hidden');
-    logBox.innerHTML = `<div class="flex items-center gap-2 text-pink-300"><i class="fa-solid fa-spinner fa-spin"></i> <span>已收到设计反馈：「${escapeHtml(rawFeedback)}」，正在调度 ${pipelineFeedbackTarget === 'both' ? 'PCB + C99 双工坊智能体协同修改' : (pipelineFeedbackTarget === 'firmware' ? 'C99 固件智能体修改源码并编译' : 'PCB 硬件智能体改板并执行 DRC')}...</span></div>`;
-  }
-  try {
-    const modulesToRun = pipelineFeedbackTarget === 'both'
-      ? ['pcb', 'firmware']
-      : [pipelineFeedbackTarget];
-    const summaryLogs = [];
-    for (const mod of modulesToRun) {
-      const targetInput = document.getElementById(mod === 'firmware' ? 'fw-copilot-input' : 'pcb-copilot-input');
-      if (targetInput) {
-        targetInput.value = rawFeedback;
-      }
-      await sendCopilotMessage(mod);
-      const hist = (typeof copilotHistory !== 'undefined' && copilotHistory[mod]) ? copilotHistory[mod] : [];
-      const lastReply = hist[hist.length - 1];
-      if (lastReply && lastReply.role !== 'user') {
-        const actions = (lastReply.actions_taken || []).join(' · ');
-        summaryLogs.push(`
-          <div class="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 space-y-1">
-            <div class="flex items-center justify-between text-[11px] font-bold ${mod === 'firmware' ? 'text-sky-300' : 'text-emerald-300'}">
-              <span>${mod === 'firmware' ? '💻 C99 固件智能体反馈执行结果' : '📐 PCB 硬件智能体反馈执行结果'}</span>
-              <div class="flex items-center gap-2">
-                <button type="button" onclick="switchTab('${mod}'); setTimeout(() => focusStudioFeedbackBox('${mod}'), 100);" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px]">
-                  前往${mod === 'firmware' ? '固件工坊' : 'PCB工坊'}查看 →
-                </button>
-                ${lastReply.snapshot_id ? `<button type="button" onclick="rollbackCopilotSnapshot('${lastReply.snapshot_id}', '${mod}')" class="px-2 py-0.5 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-[10px]">↩ 撤销回滚</button>` : ''}
-              </div>
-            </div>
-            ${actions ? `<div class="text-[11px] text-emerald-400 font-mono">${escapeHtml(actions)}</div>` : ''}
-            <div class="text-[11px] text-slate-300 whitespace-pre-wrap">${formatSimpleMarkdown(lastReply.content || '')}</div>
-          </div>
-        `);
-      }
-    }
-    inputEl.value = '';
-    if (logBox) {
-      logBox.innerHTML = summaryLogs.join('<div class="my-1.5"></div>') || '<div class="text-emerald-400">✅ 设计反馈已执行完毕！</div>';
-    }
-  } catch (err) {
-    if (logBox) {
-      logBox.innerHTML = `<div class="text-rose-400">❌ 反馈执行异常: ${escapeHtml(err.message || String(err))}</div>`;
-    }
-  } finally {
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = origBtnHtml;
-    }
+  if (typeof clearCopilotChat === 'function') {
+    await clearCopilotChat('pcb');
+    await clearCopilotChat('firmware');
   }
 };
