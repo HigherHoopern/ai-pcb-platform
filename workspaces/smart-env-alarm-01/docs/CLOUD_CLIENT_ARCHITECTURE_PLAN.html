@@ -78,6 +78,7 @@
       <a href="#sec-bridge" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800 transition">5. 本地软件桥接</a>
       <a href="#sec-security" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800 transition">6. 五道防泄密</a>
       <a href="#sec-deploy" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800 transition">7. 云端部署</a>
+      <a href="#sec-roadmap" class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-xs text-amber-300 border border-amber-500/40 font-bold transition">8. 开发步骤</a>
       <button onclick="document.documentElement.classList.toggle('dark')" class="px-3 py-1 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/30 text-xs font-bold transition">
         <i class="fa-solid fa-circle-half-stroke mr-1"></i> 深浅色切换
       </button>
@@ -577,6 +578,83 @@ services:
       - ./deploy/certs:/etc/nginx/certs:ro
     depends_on:
       - xter-ai-pcb-core</pre>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- 第八章：分阶段工程开发步骤与验收里程碑 (5-Phase Development Roadmap)  -->
+    <!-- ================================================================== -->
+    <section id="sec-roadmap" class="doc-card rounded-3xl p-8 space-y-6 border border-amber-500/40">
+      <div class="border-b border-slate-800 pb-4">
+        <span class="text-xs font-mono text-amber-400 font-bold uppercase">SECTION 08 · STEP-BY-STEP ENGINEERING DEVELOPMENT PLAN</span>
+        <h3 class="text-xl font-extrabold text-slate-100 mt-1 flex items-center gap-2.5">
+          <i class="fa-solid fa-list-check text-amber-400"></i>
+          <span>八、 分阶段工程开发步骤与验收标准（共 5 大阶段 · 10 个具体交付任务）</span>
+        </h3>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <!-- Phase 1 -->
+        <div class="p-5 rounded-2xl bg-slate-950 border border-rose-500/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="px-2.5 py-1 rounded-md bg-rose-500/20 text-rose-300 font-mono font-bold">Phase 1 · 云端后端安全加固与多租户隔离改造 (0.5 天)</span>
+            <span class="font-mono text-slate-400">涉及文件：core/verifier.py · core/tenant_auth.py · web/server.py</span>
+          </div>
+          <ul class="space-y-2 text-slate-300 list-decimal pl-5 leading-relaxed">
+            <li><strong>Step 1.1 宿主机 C99 仿真器安全沙箱拦截器</strong>：在 <code>core/verifier.py</code> 编译用户 C99 代码前新增 <code>audit_c_source_security()</code>，拦截 <code>system()</code>、<code>popen()</code>、<code>fork()</code>、<code>exec*()</code>、<code>&lt;unistd.h&gt;</code>、<code>&lt;sys/socket.h&gt;</code> 等系统调用，防止恶意客户读取云服务器文件。</li>
+            <li><strong>Step 1.2 Skill 知识库与模型配置接口云端脱敏</strong>：在 <code>web/server.py</code> 中支持 <code>XTER_CLOUD_MODE=1</code> 开关。开启后，<code>/api/skills/{id}</code> 仅对客户端返回章节目录与 300 字摘要（服务端内部 AI 推理仍加载完整 324 页《嘉立创实战指南》），并自动隐藏内网 <code>100.113.144.63:8012</code> 地址。</li>
+            <li><strong>Step 1.3 License Key 鉴权与多租户工作空间物理隔离</strong>：新增 <code>core/tenant_auth.py</code> 与 <code>config/licenses.json</code>，解析请求头 <code>Authorization: Bearer &lt;LicenseKey&gt;</code>，将客户工程目录隔离至 <code>workspaces/&lt;tenant_id&gt;/&lt;project_name&gt;/</code>。</li>
+          </ul>
+        </div>
+
+        <!-- Phase 2 -->
+        <div class="p-5 rounded-2xl bg-slate-950 border border-sky-500/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="px-2.5 py-1 rounded-md bg-sky-500/20 text-sky-300 font-mono font-bold">Phase 2 · 前端云路由动态化与本地/云端双模桥接改造 (0.5 天)</span>
+            <span class="font-mono text-slate-400">涉及文件：web/static/cloud_bridge.js · web/static/index.html · web/static/app.js</span>
+          </div>
+          <ul class="space-y-2 text-slate-300 list-decimal pl-5 leading-relaxed">
+            <li><strong>Step 2.1 全局 Fetch 与文件下载云端路由拦截器</strong>：新建 <code>web/static/cloud_bridge.js</code>，重写 <code>window.fetch</code> 与下载链接，支持动态指向云服务器域名并自动携带客户 <code>License Key</code>。</li>
+            <li><strong>Step 2.2 客户端「云端连接与授权激活」弹窗 UI</strong>：在设置中心与状态栏增加云端服务器地址与授权码配置面板。</li>
+            <li><strong>Step 2.3 桌面端与网页端 <code>openLocalTool()</code> 自适应桥接</strong>：在网页版点击「用 KiCad / VS Code 打开」时自动触发下载工程包；在桌面客户端（<code>.dmg/.exe</code>）点击时调用本地同步桥接器自动拉取云端文件并唤起客户本机软件。</li>
+          </ul>
+        </div>
+
+        <!-- Phase 3 -->
+        <div class="p-5 rounded-2xl bg-slate-950 border border-purple-500/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="px-2.5 py-1 rounded-md bg-purple-500/20 text-purple-300 font-mono font-bold">Phase 3 · 前端源码抽离与高强度混淆构建流水线 (0.5 天)</span>
+            <span class="font-mono text-slate-400">涉及文件：scripts/build_client_dist.py · dist-client/</span>
+          </div>
+          <ul class="space-y-2 text-slate-300 list-decimal pl-5 leading-relaxed">
+            <li><strong>Step 3.1 纯前端物理剥离与零后端代码审计</strong>：编写自动化构建脚本 <code>scripts/build_client_dist.py</code>，仅提取 <code>web/static/</code> 纯前端资源至 <code>dist-client/</code>，自动校验确保 <code>0</code> 个 <code>.py</code> 文件、<code>0</code> 个 <code>skills/</code> 原文进入客户端包。</li>
+            <li><strong>Step 3.2 JS 压缩与控制流平坦化混淆</strong>：集成 <code>esbuild</code> / <code>javascript-obfuscator</code>，将前端 JS 混淆为不可读产物。</li>
+          </ul>
+        </div>
+
+        <!-- Phase 4 -->
+        <div class="p-5 rounded-2xl bg-slate-950 border border-emerald-500/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-300 font-mono font-bold">Phase 4 · Tauri 跨平台桌面安装包 (.dmg / .exe) 工程与自动构建 (0.5~1 天)</span>
+            <span class="font-mono text-slate-400">涉及文件：desktop-client/ · .github/workflows/build-desktop.yml</span>
+          </div>
+          <ul class="space-y-2 text-slate-300 list-decimal pl-5 leading-relaxed">
+            <li><strong>Step 4.1 搭建 Tauri 2.0 桌面工程与 Rust 本地同步桥接器</strong>：创建 <code>desktop-client/src-tauri/</code>，实现从云端拉取 <code>.kicad_pcb</code> 与 <code>firmware/</code> 缓存至本机 <code>~/XterAI-Workspaces/</code> 并唤起本机 KiCad 10 / VS Code 的原生命令。</li>
+            <li><strong>Step 4.2 配置 GitHub Actions 双系统自动打包矩阵</strong>：配置云端 CI 同时构建产出 macOS <code>XterAI-PCB.dmg/.app</code> 与 Windows <code>XterAI-PCB-Setup.exe/.msi</code>。</li>
+          </ul>
+        </div>
+
+        <!-- Phase 5 -->
+        <div class="p-5 rounded-2xl bg-slate-950 border border-teal-500/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="px-2.5 py-1 rounded-md bg-teal-500/20 text-teal-300 font-mono font-bold">Phase 5 · 云服务器 Docker 黑盒部署与商业化安全验收 (0.5 天)</span>
+            <span class="font-mono text-slate-400">涉及文件：Dockerfile.cloud · docker-compose.cloud.yml · deploy/nginx.conf</span>
+          </div>
+          <ul class="space-y-2 text-slate-300 list-decimal pl-5 leading-relaxed">
+            <li><strong>Step 5.1 云端容器化一键部署套件</strong>：封装包含 Python 3.12 + KiCad CLI + ARM-GCC 的云端镜像与 Nginx HTTPS 反向代理网关。</li>
+            <li><strong>Step 5.2 全链路商业化防泄密与多租户回归测试</strong>：验证租户隔离、Skill 防爬脱敏、C99 恶意系统调用拦截及客户端 33 项端到端功能 100% 通过。</li>
+          </ul>
+        </div>
+      </div>
     </section>
 
   </main>
