@@ -3079,6 +3079,9 @@ async function sendCopilotMessage(module) {
           viewer.innerText = d.updated_file.content;
           updateFirmwareLineNumbers();
         }
+        if (typeof syncCodeToMonaco === 'function') {
+          syncCodeToMonaco(d.updated_file.content, d.updated_file.name);
+        }
       }
       if (d.build_or_drc && isFw && d.build_or_drc.log) {
         const logBox = document.getElementById('rev-fw-verify-log');

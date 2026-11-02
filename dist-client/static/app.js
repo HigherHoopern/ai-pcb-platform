@@ -1,4 +1,4 @@
-/* Xter AI-PCB Commercial Client Build | File: app.js | SHA256: 8b7b17698354f5f9 | Core Python & 324p Skills Strictly Excluded */
+/* Xter AI-PCB Commercial Client Build | File: app.js | SHA256: befe2a81bac54829 | Core Python & 324p Skills Strictly Excluded */
 let platformSettings = null;
 let activeLlmInfo = null;
 let allAgentsData = {};
@@ -2801,6 +2801,9 @@ async function sendCopilotMessage(module) {
           viewer.value = d.updated_file.content;
           viewer.innerText = d.updated_file.content;
           updateFirmwareLineNumbers();
+        }
+        if (typeof syncCodeToMonaco === 'function') {
+          syncCodeToMonaco(d.updated_file.content, d.updated_file.name);
         }
       }
       if (d.build_or_drc && isFw && d.build_or_drc.log) {

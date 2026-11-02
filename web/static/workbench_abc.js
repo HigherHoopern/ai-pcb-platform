@@ -1312,6 +1312,205 @@ document.addEventListener('DOMContentLoaded', () => {
   restoreSidebarSectionsState();
 });
 
+// ============================================================================
+// 10. 用户设计反馈窗口与 AI 智能体迭代改版控制器
+//     (#pcb-feedback-console / #fw-feedback-console / #pipeline-feedback-console)
+// ============================================================================
+let pipelineFeedbackTarget = 'pcb'; // 'pcb' | 'firmware' | 'both'
+
+window.focusStudioFeedbackBox = function (module = 'pcb') {
+  const isFw = module === 'firmware';
+  // 如果全局右侧边栏正打开导致工坊内部右侧反馈窗被折叠，先自动关闭全局右侧边栏以露出专属反馈窗口
+  if (globalCopilotOpen && typeof toggleGlobalCopilotSidebar === 'function') {
+    toggleGlobalCopilotSidebar(false);
+  }
+  const consoleEl = document.getElementById(isFw ? 'fw-feedback-console' : 'pcb-feedback-console');
+  const inputEl = document.getElementById(isFw ? 'fw-copilot-input' : 'pcb-copilot-input');
+
+  if (consoleEl) {
+    consoleEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    consoleEl.classList.remove('feedback-box-highlight');
+    void consoleEl.offsetWidth; // trigger reflow
+    consoleEl.classList.add('feedback-box-highlight');
+    setTimeout(() => consoleEl.classList.remove('feedback-box-highlight'), 2400);
+  }
+  if (inputEl) {
+    setTimeout(() => inputEl.focus(), 120);
+  }
+};
+
+window.openContextualFeedbackWindow = function () {
+  const pcbPane = document.getElementById('pane-pcb');
+  const fwPane = document.getElementById('pane-firmware');
+  const agentsPane = document.getElementById('pane-agents');
+
+  // 若用户在 ③ PCB 硬件工坊，且右侧全局边栏未开启，先高亮聚焦工坊右侧的「💬 PCB 设计反馈与 AI 改板窗口」
+  if (pcbPane && !pcbPane.classList.contains('hidden') && !coDesignSplitActive) {
+    const inputEl = document.getElementById('pcb-copilot-input');
+    if (document.activeElement !== inputEl && !globalCopilotOpen) {
+      window.focusStudioFeedbackBox('pcb');
+      if (typeof showToast === 'function') {
+        showToast('已定位到右侧「💬 PCB 设计反馈与 AI 改板窗口」，可直接输入改板意见！', 'info');
+      }
+      return;
+    }
+  }
+
+  // 若用户在 ④ C99 固件工坊，先高亮聚焦工坊右侧的「💬 C99 程序反馈与 AI 改码窗口」
+  if (fwPane && !fwPane.classList.contains('hidden') && !coDesignSplitActive) {
+    const inputEl = document.getElementById('fw-copilot-input');
+    if (document.activeElement !== inputEl && !globalCopilotOpen) {
+      window.focusStudioFeedbackBox('firmware');
+      if (typeof showToast === 'function') {
+        showToast('已定位到右侧「💬 C99 程序反馈与 AI 改码窗口」，可直接输入改码意见！', 'info');
+      }
+      return;
+    }
+  }
+
+  // 若用户在 ⑤ 全自动协同流水线页面，滚动并聚焦「💬 全案设计审查反馈窗口」
+  if (agentsPane && !agentsPane.classList.contains('hidden')) {
+    const pipeConsole = document.getElementById('pipeline-feedback-console');
+    const pipeInput = document.getElementById('pipeline-feedback-input');
+    if (pipeConsole && document.activeElement !== pipeInput) {
+      pipeConsole.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      pipeConsole.classList.remove('feedback-box-highlight');
+      void pipeConsole.offsetWidth;
+      pipeConsole.classList.add('feedback-box-highlight');
+      setTimeout(() => pipeConsole.classList.remove('feedback-box-highlight'), 2400);
+      if (pipeInput) setTimeout(() => pipeInput.focus(), 150);
+      if (typeof showToast === 'function') {
+        showToast('已定位到「💬 全案设计审查反馈窗口」，可针对 PCB 或 C99 提出修改建议！', 'info');
+      }
+      return;
+    }
+  }
+
+  // 其他页面或再次点击时，展开/收起右侧全局 AI Copilot 辅助边栏
+  toggleGlobalCopilotSidebar();
+};
+
+window.appendFeedbackCategoryTag = function (module, tagText) {
+  const isFw = module === 'firmware';
+  const inputEl = document.getElementById(isFw ? 'fw-copilot-input' : 'pcb-copilot-input');
+  if (!inputEl) return;
+  const cur = inputEl.value.trim();
+  if (!cur) {
+    inputEl.value = tagText;
+  } else if (!cur.includes(tagText)) {
+    inputEl.value = `${tagText} ${cur}`;
+  }
+  inputEl.focus();
+  inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length);
+};
+
+window.setPipelineFeedbackTarget = function (target = 'pcb') {
+  pipelineFeedbackTarget = target;
+  const btnMap = {
+    pcb: {
+      id: 'pipe-fb-target-pcb',
+      active: 'px-2.5 py-1 rounded-md bg-emerald-500 text-slate-950 font-bold transition flex items-center gap-1 shadow',
+      inactive: 'px-2.5 py-1 rounded-md text-slate-400 hover:text-white transition flex items-center gap-1'
+    },
+    firmware: {
+      id: 'pipe-fb-target-fw',
+      active: 'px-2.5 py-1 rounded-md bg-sky-500 text-slate-950 font-bold transition flex items-center gap-1 shadow',
+      inactive: 'px-2.5 py-1 rounded-md text-slate-400 hover:text-white transition flex items-center gap-1'
+    },
+    both: {
+      id: 'pipe-fb-target-both',
+      active: 'px-2.5 py-1 rounded-md bg-pink-500 text-slate-950 font-bold transition flex items-center gap-1 shadow',
+      inactive: 'px-2.5 py-1 rounded-md text-slate-400 hover:text-white transition flex items-center gap-1'
+    }
+  };
+  Object.entries(btnMap).forEach(([k, cfg]) => {
+    const el = document.getElementById(cfg.id);
+    if (el) el.className = (k === target) ? cfg.active : cfg.inactive;
+  });
+};
+
+window.fillPipelineFeedbackTemplate = function (templateText, target = 'pcb') {
+  window.setPipelineFeedbackTarget(target);
+  const inputEl = document.getElementById('pipeline-feedback-input');
+  if (inputEl) {
+    inputEl.value = templateText;
+    inputEl.focus();
+  }
+};
+
+window.submitPipelineDesignFeedback = async function () {
+  const inputEl = document.getElementById('pipeline-feedback-input');
+  const submitBtn = document.getElementById('btn-submit-pipeline-feedback');
+  const logBox = document.getElementById('pipeline-feedback-result-log');
+  if (!inputEl || !inputEl.value.trim()) {
+    if (typeof showToast === 'function') showToast('请先输入您的 PCB 或 C99 设计反馈建议！', 'warn');
+    if (inputEl) inputEl.focus();
+    return;
+  }
+
+  const rawFeedback = inputEl.value.trim();
+  const origBtnHtml = submitBtn ? submitBtn.innerHTML : '';
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> AI 智能体正在迭代更新设计...';
+  }
+
+  if (logBox) {
+    logBox.classList.remove('hidden');
+    logBox.innerHTML = `<div class="flex items-center gap-2 text-pink-300"><i class="fa-solid fa-spinner fa-spin"></i> <span>已收到设计反馈：「${escapeHtml(rawFeedback)}」，正在调度 ${pipelineFeedbackTarget === 'both' ? 'PCB + C99 双工坊智能体协同修改' : (pipelineFeedbackTarget === 'firmware' ? 'C99 固件智能体修改源码并编译' : 'PCB 硬件智能体改板并执行 DRC')}...</span></div>`;
+  }
+
+  try {
+    const modulesToRun = pipelineFeedbackTarget === 'both'
+      ? ['pcb', 'firmware']
+      : [pipelineFeedbackTarget];
+
+    const summaryLogs = [];
+    for (const mod of modulesToRun) {
+      const targetInput = document.getElementById(mod === 'firmware' ? 'fw-copilot-input' : 'pcb-copilot-input');
+      if (targetInput) {
+        targetInput.value = rawFeedback;
+      }
+      await sendCopilotMessage(mod);
+      const hist = (typeof copilotHistory !== 'undefined' && copilotHistory[mod]) ? copilotHistory[mod] : [];
+      const lastReply = hist[hist.length - 1];
+      if (lastReply && lastReply.role !== 'user') {
+        const actions = (lastReply.actions_taken || []).join(' · ');
+        summaryLogs.push(`
+          <div class="p-2.5 rounded-lg bg-slate-900/90 border border-slate-800 space-y-1">
+            <div class="flex items-center justify-between text-[11px] font-bold ${mod === 'firmware' ? 'text-sky-300' : 'text-emerald-300'}">
+              <span>${mod === 'firmware' ? '💻 C99 固件智能体反馈执行结果' : '📐 PCB 硬件智能体反馈执行结果'}</span>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="switchTab('${mod}'); setTimeout(() => focusStudioFeedbackBox('${mod}'), 100);" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px]">
+                  前往${mod === 'firmware' ? '固件工坊' : 'PCB工坊'}查看 →
+                </button>
+                ${lastReply.snapshot_id ? `<button type="button" onclick="rollbackCopilotSnapshot('${lastReply.snapshot_id}', '${mod}')" class="px-2 py-0.5 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-[10px]">↩ 撤销回滚</button>` : ''}
+              </div>
+            </div>
+            ${actions ? `<div class="text-[11px] text-emerald-400 font-mono">${escapeHtml(actions)}</div>` : ''}
+            <div class="text-[11px] text-slate-300 whitespace-pre-wrap">${formatSimpleMarkdown(lastReply.content || '')}</div>
+          </div>
+        `);
+      }
+    }
+
+    inputEl.value = '';
+    if (logBox) {
+      logBox.innerHTML = summaryLogs.join('<div class="my-1.5"></div>') || '<div class="text-emerald-400">✅ 设计反馈已执行完毕！</div>';
+    }
+  } catch (err) {
+    if (logBox) {
+      logBox.innerHTML = `<div class="text-rose-400">❌ 反馈执行异常: ${escapeHtml(err.message || String(err))}</div>`;
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = origBtnHtml;
+    }
+  }
+};
+
+
 
 
 
