@@ -2,10 +2,10 @@
 
 > **工程名称**：`Smart-Env-Alarm-01`  
 > **工程路径**：`/Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01`  
-> **流水线 ID**：`pipe_1793491102_7ebc5c`  
+> **流水线 ID**：`pipe_1793589138_42e56a`  
 > **执行模式**：`fast_deterministic`  
-> **总耗时**：`5.95 秒`  
-> **生成时间**：`2026-11-01 07:58:28`  
+> **总耗时**：`11.27 秒`  
+> **生成时间**：`2026-11-02 11:12:29`  
 
 ---
 
@@ -13,10 +13,10 @@
 
 | 协同角色 | 绑定引擎 / Agent | 职责说明 | 阶段状态 | 耗时 |
 | :--- | :--- | :--- | :--- | :--- |
-| **需求与 SSOT 引擎** | `本地 vLLM / Qwen3.8-27B (100.113.144.63) (Qwen3.8-27B)` | 规格解析、MCU 外设字典校验与 `bsp_pinout.h` 生成 | `COMPLETED` | `0.01s` |
-| **硬件 PCB 布局主担** | `ANTIGRAVITY` | 原理图 `.kicad_sch`、双面板 `.kicad_pcb` 与法拉第屏蔽笼构建 | `COMPLETED` | `2.22s` |
-| **DRC 自愈与制造主担** | `ANTIGRAVITY` | `kicad-cli pcb drc` 闭环自愈、正反面 3D 渲染与嘉立创 Gerber 打包 | `COMPLETED` | `3.49s` |
-| **嵌入式 C 固件主担** | `ANTIGRAVITY` | 基于 `bsp_pinout.h` 构建 HAL 驱动、非阻塞状态机与 ARM-GCC 链接 | `COMPLETED` | `0.23s` |
+| **需求与 SSOT 引擎** | `本地 vLLM / Qwen3.8-27B (100.113.144.63) (Qwen3.8-27B)` | 规格解析、MCU 外设字典校验与 `bsp_pinout.h` 生成 | `COMPLETED` | `0.02s` |
+| **硬件 PCB 布局主担** | `ANTIGRAVITY` | 原理图 `.kicad_sch`、双面板 `.kicad_pcb` 与法拉第屏蔽笼构建 | `COMPLETED` | `4.39s` |
+| **DRC 自愈与制造主担** | `ANTIGRAVITY` | `kicad-cli pcb drc` 闭环自愈、正反面 3D 渲染与嘉立创 Gerber 打包 | `COMPLETED` | `6.49s` |
+| **嵌入式 C 固件主担** | `ANTIGRAVITY` | 基于 `bsp_pinout.h` 构建 HAL 驱动、非阻塞状态机与 ARM-GCC 链接 | `COMPLETED` | `0.37s` |
 
 ---
 
@@ -28,7 +28,7 @@
 - **KiCad CLI 官方 DRC 结果**：
   - 初始扫描：`0 项违规` / `0 项未连接`
   - 闭环验收：**`0 项违规 (Violations)` / `0 项未连接 (Unconnected)`**
-- **嘉立创生产制造包 (Gerber + Drill + POS)**：`/Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/hardware/out/Smart-Env-Alarm-01_JLCPCB_Gerber.zip` (`40.2 KB`)
+- **嘉立创生产制造包 (Gerber + Drill + POS)**：`/Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/workspaces/smart-env-alarm-01/hardware/out/Smart-Env-Alarm-01_JLCPCB_Gerber.zip` (`40.1 KB`)
 
 ---
 

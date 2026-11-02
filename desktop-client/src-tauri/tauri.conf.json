@@ -1,0 +1,45 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Xter AI-PCB Studio",
+  "version": "2.0.0",
+  "identifier": "com.xter.aipcb.studio",
+  "build": {
+    "frontendDist": "../../dist-client",
+    "beforeBuildCommand": "python3 ../scripts/build_client_dist.py"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "title": "Xter AI-PCB Studio v2.0 — 软硬件协同智能研发工作台 (Cloud-Connected Desktop Edition)",
+        "width": 1520,
+        "height": 940,
+        "minWidth": 1200,
+        "minHeight": 760,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["dmg", "app", "nsis", "msi"],
+    "category": "DeveloperTool",
+    "shortDescription": "AI-PCB Hardware & C99 Firmware Co-Design Studio",
+    "longDescription": "Lightweight Cross-Platform Desktop Client for Xter AI-PCB Cloud Platform. Connects to remote Cloud AI/EDA Server while bridging local KiCad 10 and VS Code.",
+    "macOS": {
+      "minimumSystemVersion": "11.0"
+    },
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      },
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    }
+  }
+}

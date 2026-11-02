@@ -1,0 +1,17 @@
+[package]
+name = "xter-ai-pcb-desktop"
+version = "2.0.0"
+description = "Xter AI-PCB Studio Desktop Native Shell (Tauri 2.0) — Zero Python Backend Included"
+authors = ["Xter Hardware Team"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2.0", features = [] }
+
+[dependencies]
+tauri = { version = "2.0", features = [] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "0.12", features = ["blocking", "rustls-tls"] }
+zip = "2.1"
+dirs = "5.0"

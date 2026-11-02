@@ -1,0 +1,16 @@
+{
+  "name": "xter-ai-pcb-desktop-client",
+  "version": "2.0.0",
+  "description": "Xter AI-PCB Studio — Cross-Platform Desktop Client (macOS .dmg & Windows .exe) with Zero Backend Code Included",
+  "private": true,
+  "scripts": {
+    "prebuild": "python3 ../scripts/build_client_dist.py",
+    "tauri:dev": "python3 ../scripts/build_client_dist.py && tauri dev",
+    "tauri:build": "python3 ../scripts/build_client_dist.py && tauri build",
+    "tauri:build:macos": "python3 ../scripts/build_client_dist.py && tauri build --target universal-apple-darwin",
+    "tauri:build:windows": "python3 ../scripts/build_client_dist.py && tauri build --target x86_64-pc-windows-msvc"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.1.0"
+  }
+}

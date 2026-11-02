@@ -1,0 +1,50 @@
+{
+  "cloud_settings": {
+    "enforce_auth_in_cloud_mode": true,
+    "protect_skills_in_cloud_mode": true,
+    "mask_internal_llm_url": true,
+    "default_trial_license": "XTER-TRIAL-2026-DEMO"
+  },
+  "licenses": {
+    "XTER-ENT-2026-MASTER": {
+      "tenant_id": "default",
+      "customer_name": "XterAI 旗舰版管理员 (Master)",
+      "tier": "enterprise",
+      "max_projects": 999,
+      "can_view_full_skills": true,
+      "can_configure_engine": true,
+      "expires_at": "2099-12-31",
+      "active": true
+    },
+    "XTER-PRO-2026-CLIENT01": {
+      "tenant_id": "tenant_client01",
+      "customer_name": "商业客户 A (硬件研发一部)",
+      "tier": "pro",
+      "max_projects": 30,
+      "can_view_full_skills": false,
+      "can_configure_engine": false,
+      "expires_at": "2028-12-31",
+      "active": true
+    },
+    "XTER-PRO-2026-CLIENT02": {
+      "tenant_id": "tenant_client02",
+      "customer_name": "商业客户 B (智能传感事业部)",
+      "tier": "pro",
+      "max_projects": 30,
+      "can_view_full_skills": false,
+      "can_configure_engine": false,
+      "expires_at": "2028-12-31",
+      "active": true
+    },
+    "XTER-TRIAL-2026-DEMO": {
+      "tenant_id": "tenant_demo",
+      "customer_name": "公开网页/客户端体验用户 (Trial)",
+      "tier": "trial",
+      "max_projects": 5,
+      "can_view_full_skills": false,
+      "can_configure_engine": false,
+      "expires_at": "2027-12-31",
+      "active": true
+    }
+  }
+}

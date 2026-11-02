@@ -959,6 +959,16 @@ def save_project_source_file(
     if not path:
         return {"success": False, "error": "未指定需要保存的源文件路径"}
     abs_path = os.path.abspath(path)
+    if abs_path.lower().endswith((".c", ".h")):
+        from core.tenant_auth import audit_c_source_security
+        sec_audit = audit_c_source_security(content, filename=os.path.basename(abs_path))
+        if not sec_audit.get("safe", True):
+            return {
+                "success": False,
+                "security_blocked": True,
+                "violations": sec_audit.get("violations", []),
+                "error": sec_audit.get("error", "C99 安全沙箱拦截")
+            }
     os.makedirs(os.path.dirname(abs_path), exist_ok=True)
     try:
         with open(abs_path, "w", encoding="utf8") as f:
@@ -1367,6 +1377,17 @@ def save_project_file_content(project_dir: Optional[str], file_path: str, conten
     target_abs = os.path.abspath(file_path if os.path.isabs(file_path) else os.path.join(root_abs, file_path))
     if not target_abs.startswith(root_abs):
         return {"success": False, "error": "仅允许修改当前工程目录下的文件"}
+
+    if target_abs.lower().endswith((".c", ".h")):
+        from core.tenant_auth import audit_c_source_security
+        sec_audit = audit_c_source_security(content, filename=os.path.basename(target_abs))
+        if not sec_audit.get("safe", True):
+            return {
+                "success": False,
+                "security_blocked": True,
+                "violations": sec_audit.get("violations", []),
+                "error": sec_audit.get("error", "C99 安全沙箱拦截")
+            }
 
     with open(target_abs, "w", encoding="utf8") as f:
         f.write(content)

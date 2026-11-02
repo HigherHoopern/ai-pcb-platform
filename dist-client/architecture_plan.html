@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XterAI-PCB 商业化架构方案：云端黑盒核心 + Web/macOS/Windows 客户端分发白皮书</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'PingFang SC', 'Microsoft YaHei', 'sans-serif'],
+            mono: ['JetBrains Mono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: #070d19;
+      color: #e2e8f0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    html:not(.dark) body {
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .doc-card {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(51, 65, 85, 0.75);
+      box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4);
+    }
+    html:not(.dark) .doc-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 6px 20px -4px rgba(15, 23, 42, 0.06);
+    }
+    html:not(.dark) .text-slate-100, html:not(.dark) .text-slate-200 { color: #0f172a !important; }
+    html:not(.dark) .text-slate-300 { color: #334155 !important; }
+    html:not(.dark) .text-slate-400 { color: #475569 !important; }
+    html:not(.dark) .bg-slate-950, html:not(.dark) .bg-slate-900 {
+      background-color: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+    }
+    pre.code-block {
+      background-color: #090e17 !important;
+      color: #e2e8f0 !important;
+      border: 1px solid #1e293b !important;
+    }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: #ffffff !important; color: #000000 !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- 顶部固定导航栏 -->
+  <header class="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/90 border-b border-slate-800 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 no-print">
+    <div class="flex items-center gap-3">
+      <span class="px-2.5 py-1 rounded-lg bg-gradient-to-tr from-sky-500 via-indigo-500 to-emerald-400 text-white text-xs font-black tracking-wider shadow">XterAI-PCB</span>
+      <div>
+        <h1 class="text-sm font-extrabold text-slate-100">商业化云端分离架构 &amp; 跨平台客户端打包技术方案</h1>
+        <p class="text-[11px] text-slate-400 font-mono">Cloud-Core Blackbox + Web SaaS + Tauri macOS (.dmg) / Windows (.exe) Distribution Blueprint</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2.5">
+      <a href="#sec-core" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800 transition">1. 核心壁垒</a>
+      <a href="#sec-arch" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800 transition">2. 架构蓝图</a>
+      <a href="#sec-frontend" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800 transition">3. 前端云路由</a>
+      <a href="#sec-desktop" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800 transition">4. 打包 dmg/exe</a>
+      <a href="#sec-bridge" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800 transition">5. 本地软件桥接</a>
+      <a href="#sec-security" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800 transition">6. 五道防泄密</a>
+      <a href="#sec-deploy" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-xs text-slate-300 border border-slate-800 transition">7. 云端部署</a>
+      <a href="#sec-roadmap" class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-xs text-amber-300 border border-amber-500/40 font-bold transition">8. 开发步骤</a>
+      <button onclick="document.documentElement.classList.toggle('dark')" class="px-3 py-1 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/30 text-xs font-bold transition">
+        <i class="fa-solid fa-circle-half-stroke mr-1"></i> 深浅色切换
+      </button>
+      <button onclick="window.print()" class="px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition">
+        <i class="fa-solid fa-print mr-1"></i> 导出/打印 PDF
+      </button>
+    </div>
+  </header>
+
+  <!-- 主体内容容器 -->
+  <main class="max-w-7xl mx-auto w-full px-6 py-8 space-y-10">
+
+    <!-- 摘要横幅 (Executive Summary) -->
+    <section class="doc-card rounded-3xl p-8 border-l-4 border-l-sky-400 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <span class="px-3 py-1 rounded-full bg-sky-500/15 border border-sky-500/30 text-sky-300 text-xs font-mono font-bold">
+          ARCHITECTURE &amp; IP PROTECTION WHITE PAPER · v2.0
+        </span>
+        <span class="text-xs font-mono text-slate-400">适用形态：Web 网页版 SaaS / macOS (.dmg/.app) / Windows (.exe/.msi)</span>
+      </div>
+      <h2 class="text-2xl font-black text-slate-100 tracking-tight">
+        如何将前端分发给客户（网页或桌面安装包），同时将 100% 核心代码与知识库锁在云服务器？
+      </h2>
+      <p class="text-sm text-slate-300 leading-relaxed">
+        在商业化交付中，<strong>前端界面（HTML/CSS/JS）只是交互展示壳，而真正的商业机密在于后端的「SSOT 软硬件确定性双向编译引擎」、「PCB 自动布局与 DRC 自愈算法」、「324 页嘉立创等工业级蒸馏知识库（Skills）」以及「多 Agent 协同编排器」</strong>。本方案采用工业界成熟的 <strong>「云端黑盒大脑（Cloud Core）+ 跨平台轻量客户端（Web &amp; Tauri Desktop）」</strong> 架构：客户拿到的安装包仅包含混淆后的纯前端界面与极薄的本地文件同步桥接器（安装包仅 ~6MB，零 Python 代码、零 Prompt 泄露），所有核心运算、知识库注入、KiCad 渲染、ARM-GCC 编译与状态机仿真全部在您的私有云服务器黑盒内完成。
+      </p>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- 第一章：项目核心技术壁垒与知识产权（IP）盘点                         -->
+    <!-- ================================================================== -->
+    <section id="sec-core" class="doc-card rounded-3xl p-8 space-y-6">
+      <div class="border-b border-slate-800 pb-4">
+        <span class="text-xs font-mono text-amber-400 font-bold uppercase">SECTION 01 · CORE INTELLECTUAL PROPERTY</span>
+        <h3 class="text-xl font-extrabold text-slate-100 mt-1 flex items-center gap-2.5">
+          <i class="fa-solid fa-vault text-amber-400"></i>
+          <span>一、 本项目的真正核心在哪里？（前后端代码资产密级划分）</span>
+        </h3>
+      </div>
+
+      <p class="text-xs text-slate-300 leading-relaxed">
+        普通 AI 编程工具之所以无法直接用于硬件工程量产，是因为纯大模型直接输出 KiCad 文件或 C 代码时存在严重的<strong>“引脚幻觉、封装错位、DRC 走线短路、改了原理图忘了改固件宏”</strong>。本项目的核心护城河是<strong>“大模型只做结构化推理，确定性工程引擎生成 100% 合规软硬件产物”</strong>：
+      </p>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="border-b border-slate-800 bg-slate-950/80 text-slate-400 font-mono text-[11px]">
+              <th class="py-3 px-4">资产密级</th>
+              <th class="py-3 px-4">核心模块与代码路径</th>
+              <th class="py-3 px-4">核心技术壁垒说明</th>
+              <th class="py-3 px-4">部署位置策略</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/70 text-slate-300">
+            <tr>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono font-bold">🔴 绝密核心 IP</span></td>
+              <td class="py-3 px-4 font-mono font-bold text-amber-300">core/pinmux_guardian.py<br/>core/scaffold_generator.py</td>
+              <td class="py-3 px-4">
+                <strong>SSOT 软硬件确定性双向编译引擎</strong>：将 <code>spec.json + pinout.json</code> 同时编译为 0 冲突的 KiCad 10 原理图/PCB S-Expression 网表、确定性 <code>bsp_pinout.h</code> 硬件抽象层头文件，以及 100% 引脚覆盖率的 C99 非阻塞三态有限状态机固件。
+              </td>
+              <td class="py-3 px-4 font-mono text-emerald-300">100% 留存云服务器<br/>（严禁下发客户端）</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono font-bold">🔴 绝密核心 IP</span></td>
+              <td class="py-3 px-4 font-mono font-bold text-emerald-300">core/verifier.py<br/>(heal_pcb_drc_conflicts)</td>
+              <td class="py-3 px-4">
+                <strong>PCB 自动布局布线、DRC 冲突自愈闭环与嘉立创 DFM 优选算法</strong>：解析 KiCad DRC 报错坐标并自动重排走线/退让安全间距；智能匹配嘉立创 SMT Basic 基础库（帮客户省换料费）并生成标准 Gerber + BOM + CPL 坐标包。
+              </td>
+              <td class="py-3 px-4 font-mono text-emerald-300">100% 留存云服务器<br/>（严禁下发客户端）</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono font-bold">🔴 绝密数据资产</span></td>
+              <td class="py-3 px-4 font-mono font-bold text-indigo-300">core/distiller.py<br/>skills/pcb-design-skill/*</td>
+              <td class="py-3 px-4">
+                <strong>Book-to-Skill 深度蒸馏算法与硬件工业规则库</strong>：包含 324 页《嘉立创 PCB 智造实战指南》等专业书籍提炼出的 16 章工程规范、<code>cheatsheet.md</code> 量化工艺参数与 <code>patterns.md</code> 经典电路范式。
+              </td>
+              <td class="py-3 px-4 font-mono text-emerald-300">100% 留存云服务器<br/>（API 仅返回脱敏摘要）</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">🟠 机密编排层</span></td>
+              <td class="py-3 px-4 font-mono font-bold text-sky-300">core/agent_dispatcher.py<br/>core/req_extractor.py<br/>core/llm_client.py</td>
+              <td class="py-3 px-4">
+                <strong>跨模态 Copilot 编排器与 5 阶段全自动流水线</strong>：包含 Gate 1 自然语言需求提取 Prompt 矩阵、<code>@pinout @drc @gcc</code> 上下文组装器、自然语言改板动作解析器，以及私有 <code>Qwen3.8-27B</code> 模型路由。
+              </td>
+              <td class="py-3 px-4 font-mono text-emerald-300">100% 留存云服务器<br/>（严禁下发客户端）</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-mono font-bold">🟢 公开交互壳层</span></td>
+              <td class="py-3 px-4 font-mono text-slate-300">web/static/index.html<br/>web/static/app.js<br/>web/static/workbench_abc.js</td>
+              <td class="py-3 px-4">
+                <strong>类 VS Code 六区工作台前端 UI 与交互控制器</strong>：仅负责渲染界面、展示 SVG/3D 图片、挂载 Monaco 代码编辑器，并通过 HTTPS 调用云端 API。不含任何生成算法或 Prompt 模板。
+              </td>
+              <td class="py-3 px-4 font-mono text-sky-300">混淆压缩后分发给客户<br/>（Web / .dmg / .exe）</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- 第二章：总体系统架构蓝图（SVG 矢量架构图）                            -->
+    <!-- ================================================================== -->
+    <section id="sec-arch" class="doc-card rounded-3xl p-8 space-y-6">
+      <div class="border-b border-slate-800 pb-4">
+        <span class="text-xs font-mono text-emerald-400 font-bold uppercase">SECTION 02 · CLOUD-CLIENT SEPARATION ARCHITECTURE</span>
+        <h3 class="text-xl font-extrabold text-slate-100 mt-1 flex items-center gap-2.5">
+          <i class="fa-solid fa-network-wired text-emerald-400"></i>
+          <span>二、 「云端黑盒大脑 + Web / macOS / Windows 轻量客户端」总体架构图</span>
+        </h3>
+      </div>
+
+      <div class="rounded-2xl bg-slate-950 border border-slate-800 p-4 overflow-x-auto">
+        <svg viewBox="0 0 1140 500" class="w-full min-w-[920px] h-auto select-none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr-sky" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8"/>
+            </marker>
+            <marker id="arr-emerald" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#10b981"/>
+            </marker>
+            <marker id="arr-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#f59e0b"/>
+            </marker>
+          </defs>
+
+          <!-- 左区：客户终端层 (Client Tier) -->
+          <rect x="16" y="20" width="310" height="460" rx="16" fill="#0d1829" stroke="#38bdf8" stroke-width="1.8"/>
+          <rect x="32" y="34" width="278" height="28" rx="6" fill="#38bdf8" fill-opacity="0.18"/>
+          <text x="44" y="53" fill="#38bdf8" font-size="13" font-weight="bold" font-family="monospace">👤 客户侧终端 (0 核心后端代码)</text>
+
+          <!-- 形态 1：Web 网页版 -->
+          <rect x="32" y="80" width="278" height="95" rx="10" fill="#112238" stroke="#38bdf8" stroke-opacity="0.6"/>
+          <text x="46" y="104" fill="#f1f5f9" font-size="12.5" font-weight="bold">🌐 形态 A：Web 浏览器在线版 (SaaS)</text>
+          <text x="46" y="124" fill="#94a3b8" font-size="10.5">• 访问 https://pcb.yourdomain.com</text>
+          <text x="46" y="142" fill="#94a3b8" font-size="10.5">• 客户电脑免装 Python / KiCad / GCC</text>
+          <text x="46" y="160" fill="#38bdf8" font-size="10" font-family="monospace">• 静态资源：混淆后 JS + HTML (~300KB)</text>
+
+          <!-- 形态 2：Tauri 桌面客户端 (.dmg / .exe) -->
+          <rect x="32" y="192" width="278" height="130" rx="10" fill="#112238" stroke="#10b981" stroke-width="1.6"/>
+          <text x="46" y="216" fill="#6ee7b7" font-size="12.5" font-weight="bold">💻 形态 B：桌面安装包 (.dmg / .exe)</text>
+          <text x="46" y="236" fill="#cbd5e1" font-size="10.5">• 基于 Tauri 2.0 (Rust 二进制防反编译外壳)</text>
+          <text x="46" y="254" fill="#cbd5e1" font-size="10.5">• macOS: XterAI-PCB.dmg / .app (~6MB)</text>
+          <text x="46" y="272" fill="#cbd5e1" font-size="10.5">• Windows: XterAI-PCB-Setup.exe (~5MB)</text>
+          <text x="46" y="290" fill="#34d399" font-size="10" font-family="monospace">• 内置 API 路由拦截器直连云服务器</text>
+          <text x="46" y="308" fill="#fbbf24" font-size="10" font-family="monospace">• 内置 Local Bridge 薄代理 (~80行 Rust)</text>
+
+          <!-- 本地桌面软件桥接 -->
+          <rect x="32" y="340" width="278" height="120" rx="10" fill="#171f30" stroke="#f59e0b" stroke-dasharray="4 3"/>
+          <text x="46" y="364" fill="#fbbf24" font-size="12" font-weight="bold">🔌 客户本机 EDA / IDE 协同 (可选)</text>
+          <text x="46" y="384" fill="#94a3b8" font-size="10.5">1. 点击「用 KiCad 打开」➔ 自动从云端拉取</text>
+          <text x="46" y="400" fill="#94a3b8" font-size="10.5">   最新 .kicad_pcb 到本地缓存目录并唤起</text>
+          <text x="46" y="418" fill="#94a3b8" font-size="10.5">2. 本机保存修改 ➔ 自动同步回云端跑 DRC</text>
+          <text x="46" y="440" fill="#fbbf24" font-size="10" font-family="monospace">📂 ~/XterAI-Workspaces/&lt;project&gt;/</text>
+
+          <!-- 中间：HTTPS / WSS 加密通信与网关层 -->
+          <path d="M 326 140 L 428 140" stroke="#38bdf8" stroke-width="2.5" marker-start="url(#arr-sky)" marker-end="url(#arr-sky)"/>
+          <path d="M 326 255 L 428 255" stroke="#10b981" stroke-width="2.5" marker-start="url(#arr-emerald)" marker-end="url(#arr-emerald)"/>
+          <rect x="336" y="176" width="84" height="46" rx="6" fill="#0f172a" stroke="#475569"/>
+          <text x="345" y="195" fill="#38bdf8" font-size="10" font-weight="bold" font-family="monospace">HTTPS TLS1.3</text>
+          <text x="345" y="211" fill="#94a3b8" font-size="9.5" font-family="monospace">Bearer Token</text>
+
+          <!-- 右区：私有云服务器黑盒 (Cloud Core Tier) -->
+          <rect x="432" y="20" width="692" height="460" rx="16" fill="#0c1424" stroke="#f43f5e" stroke-width="2"/>
+          <rect x="450" y="34" width="656" height="28" rx="6" fill="#f43f5e" fill-opacity="0.18"/>
+          <text x="464" y="53" fill="#fda4af" font-size="13" font-weight="bold" font-family="monospace">☁️ 您的私有云服务器 (100% 闭源黑盒 · 核心代码与知识库绝对不出云)</text>
+
+          <!-- 网关与多租户隔离层 -->
+          <rect x="450" y="76" width="185" height="384" rx="12" fill="#131c31" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="464" y="102" fill="#fbbf24" font-size="12" font-weight="bold">🛡️ 鉴权与多租户网关</text>
+          <text x="464" y="126" fill="#cbd5e1" font-size="10.5">• Nginx 反向代理 + WAF</text>
+          <text x="464" y="146" fill="#cbd5e1" font-size="10.5">• License Key / JWT 校验</text>
+          <text x="464" y="166" fill="#cbd5e1" font-size="10.5">• 租户级目录物理隔离:</text>
+          <text x="464" y="184" fill="#38bdf8" font-size="10" font-family="monospace">  workspaces/&lt;uid&gt;/&lt;proj&gt;</text>
+          <text x="464" y="210" fill="#cbd5e1" font-size="10.5">• Skill 知识库防爬脱敏:</text>
+          <text x="464" y="228" fill="#94a3b8" font-size="10">  外部 API 屏蔽全文下载</text>
+          <text x="464" y="254" fill="#cbd5e1" font-size="10.5">• C99 仿真 AST 安全过滤:</text>
+          <text x="464" y="272" fill="#94a3b8" font-size="10">  拦截 system/fork/popen</text>
+          <text x="464" y="300" fill="#cbd5e1" font-size="10.5">• 调用配额与商业计费统计</text>
+
+          <!-- 箭头 网关 -> 核心引擎 -->
+          <line x1="635" y1="250" x2="662" y2="250" stroke="#f59e0b" stroke-width="2.2" marker-end="url(#arr-amber)"/>
+
+          <!-- 核心业务引擎 (core/) -->
+          <rect x="666" y="76" width="220" height="384" rx="12" fill="#112233" stroke="#10b981" stroke-width="1.8"/>
+          <text x="680" y="102" fill="#34d399" font-size="12.5" font-weight="bold">🧠 Python 核心引擎 (core/)</text>
+          <rect x="678" y="116" width="196" height="64" rx="8" fill="#0b1524" stroke="#10b981" stroke-opacity="0.5"/>
+          <text x="688" y="136" fill="#6ee7b7" font-size="11" font-weight="bold">1. SSOT 软硬件双向编译器</text>
+          <text x="688" y="152" fill="#94a3b8" font-size="9.5" font-family="monospace">pinmux_guardian.py</text>
+          <text x="688" y="166" fill="#94a3b8" font-size="9.5" font-family="monospace">scaffold_generator.py</text>
+
+          <rect x="678" y="190" width="196" height="64" rx="8" fill="#0b1524" stroke="#10b981" stroke-opacity="0.5"/>
+          <text x="688" y="210" fill="#6ee7b7" font-size="11" font-weight="bold">2. PCB 自动布局 &amp; DRC 自愈</text>
+          <text x="688" y="226" fill="#94a3b8" font-size="9.5" font-family="monospace">heal_pcb_drc_conflicts()</text>
+          <text x="688" y="240" fill="#94a3b8" font-size="9.5" font-family="monospace">optimize_jlc_bom()</text>
+
+          <rect x="678" y="264" width="196" height="64" rx="8" fill="#0b1524" stroke="#10b981" stroke-opacity="0.5"/>
+          <text x="688" y="284" fill="#6ee7b7" font-size="11" font-weight="bold">3. 工业级加密 Skill 知识库</text>
+          <text x="688" y="300" fill="#94a3b8" font-size="9.5" font-family="monospace">skills/pcb-design-skill</text>
+          <text x="688" y="314" fill="#94a3b8" font-size="9.5" font-family="monospace">324页嘉立创规范内网注入</text>
+
+          <rect x="678" y="338" width="196" height="64" rx="8" fill="#0b1524" stroke="#10b981" stroke-opacity="0.5"/>
+          <text x="688" y="358" fill="#6ee7b7" font-size="11" font-weight="bold">4. 5阶段多Agent协同编排器</text>
+          <text x="688" y="374" fill="#94a3b8" font-size="9.5" font-family="monospace">agent_dispatcher.py</text>
+          <text x="688" y="388" fill="#94a3b8" font-size="9.5" font-family="monospace">req_extractor.py</text>
+
+          <!-- 右侧：云端工具链容器与 GPU 大模型集群 -->
+          <rect x="904" y="76" width="202" height="182" rx="12" fill="#171530" stroke="#a855f7" stroke-width="1.6"/>
+          <text x="916" y="102" fill="#d8b4fe" font-size="12" font-weight="bold">🤖 私有大模型推理节点</text>
+          <text x="916" y="124" fill="#cbd5e1" font-size="10.5">• vLLM 高吞吐推理集群</text>
+          <text x="916" y="142" fill="#38bdf8" font-size="10.5" font-family="monospace">  Qwen3.8-27B (:8012)</text>
+          <text x="916" y="162" fill="#cbd5e1" font-size="10.5">• 仅对云端后端内网开放</text>
+          <text x="916" y="182" fill="#cbd5e1" font-size="10.5">• 负责需求提炼、DRC自愈</text>
+          <text x="916" y="200" fill="#cbd5e1" font-size="10.5">  推理与 C99 驱动补全</text>
+
+          <rect x="904" y="274" width="202" height="186" rx="12" fill="#112030" stroke="#38bdf8" stroke-width="1.6"/>
+          <text x="916" y="300" fill="#38bdf8" font-size="12" font-weight="bold">🛠️ 云端 EDA &amp; 编译沙箱</text>
+          <text x="916" y="322" fill="#cbd5e1" font-size="10.5">• KiCad 10 CLI 无头容器</text>
+          <text x="916" y="340" fill="#94a3b8" font-size="10">  (DRC / 2D SVG / 3D 光追)</text>
+          <text x="916" y="362" fill="#cbd5e1" font-size="10.5">• arm-none-eabi-gcc 16</text>
+          <text x="916" y="380" fill="#94a3b8" font-size="10">  (编译 .elf/.hex/.bin)</text>
+          <text x="916" y="402" fill="#cbd5e1" font-size="10.5">• Host C99 状态机仿真沙箱</text>
+          <text x="916" y="420" fill="#94a3b8" font-size="10">  (12-Tick 逻辑分析仪波形)</text>
+        </svg>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- 第三章：前端云路由动态化改造方案（一套前端同时支持 Web 与桌面安装包）  -->
+    <!-- ================================================================== -->
+    <section id="sec-frontend" class="doc-card rounded-3xl p-8 space-y-6">
+      <div class="border-b border-slate-800 pb-4">
+        <span class="text-xs font-mono text-sky-400 font-bold uppercase">SECTION 03 · FRONTEND CLOUD API ROUTING</span>
+        <h3 class="text-xl font-extrabold text-slate-100 mt-1 flex items-center gap-2.5">
+          <i class="fa-solid fa-plug-circle-bolt text-sky-400"></i>
+          <span>三、 前端云 API 动态路由方案（零改动兼容现有 40+ 个后端接口）</span>
+        </h3>
+      </div>
+
+      <p class="text-xs text-slate-300 leading-relaxed">
+        目前前端 <code>web/static/app.js</code> 与 <code>web/static/workbench_abc.js</code> 使用相对路径 <code>fetch('/api/...')</code>。当您把前端单独打包成 macOS <code>.dmg</code> 或 Windows <code>.exe</code> 发给客户时，只需在 <code>index.html</code> 头部引入一段 40 行的 <strong>云端 API 路由与 License 鉴权拦截器（<code>cloud_bridge.js</code>）</strong>，即可在不修改业务代码的前提下，将所有请求自动指向您的云服务器：
+      </p>
+
+      <pre class="code-block rounded-2xl p-5 text-xs font-mono overflow-x-auto leading-relaxed">// 文件：web/static/cloud_bridge.js
+// 作用：在打包桌面客户端 (.dmg / .exe) 或独立部署前端时，自动将所有 /api/* 请求路由至云服务器并注入客户 License Key
+(function () {
+  // 1. 云服务器地址配置（可通过客户端登录页设置并持久化在 localStorage）
+  const DEFAULT_CLOUD_SERVER = localStorage.getItem('xter_cloud_api_base') || 'https://pcb-api.yourdomain.com';
+  const CLIENT_LICENSE_KEY   = localStorage.getItem('xter_client_license_key') || '';
+  const IS_DESKTOP_APP       = Boolean(window.__TAURI__ || window.electronAPI || location.protocol === 'file:' || location.protocol === 'tauri:');
+
+  window.XTER_CLOUD_CONFIG = {
+    isDesktop: IS_DESKTOP_APP,
+    apiBase: IS_DESKTOP_APP ? DEFAULT_CLOUD_SERVER.replace(/\/+$/, '') : '',
+    setLicenseKey(key) {
+      localStorage.setItem('xter_client_license_key', key.trim());
+      location.reload();
+    }
+  };
+
+  // 2. 全局重写 window.fetch：自动拼接云服务器域名并附加多租户 Authorization Header
+  const rawFetch = window.fetch.bind(window);
+  window.fetch = function (input, init = {}) {
+    let url = typeof input === 'string' ? input : input.url;
+    if (url.startsWith('/api/') && window.XTER_CLOUD_CONFIG.apiBase) {
+      url = window.XTER_CLOUD_CONFIG.apiBase + url;
+    }
+    const headers = new Headers(init.headers || {});
+    if (CLIENT_LICENSE_KEY) {
+      headers.set('Authorization', `Bearer ${CLIENT_LICENSE_KEY}`);
+    }
+    return rawFetch(url, { ...init, headers });
+  };
+})();</pre>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- 第四章：跨平台桌面客户端打包方案（macOS .dmg/.app 与 Windows .exe）   -->
+    <!-- ================================================================== -->
+    <section id="sec-desktop" class="doc-card rounded-3xl p-8 space-y-6">
+      <div class="border-b border-slate-800 pb-4">
+        <span class="text-xs font-mono text-purple-400 font-bold uppercase">SECTION 04 · MACOS (.DMG) &amp; WINDOWS (.EXE) DESKTOP PACKAGING</span>
+        <h3 class="text-xl font-extrabold text-slate-100 mt-1 flex items-center gap-2.5">
+          <i class="fa-solid fa-boxes-packing text-purple-400"></i>
+          <span>四、 将前端打包为 macOS (.dmg/.app) 与 Windows (.exe) 安装包方案</span>
+        </h3>
+      </div>
+
+      <!-- Tauri vs Electron 对比 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-5 rounded-2xl bg-slate-950 border border-emerald-500/40 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-extrabold text-emerald-300">🏆 推荐方案：Tauri 2.0 (Rust 原生壳)</span>
+            <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold">首选商业交付方案</span>
+          </div>
+          <ul class="text-xs text-slate-300 space-y-1.5 list-disc pl-4 leading-relaxed">
+            <li><strong>安装包体积仅 5~8 MB</strong>（复用 macOS WebKit 与 Windows Edge WebView2，无需捆绑 150MB Chromium）。</li>
+            <li><strong>极高防逆向安全性</strong>：外壳与本地桥接逻辑直接由 Rust 编译为机器码二进制（Mach-O / PE），无法像 Electron 那样用 <code>asar extract</code> 一键解压出源码。</li>
+            <li><strong>一键产出全平台安装包</strong>：支持生成 <code>.dmg</code>、<code>.app</code>（macOS Apple Silicon &amp; Intel）以及 <code>.exe</code>、<code>.msi</code>（Windows 10/11）。</li>
+          </ul>
+        </div>
+
+        <div class="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-extrabold text-sky-300">备选方案：Electron + electron-builder</span>
+            <span class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px] font-mono">兼容性广</span>
+          </div>
+          <ul class="text-xs text-slate-300 space-y-1.5 list-disc pl-4 leading-relaxed">
+            <li>自带固定版本 Chromium 内核，在老旧 Windows 7/10 机器上渲染表现完全一致。</li>
+            <li>缺点是安装包体积约 <code>120 MB ~ 160 MB</code>，且必须配合 <code>bytenode</code>（V8 字节码编译）+ <code>javascript-obfuscator</code> 才能防止客户解包查看前端 JS。</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Tauri 配置文件示例 -->
+      <div class="space-y-2">
+        <div class="text-xs font-bold text-slate-200 font-mono">📄 1. Tauri 跨平台打包配置（<code>desktop-client/src-tauri/tauri.conf.json</code>）：</div>
+        <pre class="code-block rounded-2xl p-5 text-xs font-mono overflow-x-auto leading-relaxed">{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "XterAI-PCB Studio",
+  "version": "2.0.0",
+  "identifier": "com.xterai.pcbstudio",
+  "build": {
+    "frontendDist": "../dist-obfuscated"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "XterAI-PCB IDE v2.0 — 软硬件协同研发工作台",
+        "width": 1520,
+        "height": 940,
+        "minWidth": 1200,
+        "minHeight": 760,
+        "resizable": true
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["dmg", "app", "nsis", "msi"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "minimumSystemVersion": "11.0"
+    },
+    "windows": {
+      "webviewInstallMode": { "type": "downloadBootstrapper" },
+      "nsis": { "installMode": "currentUser" }
+    }
+  }
+}</pre>
+      </div>
+
+      <!-- 一键打包命令 -->
+      <div class="space-y-2">
+        <div class="text-xs font-bold text-slate-200 font-mono">🔨 2. 前端混淆与双平台（macOS `.dmg` + Windows `.exe`）构建命令：</div>
+        <pre class="code-block rounded-2xl p-5 text-xs font-mono overflow-x-auto leading-relaxed"># 第 1 步：拷贝纯前端静态文件并对 app.js / workbench_abc.js 进行高强度混淆（不含任何 Python 后端文件）
+npx javascript-obfuscator web/static/app.js --output desktop-client/dist-obfuscated/static/app.js \
+  --compact true --control-flow-flattening true --string-array true --string-array-encoding base64
+npx javascript-obfuscator web/static/workbench_abc.js --output desktop-client/dist-obfuscated/static/workbench_abc.js \
+  --compact true --control-flow-flattening true --string-array true --string-array-encoding base64
+
+# 第 2 步：在 macOS 上一键生成 XterAI-PCB_2.0.0_universal.dmg 与 .app
+cd desktop-client &amp;&amp; npm run tauri build -- --target universal-apple-darwin
+
+# 第 3 步：在 Windows (或 GitHub Actions 自动构建矩阵) 上一键生成 XterAI-PCB_2.0.0_x64-setup.exe
+cd desktop-client &amp;&amp; npm run tauri build -- --target x86_64-pc-windows-msvc</pre>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- 第五章：桌面端「最后一公里」—— 云端大脑如何唤起客户本机的 KiCad / VS Code -->
+    <!-- ================================================================== -->
+    <section id="sec-bridge" class="doc-card rounded-3xl p-8 space-y-6">
+      <div class="border-b border-slate-800 pb-4">
+        <span class="text-xs font-mono text-amber-400 font-bold uppercase">SECTION 05 · HYBRID CLOUD &amp; LOCAL DESKTOP TOOL BRIDGE</span>
+        <h3 class="text-xl font-extrabold text-slate-100 mt-1 flex items-center gap-2.5">
+          <i class="fa-solid fa-bridge-water text-amber-400"></i>
+          <span>五、 关键痛点解决：后端在云上，如何让客户点击「用本机 KiCad / VS Code 打开」仍然生效？</span>
+        </h3>
+      </div>
+
+      <p class="text-xs text-slate-300 leading-relaxed">
+        当后端部署在云服务器时，云服务器显然无法直接执行 <code>subprocess.Popen(['open', '-a', 'KiCad'])</code> 打开客户电脑上的桌面软件。为此，我们针对<strong>网页版</strong>和<strong>桌面安装包版</strong>分别设计了无缝体验：
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+          <div class="text-xs font-bold text-sky-300">🌐 网页版用户点击「用 KiCad / VS Code 打开」时：</div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            前端自动检测当前为浏览器环境，直接触发下载最新生成的 <code>&lt;Project&gt;.kicad_pcb</code> 或全套软硬件工程包 <code>Full_Release_Bundle.zip</code>，并在浏览器右上角弹出提示引导用户在本地打开。
+          </p>
+        </div>
+        <div class="p-4 rounded-2xl bg-slate-950 border border-amber-500/40 space-y-2">
+          <div class="text-xs font-bold text-amber-300">💻 桌面客户端 (.dmg / .exe) 用户点击「用 KiCad / VS Code 打开」时：</div>
+          <p class="text-xs text-slate-400 leading-relaxed">
+            Tauri 客户端内置一个仅 50 行代码的 Rust 本地同步函数 <code>sync_and_open_local_tool(tool, cloud_zip_url)</code>：自动将云端当前工程同步解压至客户本机的 <code>~/XterAI-Workspaces/&lt;项目名&gt;/</code> 目录，并直接调用客户电脑上的 <strong>KiCad 10</strong> 或 <strong>VS Code</strong> 打开！
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- 第六章：云端后端 5 道防泄密安全加固防线                               -->
+    <!-- ================================================================== -->
+    <section id="sec-security" class="doc-card rounded-3xl p-8 space-y-6">
+      <div class="border-b border-slate-800 pb-4">
+        <span class="text-xs font-mono text-rose-400 font-bold uppercase">SECTION 06 · FIVE-LAYER IP &amp; CLOUD SECURITY HARDENING</span>
+        <h3 class="text-xl font-extrabold text-slate-100 mt-1 flex items-center gap-2.5">
+          <i class="fa-solid fa-shield-cat text-rose-400"></i>
+          <span>六、 云端后端的 5 道防泄密与安全加固防线（上线必配）</span>
+        </h3>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+        <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+          <div class="font-bold text-rose-300">1. Skill 知识库接口防爬取脱敏（保护 324 页蒸馏资产）</div>
+          <p class="text-slate-400 leading-relaxed">
+            在 <code>web/server.py</code> 的 <code>/api/skills/{skill_id}</code> 接口中开启云端保护模式（<code>CLOUD_PROTECT_SKILLS=1</code>）：云端 AI 推理在服务器内存里读取完整的 <code>SKILL.md / cheatsheet.md / patterns.md</code>，但对前端 API 仅返回章节目录与 300 字摘要，防止同行通过接口爬走您的核心硬件知识库。
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+          <div class="font-bold text-amber-300">2. 多租户工作空间物理隔离（Multi-Tenant Workspace）</div>
+          <p class="text-slate-400 leading-relaxed">
+            根据请求头中的 <code>Authorization: Bearer &lt;Token&gt;</code> 解析出唯一的 <code>tenant_id</code>，将云端工作空间路径映射为 <code>workspaces/&lt;tenant_id&gt;/&lt;project_name&gt;/</code>，确保 A 客户绝对无法访问或下载 B 客户的 PCB 与固件工程。
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+          <div class="font-bold text-emerald-300">3. 宿主机 C99 状态机仿真安全沙箱（防恶意代码注入）</div>
+          <p class="text-slate-400 leading-relaxed">
+            因为 <code>/api/firmware/simulate</code> 会编译并运行用户提交的 C99 代码，云端在编译前必须拦截 <code>system()</code>、<code>popen()</code>、<code>fork()</code>、<code>exec*()</code>、<code>&lt;unistd.h&gt;</code>、<code>&lt;sys/socket.h&gt;</code> 等危险调用，并在无外网权限、<code>--memory=256m --cpus=0.5</code> 的受限沙箱用户下执行。
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2">
+          <div class="font-bold text-sky-300">4. 隐藏云端大模型地址与 API Key（内网通信）</div>
+          <p class="text-slate-400 leading-relaxed">
+            在云端模式下，<code>/api/config</code> 接口自动隐藏您的 <code>https://cloud-vllm-cluster.internal/v1</code> 内网推理地址与 API Key；客户端无需配置大模型即可直接使用您云端的 <code>Qwen3.8-27B</code> 算力，按客户 License 配额扣减次数。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- 第七章：云服务器 Docker Compose + Nginx 生产部署蓝图                 -->
+    <!-- ================================================================== -->
+    <section id="sec-deploy" class="doc-card rounded-3xl p-8 space-y-6">
+      <div class="border-b border-slate-800 pb-4">
+        <span class="text-xs font-mono text-teal-400 font-bold uppercase">SECTION 07 · CLOUD SERVER DOCKER &amp; NGINX DEPLOYMENT</span>
+        <h3 class="text-xl font-extrabold text-slate-100 mt-1 flex items-center gap-2.5">
+          <i class="fa-solid fa-server text-teal-400"></i>
+          <span>七、 云服务器一键生产部署配置（Docker Compose + Nginx HTTPS）</span>
+        </h3>
+      </div>
+
+      <pre class="code-block rounded-2xl p-5 text-xs font-mono overflow-x-auto leading-relaxed"># 文件：docker-compose.cloud.yml（部署在您的私有云服务器上，客户不可见）
+version: "3.9"
+services:
+  xter-ai-pcb-core:
+    build:
+      context: .
+      dockerfile: Dockerfile.cloud
+    container_name: xter-ai-pcb-core
+    restart: always
+    environment:
+      - XTER_CLOUD_MODE=1
+      - XTER_PROTECT_SKILLS=1
+      - LLM_BASE_URL=https://cloud-vllm-cluster.internal/v1
+      - LLM_MODEL=Qwen3.8-27B
+    volumes:
+      - ./workspaces:/app/workspaces
+      - ./skills:/app/skills:ro
+      - ./config:/app/config
+    ports:
+      - "127.0.0.1:8989:8989"
+    deploy:
+      resources:
+        limits:
+          cpus: "4.0"
+          memory: 8G
+
+  nginx-gateway:
+    image: nginx:1.27-alpine
+    container_name: xter-ai-pcb-gateway
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deploy/certs:/etc/nginx/certs:ro
+    depends_on:
+      - xter-ai-pcb-core</pre>
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- 第八章：分阶段工程开发步骤与验收里程碑 (5-Phase Development Roadmap)  -->
+    <!-- ================================================================== -->
+    <section id="sec-roadmap" class="doc-card rounded-3xl p-8 space-y-6 border border-amber-500/40">
+      <div class="border-b border-slate-800 pb-4">
+        <span class="text-xs font-mono text-amber-400 font-bold uppercase">SECTION 08 · STEP-BY-STEP ENGINEERING DEVELOPMENT PLAN</span>
+        <h3 class="text-xl font-extrabold text-slate-100 mt-1 flex items-center gap-2.5">
+          <i class="fa-solid fa-list-check text-amber-400"></i>
+          <span>八、 分阶段工程开发步骤与验收标准（共 5 大阶段 · 10 个具体交付任务）</span>
+        </h3>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <!-- Phase 1 -->
+        <div class="p-5 rounded-2xl bg-slate-950 border border-rose-500/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="px-2.5 py-1 rounded-md bg-rose-500/20 text-rose-300 font-mono font-bold">Phase 1 · 云端后端安全加固与多租户隔离改造 (0.5 天)</span>
+            <span class="font-mono text-slate-400">涉及文件：core/verifier.py · core/tenant_auth.py · web/server.py</span>
+          </div>
+          <ul class="space-y-2 text-slate-300 list-decimal pl-5 leading-relaxed">
+            <li><strong>Step 1.1 宿主机 C99 仿真器安全沙箱拦截器</strong>：在 <code>core/verifier.py</code> 编译用户 C99 代码前新增 <code>audit_c_source_security()</code>，拦截 <code>system()</code>、<code>popen()</code>、<code>fork()</code>、<code>exec*()</code>、<code>&lt;unistd.h&gt;</code>、<code>&lt;sys/socket.h&gt;</code> 等系统调用，防止恶意客户读取云服务器文件。</li>
+            <li><strong>Step 1.2 Skill 知识库与模型配置接口云端脱敏</strong>：在 <code>web/server.py</code> 中支持 <code>XTER_CLOUD_MODE=1</code> 开关。开启后，<code>/api/skills/{id}</code> 仅对客户端返回章节目录与 300 字摘要（服务端内部 AI 推理仍加载完整 324 页《嘉立创实战指南》），并自动隐藏内网 <code>cloud-vllm-cluster.internal:8012</code> 地址。</li>
+            <li><strong>Step 1.3 License Key 鉴权与多租户工作空间物理隔离</strong>：新增 <code>core/tenant_auth.py</code> 与 <code>config/licenses.json</code>，解析请求头 <code>Authorization: Bearer &lt;LicenseKey&gt;</code>，将客户工程目录隔离至 <code>workspaces/&lt;tenant_id&gt;/&lt;project_name&gt;/</code>。</li>
+          </ul>
+        </div>
+
+        <!-- Phase 2 -->
+        <div class="p-5 rounded-2xl bg-slate-950 border border-sky-500/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="px-2.5 py-1 rounded-md bg-sky-500/20 text-sky-300 font-mono font-bold">Phase 2 · 前端云路由动态化与本地/云端双模桥接改造 (0.5 天)</span>
+            <span class="font-mono text-slate-400">涉及文件：web/static/cloud_bridge.js · web/static/index.html · web/static/app.js</span>
+          </div>
+          <ul class="space-y-2 text-slate-300 list-decimal pl-5 leading-relaxed">
+            <li><strong>Step 2.1 全局 Fetch 与文件下载云端路由拦截器</strong>：新建 <code>web/static/cloud_bridge.js</code>，重写 <code>window.fetch</code> 与下载链接，支持动态指向云服务器域名并自动携带客户 <code>License Key</code>。</li>
+            <li><strong>Step 2.2 客户端「云端连接与授权激活」弹窗 UI</strong>：在设置中心与状态栏增加云端服务器地址与授权码配置面板。</li>
+            <li><strong>Step 2.3 桌面端与网页端 <code>openLocalTool()</code> 自适应桥接</strong>：在网页版点击「用 KiCad / VS Code 打开」时自动触发下载工程包；在桌面客户端（<code>.dmg/.exe</code>）点击时调用本地同步桥接器自动拉取云端文件并唤起客户本机软件。</li>
+          </ul>
+        </div>
+
+        <!-- Phase 3 -->
+        <div class="p-5 rounded-2xl bg-slate-950 border border-purple-500/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="px-2.5 py-1 rounded-md bg-purple-500/20 text-purple-300 font-mono font-bold">Phase 3 · 前端源码抽离与高强度混淆构建流水线 (0.5 天)</span>
+            <span class="font-mono text-slate-400">涉及文件：scripts/build_client_dist.py · dist-client/</span>
+          </div>
+          <ul class="space-y-2 text-slate-300 list-decimal pl-5 leading-relaxed">
+            <li><strong>Step 3.1 纯前端物理剥离与零后端代码审计</strong>：编写自动化构建脚本 <code>scripts/build_client_dist.py</code>，仅提取 <code>web/static/</code> 纯前端资源至 <code>dist-client/</code>，自动校验确保 <code>0</code> 个 <code>.py</code> 文件、<code>0</code> 个 <code>skills/</code> 原文进入客户端包。</li>
+            <li><strong>Step 3.2 JS 压缩与控制流平坦化混淆</strong>：集成 <code>esbuild</code> / <code>javascript-obfuscator</code>，将前端 JS 混淆为不可读产物。</li>
+          </ul>
+        </div>
+
+        <!-- Phase 4 -->
+        <div class="p-5 rounded-2xl bg-slate-950 border border-emerald-500/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-300 font-mono font-bold">Phase 4 · Tauri 跨平台桌面安装包 (.dmg / .exe) 工程与自动构建 (0.5~1 天)</span>
+            <span class="font-mono text-slate-400">涉及文件：desktop-client/ · .github/workflows/build-desktop.yml</span>
+          </div>
+          <ul class="space-y-2 text-slate-300 list-decimal pl-5 leading-relaxed">
+            <li><strong>Step 4.1 搭建 Tauri 2.0 桌面工程与 Rust 本地同步桥接器</strong>：创建 <code>desktop-client/src-tauri/</code>，实现从云端拉取 <code>.kicad_pcb</code> 与 <code>firmware/</code> 缓存至本机 <code>~/XterAI-Workspaces/</code> 并唤起本机 KiCad 10 / VS Code 的原生命令。</li>
+            <li><strong>Step 4.2 配置 GitHub Actions 双系统自动打包矩阵</strong>：配置云端 CI 同时构建产出 macOS <code>XterAI-PCB.dmg/.app</code> 与 Windows <code>XterAI-PCB-Setup.exe/.msi</code>。</li>
+          </ul>
+        </div>
+
+        <!-- Phase 5 -->
+        <div class="p-5 rounded-2xl bg-slate-950 border border-teal-500/30 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="px-2.5 py-1 rounded-md bg-teal-500/20 text-teal-300 font-mono font-bold">Phase 5 · 云服务器 Docker 黑盒部署与商业化安全验收 (0.5 天)</span>
+            <span class="font-mono text-slate-400">涉及文件：Dockerfile.cloud · docker-compose.cloud.yml · deploy/nginx.conf</span>
+          </div>
+          <ul class="space-y-2 text-slate-300 list-decimal pl-5 leading-relaxed">
+            <li><strong>Step 5.1 云端容器化一键部署套件</strong>：封装包含 Python 3.12 + KiCad CLI + ARM-GCC 的云端镜像与 Nginx HTTPS 反向代理网关。</li>
+            <li><strong>Step 5.2 全链路商业化防泄密与多租户回归测试</strong>：验证租户隔离、Skill 防爬脱敏、C99 恶意系统调用拦截及客户端 33 项端到端功能 100% 通过。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="border-t border-slate-800/80 py-6 px-6 text-center text-xs text-slate-500 font-mono no-print">
+    XterAI-PCB Platform v2.0 · Cloud-Client Commercial Architecture &amp; IP Protection Blueprint
+  </footer>
+</body>
+</html>

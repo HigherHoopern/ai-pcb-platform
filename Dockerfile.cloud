@@ -1,0 +1,33 @@
+# ==============================================================================
+# Xter AI-PCB Platform — 云端黑盒核心引擎生产镜像 (Dockerfile.cloud)
+# 部署在私有云服务器，封存 core/*.py、324页蒸馏 skills/、KiCad CLI 与 ARM-GCC
+# ==============================================================================
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV PYTHONUNBUFFERED=1
+ENV XTER_CLOUD_MODE=1
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-pip python3-venv \
+    gcc g++ make git curl ca-certificates \
+    gcc-arm-none-eabi binutils-arm-none-eabi \
+    kicad \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY requirements.txt /app/requirements.txt
+RUN pip3 install --no-cache-dir --break-system-packages -r /app/requirements.txt
+
+COPY core/ /app/core/
+COPY knowledge_distiller/ /app/knowledge_distiller/
+COPY skills/ /app/skills/
+COPY config/ /app/config/
+COPY scripts/ /app/scripts/
+COPY web/ /app/web/
+COPY workspaces/ /app/workspaces/
+
+EXPOSE 8989
+
+CMD ["uvicorn", "web.server:app", "--host", "0.0.0.0", "--port", "8989", "--workers", "2"]

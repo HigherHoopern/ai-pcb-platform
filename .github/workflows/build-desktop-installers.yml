@@ -1,0 +1,62 @@
+name: Build Cross-Platform Desktop Installers (macOS .dmg & Windows .exe)
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-tauri-clients:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest'
+            args: '--target universal-apple-darwin'
+            os_label: 'macOS-Universal-DMG-APP'
+          - platform: 'windows-latest'
+            args: '--target x86_64-pc-windows-msvc'
+            os_label: 'Windows-x64-EXE-MSI'
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11 & Run Phase 3 Zero-Backend Client Build Audit
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Build Pure Frontend Dist & Enforce 0-Python / 0-Skill Leak Audit
+        run: |
+          python3 scripts/build_client_dist.py
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Rust Stable Toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || 'x86_64-pc-windows-msvc' }}
+
+      - name: Install Tauri CLI & Build Installers (.dmg / .app / .exe / .msi)
+        working-directory: desktop-client
+        run: |
+          npm install
+          npx tauri build ${{ matrix.args }}
+
+      - name: Upload Desktop Installer Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Xter-AI-PCB-Studio-${{ matrix.os_label }}
+          path: |
+            desktop-client/src-tauri/target/**/release/bundle/dmg/*.dmg
+            desktop-client/src-tauri/target/**/release/bundle/macos/*.app
+            desktop-client/src-tauri/target/**/release/bundle/nsis/*.exe
+            desktop-client/src-tauri/target/**/release/bundle/msi/*.msi

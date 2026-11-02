@@ -219,7 +219,8 @@ def run_firmware_simulation(
     temp_c: float = 26.5,
     vbat_mv: int = 3300,
     button_pressed: bool = False,
-    ticks: int = 12
+    ticks: int = 12,
+    custom_c_code: str = ""
 ) -> Dict[str, Any]:
     """
     执行嵌入式 C99 状态机在线仿真，返回：
@@ -227,6 +228,21 @@ def run_firmware_simulation(
     - fsm_state: 当前收敛状态与描述
     - pin_waveforms: 每个 SSOT 引脚的实时电平状态与 12-tick 逻辑分析仪波形
     """
+    from core.tenant_auth import audit_project_firmware_security, audit_c_source_security
+
+    # 云端安全沙箱审计：在宿主机编译运行前拦截 system/popen/fork/exec/unistd.h 等危险调用
+    sec_proj = audit_project_firmware_security(project_dir)
+    sec_inline = audit_c_source_security(custom_c_code, filename="inline_sim.c") if custom_c_code else {"safe": True, "violations": []}
+    all_sec_violations = sec_proj.get("violations", []) + sec_inline.get("violations", [])
+    if all_sec_violations:
+        v_first = all_sec_violations[0]
+        return {
+            "success": False,
+            "security_blocked": True,
+            "error": f"🛡️ 云端 C99 安全沙箱拦截：{v_first['file']}:{v_first['line']} 检测到危险调用 `{v_first['token']}` ({v_first['reason']})",
+            "violations": all_sec_violations
+        }
+
     adc_mv = int(max(0, min(3300, adc_mv)))
     temp_c = float(max(-40.0, min(125.0, temp_c)))
     vbat_mv = int(max(2000, min(5500, vbat_mv)))

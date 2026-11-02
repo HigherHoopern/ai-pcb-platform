@@ -228,7 +228,8 @@
     html:not(.dark) #pcb-pinout-drawer,
     html:not(.dark) #fw-pinout-drawer,
     html:not(.dark) #vscode-file-preview-modal > div,
-    html:not(.dark) #vscode-diff-modal > div {
+    html:not(.dark) #vscode-diff-modal > div,
+    html:not(.dark) #cloud-license-modal > div {
       background-color: #ffffff !important;
       border-color: #e2e8f0 !important;
       color: #0f172a !important;
@@ -816,6 +817,11 @@
             <span class="hidden xl:inline">AI 助手</span>
           </button>
         </div>
+
+        <button type="button" id="header-cloud-mode-badge" onclick="openCloudLicenseModal()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-300 border border-purple-500/30 text-xs font-medium transition flex items-center gap-1.5 whitespace-nowrap" title="配置商业化云端分离网关 (Cloud API URL) 与多租户 License Key 授权码">
+          <i class="fa-solid fa-cloud-shield text-[11px] text-purple-400"></i>
+          <span id="header-cloud-mode-text">☁️ 云端与商业授权</span>
+        </button>
 
         <button onclick="promptCreateNewProject()" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition flex items-center gap-1.5 whitespace-nowrap" title="使用行业工程模板向导创建新硬件工程">
           <i class="fa-solid fa-plus text-[10px]"></i> 新建
@@ -3499,6 +3505,101 @@ GPIOA_ODR |= (1U &lt;&lt; 4);
     </div>
   </div>
 
+  <!-- ==================================================================== -->
+  <!-- 商业化云端分离架构 & 多租户 License 授权配置弹窗 (Phase 1+2 Cloud Hub) -->
+  <!-- ==================================================================== -->
+  <div id="cloud-license-modal" class="hidden fixed inset-0 z-50 bg-black/75 backdrop-blur-sm items-center justify-center p-4">
+    <div class="w-full max-w-2xl rounded-2xl bg-slate-900 border border-purple-500/40 shadow-2xl overflow-hidden flex flex-col max-h-[88vh]">
+      <div class="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-950/70">
+        <div class="flex items-center gap-2.5">
+          <span class="w-8 h-8 rounded-xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300">
+            <i class="fa-solid fa-cloud-shield"></i>
+          </span>
+          <div>
+            <h3 class="text-sm font-extrabold text-slate-100">☁️ 商业化云端分离网关 &amp; 多租户授权中心 (Cloud &amp; License Hub)</h3>
+            <p class="text-[11px] text-slate-400">前端壳与云端核心引擎 (`core/` + 324页 `skills/` + `vLLM`) 完全物理分离 · 支持 Web / macOS `.dmg` / Windows `.exe`</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeCloudLicenseModal()" class="w-7 h-7 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto space-y-4 text-xs">
+        <!-- 实时防护与租户沙箱状态卡片 -->
+        <div id="cloud-live-status-summary"></div>
+
+        <!-- 云端 API 地址与 License Key 表单 -->
+        <div class="space-y-3 p-4 rounded-xl bg-slate-950/70 border border-slate-800">
+          <div class="flex items-center justify-between">
+            <label class="font-bold text-slate-200 flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" id="cloud-cfg-enable-checkbox" class="rounded border-slate-600 text-purple-500 focus:ring-purple-500">
+              <span>启用商业化云端多租户分离模式 (Cloud Multi-Tenant &amp; IP Desensitization Mode)</span>
+            </label>
+            <a href="/static/architecture_plan.html" target="_blank" class="text-[11px] text-purple-400 hover:text-purple-300 underline font-mono">
+              查看架构白皮书 ↗
+            </a>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-400 mb-1">
+              1. 云端核心 API 服务器地址 (Cloud API Base URL，留空则默认连接当前宿主机网关)
+            </label>
+            <input type="text" id="cloud-cfg-api-base" placeholder="例如: https://api.your-pcb-cloud.com 或留空使用当前网关" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-slate-100 font-mono text-xs focus:outline-none focus:border-purple-500">
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-400 mb-1">
+              2. 客户商业授权码 (Enterprise / Pro License Key)
+            </label>
+            <div class="flex gap-2">
+              <input type="text" id="cloud-cfg-license-key" placeholder="输入 XTER-PRO-2026-XXXX 商业授权码..." class="flex-1 px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-emerald-300 font-mono text-xs focus:outline-none focus:border-emerald-500">
+              <button type="button" onclick="saveAndVerifyCloudLicense()" class="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow transition whitespace-nowrap">
+                <i class="fa-solid fa-key mr-1"></i> 验证并激活授权
+              </button>
+            </div>
+          </div>
+
+          <!-- 一键填入预设演示 License Key -->
+          <div class="pt-1">
+            <div class="text-[11px] text-slate-400 mb-1.5">⚡ 一键填入内置多租户测试 License Key：</div>
+            <div class="flex flex-wrap gap-1.5">
+              <button type="button" onclick="applyDemoLicenseKey('XTER-PRO-2026-CLIENT01')" class="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-300 font-mono text-[11px] transition">
+                客户A专业版: XTER-PRO-2026-CLIENT01
+              </button>
+              <button type="button" onclick="applyDemoLicenseKey('XTER-PRO-2026-CLIENT02')" class="px-2.5 py-1 rounded-lg bg-sky-500/15 hover:bg-sky-500/25 border border-sky-500/30 text-sky-300 font-mono text-[11px] transition">
+                客户B专业版: XTER-PRO-2026-CLIENT02
+              </button>
+              <button type="button" onclick="applyDemoLicenseKey('XTER-TRIAL-2026-DEMO')" class="px-2.5 py-1 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 font-mono text-[11px] transition">
+                试用版: XTER-TRIAL-2026-DEMO
+              </button>
+              <button type="button" onclick="applyDemoLicenseKey('XTER-ENT-2026-MASTER')" class="px-2.5 py-1 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 font-mono text-[11px] transition">
+                企业管理员: XTER-ENT-2026-MASTER
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 校验结果反馈 -->
+        <div id="cloud-verify-result-box" class="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400">
+          💡 选择上方任一客户授权码即可立即体验【多租户独立工作空间隔离】与【324页嘉立创知识库防爬脱敏保护】。
+        </div>
+      </div>
+
+      <div class="px-5 py-3 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between">
+        <button type="button" onclick="switchToLocalDevMode()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium transition">
+          <i class="fa-solid fa-laptop-code mr-1"></i> 切回本地开发模式 (Local Dev)
+        </button>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="closeCloudLicenseModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold">
+            关闭窗口
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/cloud_bridge.js"></script>
   <script src="/static/app.js"></script>
   <script src="/static/workbench_abc.js"></script>
 </body>

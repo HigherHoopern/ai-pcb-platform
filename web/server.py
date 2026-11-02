@@ -18,6 +18,7 @@ import shutil
 import subprocess
 from typing import Optional
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 
 PLATFORM_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,6 +28,14 @@ STATIC_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static")
 DISTILLER_PY = os.path.join(PLATFORM_ROOT, "knowledge_distiller", "distiller.py")
 
 from core.config_manager import load_settings, save_settings, resolve_llm_config
+from core.tenant_auth import (
+    resolve_request_tenant,
+    validate_tenant_project_path,
+    list_tenant_projects,
+    desensitize_skill_detail,
+    mask_cloud_settings,
+    load_licenses_config
+)
 from core.llm_client import test_llm_connection
 from core.agent_runner import (
     detect_installed_agents,
@@ -80,10 +89,84 @@ from core.copilot_engine import (
     rollback_copilot_snapshot
 )
 
-app = FastAPI(title="AI-PCB Platform v2.0")
+app = FastAPI(title="AI-PCB Platform v2.0 (Cloud & Desktop Dual-Mode)")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 if os.path.exists(STATIC_DIR):
     from fastapi.staticfiles import StaticFiles
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+
+# ==============================================================================
+# 0. 商业化云端分离架构 & 多租户 License 鉴权 API (Phase 1 Cloud Security Hub)
+# ==============================================================================
+@app.get("/api/cloud/status")
+def api_cloud_status(request: Request):
+    """查询当前服务的云端分离模式状态、当前租户隔离信息与核心 IP 防护策略"""
+    tenant_ctx = resolve_request_tenant(request, require_auth_if_cloud=False)
+    lic_cfg = load_licenses_config()
+    return {
+        "success": True,
+        "cloud_mode_env": os.environ.get("XTER_CLOUD_MODE", "0") == "1",
+        "tenant": {
+            "authenticated": tenant_ctx.get("authenticated", True),
+            "is_cloud_mode": tenant_ctx.get("is_cloud_mode", False),
+            "tenant_id": tenant_ctx.get("tenant_id", "default"),
+            "owner": tenant_ctx.get("owner", ""),
+            "tier": tenant_ctx.get("tier", "local_dev"),
+            "features": tenant_ctx.get("features", []),
+            "workspace_root": tenant_ctx.get("workspace_root", ""),
+        },
+        "ip_protection": {
+            "core_python_hidden": True,
+            "skill_full_markdown_protected": True,
+            "vllm_internal_ip_masked": True,
+            "c99_host_sandbox_enabled": True,
+        },
+        "available_demo_keys": list((lic_cfg.get("licenses") or {}).keys())
+    }
+
+
+@app.post("/api/cloud/verify_license")
+def api_verify_license(data: dict):
+    """校验客户输入的商业授权码 (License Key) 并初始化独立租户工作空间"""
+    raw_key = (data.get("license_key") or "").strip()
+    lic_cfg = load_licenses_config()
+    licenses_map = lic_cfg.get("licenses", {})
+    if not raw_key or raw_key not in licenses_map:
+        return {
+            "success": False,
+            "valid": False,
+            "error": "无效的商业授权码 (Invalid License Key)，请核对您的企业/专业版 License Key。"
+        }
+    info = licenses_map[raw_key]
+    if not info.get("active", True):
+        return {
+            "success": False,
+            "valid": False,
+            "error": f"授权码已停用或过期 (Expires: {info.get('expires_at', 'unknown')})"
+        }
+    from core.tenant_auth import get_tenant_workspace_root
+    tenant_id = info.get("tenant_id", "tenant_unknown")
+    ws_root = get_tenant_workspace_root(tenant_id, is_cloud_mode=True)
+    return {
+        "success": True,
+        "valid": True,
+        "license_key": raw_key,
+        "tenant_id": tenant_id,
+        "owner": info.get("owner", ""),
+        "tier": info.get("tier", "pro"),
+        "expires_at": info.get("expires_at", ""),
+        "max_projects": info.get("max_projects", 20),
+        "features": info.get("features", []),
+        "workspace_root": ws_root,
+        "message": f"✅ 商业授权验证通过：{info.get('owner')} ({info.get('tier').upper()})，已挂载独立租户沙箱！"
+    }
 
 
 def _get_tool_version(cmd_args, default_desc: str) -> str:
@@ -165,18 +248,28 @@ def get_preflight():
 # 1. 模型与 Agent 配置中心 API (Model & Agent Configuration Hub)
 # ==============================================================================
 @app.get("/api/config")
-def get_config():
-    settings = load_settings()
-    return {
-        "settings": settings,
+def get_config(request: Request):
+    tenant_ctx = resolve_request_tenant(request, require_auth_if_cloud=True)
+    resp = {
+        "settings": load_settings(),
         "active_llm": resolve_llm_config("req_distill"),
         "skill_llm": resolve_llm_config("skill_distill"),
-        "agents_detected": detect_installed_agents()
+        "agents_detected": detect_installed_agents(),
+        "tenant": {
+            "is_cloud_mode": tenant_ctx.get("is_cloud_mode", False),
+            "tenant_id": tenant_ctx.get("tenant_id", "default"),
+            "owner": tenant_ctx.get("owner", ""),
+            "tier": tenant_ctx.get("tier", "local_dev"),
+        }
     }
+    return mask_cloud_settings(resp, tenant_ctx)
 
 
 @app.post("/api/config/save")
-def save_config_endpoint(data: dict):
+def save_config_endpoint(data: dict, request: Request):
+    tenant_ctx = resolve_request_tenant(request, require_auth_if_cloud=True)
+    if tenant_ctx.get("is_cloud_mode") and tenant_ctx.get("tier") != "enterprise_admin":
+        raise HTTPException(status_code=403, detail="云端租户模式下，仅企业管理员 (Enterprise Admin) 可修改全局算力与模型路由配置。")
     current = load_settings()
     if "llm" in data:
         current["llm"] = data["llm"]
@@ -202,19 +295,24 @@ def test_llm_endpoint(data: dict):
 # 2. 多工程工作空间与 SSOT 管理 API (Multi-Project Workspace)
 # ==============================================================================
 @app.get("/api/projects")
-def api_list_projects():
+def api_list_projects(request: Request):
+    tenant_ctx = resolve_request_tenant(request, require_auth_if_cloud=True)
+    if tenant_ctx.get("is_cloud_mode") and tenant_ctx.get("tenant_id") != "tenant_admin_master":
+        return list_tenant_projects(tenant_ctx)
     return list_projects()
 
 
 @app.post("/api/projects/select")
-def api_select_project(data: dict):
-    project_dir = data.get("project_dir", "")
+def api_select_project(data: dict, request: Request):
+    tenant_ctx = resolve_request_tenant(request, require_auth_if_cloud=True)
+    project_dir = validate_tenant_project_path(data.get("project_dir", ""), tenant_ctx)
     if not project_dir or not os.path.exists(project_dir):
         raise HTTPException(status_code=400, detail=f"工程目录不存在: {project_dir}")
-    register_project_dir(project_dir)
-    settings = load_settings()
-    settings.setdefault("workspace", {})["active_project_dir"] = project_dir
-    save_settings(settings)
+    if not tenant_ctx.get("is_cloud_mode"):
+        register_project_dir(project_dir)
+        settings = load_settings()
+        settings.setdefault("workspace", {})["active_project_dir"] = project_dir
+        save_settings(settings)
     return {
         "success": True,
         "active_project_dir": project_dir,
@@ -223,15 +321,20 @@ def api_select_project(data: dict):
 
 
 @app.get("/api/projects/detail")
-def api_get_project_detail(project_dir: Optional[str] = Query(None)):
+def api_get_project_detail(request: Request, project_dir: Optional[str] = Query(None)):
+    tenant_ctx = resolve_request_tenant(request, require_auth_if_cloud=True)
     try:
-        return {"success": True, "detail": get_project_details(project_dir)}
+        resolved_dir = validate_tenant_project_path(project_dir, tenant_ctx) if tenant_ctx.get("is_cloud_mode") else project_dir
+        return {"success": True, "detail": get_project_details(resolved_dir)}
+    except HTTPException:
+        raise
     except Exception as e:
         return {"success": False, "error": str(e)}
 
 
 @app.post("/api/projects/create")
-def api_create_project(data: dict):
+def api_create_project(data: dict, request: Request):
+    tenant_ctx = resolve_request_tenant(request, require_auth_if_cloud=True)
     template_id = data.get("template_id") or ""
     tpl = get_project_template(template_id) if template_id else None
 
@@ -241,8 +344,11 @@ def api_create_project(data: dict):
         or "New-Hardware-Project"
     ).strip()
     folder_slug = raw_name.lower().replace(" ", "_").replace("/", "_")
-    default_ws_root = load_settings().get("workspace", {}).get("projects_root") or os.path.join(PLATFORM_ROOT, "workspaces")
-    parent_dir = data.get("parent_dir") or default_ws_root
+    if tenant_ctx.get("is_cloud_mode") and tenant_ctx.get("tenant_id") != "tenant_admin_master":
+        parent_dir = tenant_ctx["workspace_root"]
+    else:
+        default_ws_root = load_settings().get("workspace", {}).get("projects_root") or os.path.join(PLATFORM_ROOT, "workspaces")
+        parent_dir = data.get("parent_dir") or default_ws_root
     out_dir = os.path.join(parent_dir, folder_slug)
 
     os.makedirs(os.path.join(out_dir, "hardware", "scripts"), exist_ok=True)
@@ -332,15 +438,16 @@ def api_create_project(data: dict):
             render_project_3d(out_dir)
         except Exception:
             pass
-    register_project_dir(out_dir)
-
-    settings = load_settings()
-    settings.setdefault("workspace", {})["active_project_dir"] = out_dir
-    save_settings(settings)
+    if not tenant_ctx.get("is_cloud_mode"):
+        register_project_dir(out_dir)
+        settings = load_settings()
+        settings.setdefault("workspace", {})["active_project_dir"] = out_dir
+        save_settings(settings)
 
     return {
         "success": True,
         "project_dir": out_dir,
+        "tenant_id": tenant_ctx.get("tenant_id", "default"),
         "detail": get_project_details(out_dir)
     }
 
@@ -633,7 +740,8 @@ def api_uninstall_skill(data: dict):
 
 
 @app.get("/api/skills/{skill_name}")
-def get_skill_detail(skill_name: str):
+def get_skill_detail(skill_name: str, request: Request):
+    tenant_ctx = resolve_request_tenant(request, require_auth_if_cloud=True)
     p = os.path.join(PLATFORM_ROOT, "skills", skill_name)
     if not os.path.isdir(p):
         # 支持直接预览尚未安装的市场精选 Skill
@@ -641,7 +749,7 @@ def get_skill_detail(skill_name: str):
         from core.skill_marketplace import MARKETPLACE_CATALOG
         cat = next((x for x in MARKETPLACE_CATALOG if x["id"] == skill_name), None)
         if cat:
-            return {
+            raw_cat = {
                 "name": cat["id"],
                 "title": cat["title"],
                 "publisher": cat["publisher"],
@@ -656,6 +764,7 @@ def get_skill_detail(skill_name: str):
                 "cheatsheet_md": cat["cheatsheet_md"],
                 "patterns_md": cat["patterns_md"]
             }
+            return desensitize_skill_detail(raw_cat, tenant_ctx)
         raise HTTPException(status_code=404, detail="Skill not found")
 
     def _read_opt(fname):
@@ -667,7 +776,7 @@ def get_skill_detail(skill_name: str):
 
     reg = list_all_skills_and_marketplace()
     inst = next((x for x in reg.get("installed", []) if x["name"] == skill_name), {})
-    return {
+    raw_skill = {
         "name": skill_name,
         "title": inst.get("title", skill_name),
         "publisher": inst.get("publisher", "Local / Custom"),
@@ -682,6 +791,7 @@ def get_skill_detail(skill_name: str):
         "cheatsheet_md": _read_opt("cheatsheet.md"),
         "patterns_md": _read_opt("patterns.md")
     }
+    return desensitize_skill_detail(raw_skill, tenant_ctx)
 
 
 # ==============================================================================
@@ -1091,21 +1201,25 @@ def api_copilot_clear(data: dict):
 
 
 @app.post("/api/firmware/simulate")
-def api_firmware_simulate(data: dict):
+def api_firmware_simulate(data: dict, request: Request):
+    tenant_ctx = resolve_request_tenant(request, require_auth_if_cloud=True)
     from core.firmware_simulator import run_firmware_simulation
-    project_dir = data.get("project_dir") or load_settings().get("workspace", {}).get("active_project_dir", "")
+    raw_dir = data.get("project_dir") or load_settings().get("workspace", {}).get("active_project_dir", "")
+    project_dir = validate_tenant_project_path(raw_dir, tenant_ctx) if tenant_ctx.get("is_cloud_mode") else raw_dir
     adc_mv = int(data.get("adc_mv", 1200))
     temp_c = float(data.get("temp_c", 26.5))
     vbat_mv = int(data.get("vbat_mv", 3300))
     button_pressed = bool(data.get("button_pressed", False))
     ticks = int(data.get("ticks", 12))
+    custom_c_code = str(data.get("custom_c_code") or "")
     return run_firmware_simulation(
         project_dir=project_dir,
         adc_mv=adc_mv,
         temp_c=temp_c,
         vbat_mv=vbat_mv,
         button_pressed=button_pressed,
-        ticks=ticks
+        ticks=ticks,
+        custom_c_code=custom_c_code
     )
 
 
