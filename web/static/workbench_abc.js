@@ -68,7 +68,7 @@ function toggleGlobalCopilotSidebar(forceState = null) {
   // 更新右侧边缘折叠/展开把手的状态与位置
   if (edgeHandle) {
     edgeHandle.style.right = globalCopilotOpen ? '24rem' : '0px';
-    edgeHandle.title = globalCopilotOpen ? '收起右侧「✨ AI 设计精修」侧边栏' : '展开右侧「✨ AI 设计精修」侧边栏';
+    edgeHandle.title = globalCopilotOpen ? '收起右侧「🧭 维吉尔 · Virgil」领航边栏' : '展开右侧「🧭 维吉尔 · Virgil」领航边栏';
   }
   if (edgeIcon) {
     edgeIcon.className = globalCopilotOpen
@@ -328,7 +328,7 @@ async function sendGlobalCopilotMessage() {
           .join('');
         aiDiv.innerHTML = `
           <div class="flex items-center justify-between text-[10px] font-mono text-pink-300">
-            <span>✨ ${targetModule === 'firmware' ? 'C99 固件精修 Agent' : 'PCB 版图精修 Agent'}</span>
+            <span>🧭 维吉尔 (Virgil) · ${targetModule === 'firmware' ? 'C99 固件领航' : 'PCB 版图领航'}</span>
             <span>${escapeHtml(lastReply.timestamp || '')}</span>
           </div>
           ${actionsHtml ? `<div class="p-2 rounded bg-emerald-500/10 border border-emerald-500/30 space-y-0.5">${actionsHtml}</div>` : ''}
@@ -346,7 +346,7 @@ async function sendGlobalCopilotMessage() {
     }
   } finally {
     if (sendBtn) sendBtn.disabled = false;
-    if (statusEl) statusEl.innerText = 'Ready · 自动快照保护';
+    if (statusEl) statusEl.innerText = 'Virgil Ready · 自动快照保护';
   }
 }
 
@@ -1474,11 +1474,11 @@ window.clearGlobalRefinementHistory = async function () {
     box.innerHTML = `
       <div class="p-3 rounded-xl bg-slate-900/90 border border-pink-500/30 text-slate-200 leading-relaxed space-y-1.5">
         <div class="font-bold text-pink-300 flex items-center justify-between">
-          <span><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> ✨ AI 设计精修台已重置</span>
+          <span><i class="fa-solid fa-compass mr-1"></i> 🧭 维吉尔 (Virgil) · 领航记录已重置</span>
           <span class="text-[10px] font-mono text-slate-400">快照保护 + Diff</span>
         </div>
         <p class="text-[11px] text-slate-300 leading-relaxed">
-          历史对话已清空。您可以随时针对 <b>PCB 电路板</b> 或 <b>C99 固件程序</b> 提出新的修改要求！
+          历史对话已清空。我是你的理性与技艺引路人，随时可针对 <b>PCB 电路板</b> 或 <b>C99 固件程序</b> 提出新的修改要求！
         </p>
       </div>
     `;

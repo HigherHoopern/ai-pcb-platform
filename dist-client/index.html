@@ -839,9 +839,9 @@
             <i class="fa-solid fa-wave-square text-slate-400"></i>
             <span class="hidden xl:inline">仿真/诊断</span>
           </button>
-          <button type="button" id="btn-header-copilot" onclick="toggleGlobalCopilotSidebar()" class="px-2.5 py-1 rounded text-[11px] font-bold text-pink-300 hover:text-white bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/30 flex items-center gap-1.5 transition" title="展开/折叠右侧「✨ AI 设计精修」侧边栏（针对 PCB 版图或 C99 程序提出修改要求，自动闭环验证）">
-            <i class="fa-solid fa-wand-magic-sparkles text-pink-400"></i>
-            <span class="hidden xl:inline">✨ AI 设计精修</span>
+          <button type="button" id="btn-header-copilot" onclick="toggleGlobalCopilotSidebar()" class="px-2.5 py-1 rounded text-[11px] font-bold text-pink-300 hover:text-white bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/30 flex items-center gap-1.5 transition" title="展开/折叠右侧「🧭 维吉尔 · Virgil」软硬件领航边栏（针对 PCB 版图或 C99 程序提出修改要求，自动闭环验证）">
+            <i class="fa-solid fa-compass text-pink-400"></i>
+            <span class="hidden xl:inline">🧭 维吉尔 · Virgil</span>
           </button>
         </div>
 
@@ -1558,7 +1558,7 @@
               <span class="font-bold text-amber-300"><i class="fa-solid fa-file-signature mr-1.5"></i>软硬件双闭环交付验收报告 (PIPELINE_DELIVERY_REPORT.md)</span>
               <div class="flex items-center gap-1.5">
                 <button type="button" onclick="openRefinementSidebar('both')" class="text-[11px] px-2.5 py-0.5 rounded bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 border border-pink-500/30 font-bold">
-                  ✨ AI 设计精修
+                  🧭 维吉尔 · 协同调优
                 </button>
                 <button onclick="switchTab('pcb')" class="text-[11px] px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/30">前往 PCB / 固件工坊</button>
               </div>
@@ -1885,8 +1885,8 @@
                 <button onclick="openLocalTool('easyeda')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 font-medium text-xs flex items-center gap-1.5 transition">
                   <i class="fa-solid fa-cloud-arrow-up text-sky-400"></i> 嘉立创导入
                 </button>
-                <button onclick="openRefinementSidebar('pcb')" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-bold text-xs flex items-center gap-1 transition" title="展开右侧「✨ AI 设计精修」侧边栏并切换至 PCB 改板模式">
-                  <i class="fa-solid fa-wand-magic-sparkles"></i> ✨ AI 改板精修
+                <button onclick="openRefinementSidebar('pcb')" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 font-bold text-xs flex items-center gap-1 transition" title="展开右侧「🧭 维吉尔 · Virgil」边栏并切换至 PCB 改板模式">
+                  <i class="fa-solid fa-compass"></i> 🧭 维吉尔 · 改板
                 </button>
               </div>
             </div>
@@ -2108,8 +2108,8 @@
             <button onclick="openLocalTool('vscode')" class="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-[11px] text-slate-300 border border-slate-700 font-medium flex items-center gap-1 transition">
               <i class="fa-solid fa-laptop-code text-sky-400"></i> VS Code 打开
             </button>
-            <button onclick="openRefinementSidebar('firmware')" class="px-2.5 py-1 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 font-bold text-[11px] flex items-center gap-1 transition" title="展开右侧「✨ AI 设计精修」侧边栏并切换至 C99 固件改码模式">
-              <i class="fa-solid fa-wand-magic-sparkles"></i> ✨ AI 改码精修
+            <button onclick="openRefinementSidebar('firmware')" class="px-2.5 py-1 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 font-bold text-[11px] flex items-center gap-1 transition" title="展开右侧「🧭 维吉尔 · Virgil」边栏并切换至 C99 固件改码模式">
+              <i class="fa-solid fa-compass"></i> 🧭 维吉尔 · 改码
             </button>
 
             <!-- 紧凑型 AI 引擎选择器 (保持 DOM 兼容) -->
@@ -3134,21 +3134,21 @@ GPIOA_ODR |= (1U &lt;&lt; 4);
 
           <div class="p-4 rounded-xl bg-slate-950/80 border border-pink-500/30 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-extrabold text-pink-300">✨ 模式二：右侧「AI 设计精修」可折叠侧边栏</span>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-pink-500/15 text-pink-300">自由展开/折叠 · 快照回滚</span>
+              <span class="text-xs font-extrabold text-pink-300">🧭 模式二：右侧「维吉尔 · Virgil」可折叠领航边栏</span>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-pink-500/15 text-pink-300">理性与技艺 · 自由折叠</span>
             </div>
             <p class="text-xs text-slate-300 leading-relaxed">
-              当生成的 <strong>PCB 电路板</strong> 或 <strong>C99 固件程序</strong> 不符合要求时，随时点击顶部或屏幕右侧边缘的 <code class="text-pink-300">✨ AI 设计精修</code> 展开右侧边栏：<br>
-              • <strong>📐 PCB 改板精修</strong>：调整板框尺寸、移动元器件坐标、修复 DRC 间距违规、一键替换立创基础库；<br>
-              • <strong>💻 C99 改码精修</strong>：修复 GCC 编译报错、调整报警阈值与状态机、补全漏写引脚宏驱动；<br>
+              当生成的 <strong>PCB 电路板</strong> 或 <strong>C99 固件程序</strong> 陷入 DRC 冲突或 Bug 迷雾时，随时点击顶部或屏幕右侧边缘的 <code class="text-pink-300">🧭 维吉尔 · Virgil</code> 展开右侧边栏：<br>
+              • <strong>📐 PCB 改板领航</strong>：调整板框尺寸、移动元器件坐标、修复 DRC 间距违规、一键替换立创基础库；<br>
+              • <strong>💻 C99 改码领航</strong>：修复 GCC 编译报错、调整报警阈值与状态机、补全漏写引脚宏驱动；<br>
               • <strong>🔄 软硬件联动</strong>：同时修改引脚表、重绘 PCB 并同步重写 C99 固件，每次修改自动备份快照并支持 <strong>Side-by-Side Diff</strong> 与一键撤销回滚！
             </p>
             <div class="grid grid-cols-2 gap-2 pt-1">
               <button type="button" onclick="openRefinementSidebar('pcb')" class="py-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-[11px] font-bold transition">
-                📐 展开 PCB 改板精修 →
+                📐 唤起维吉尔改板 →
               </button>
               <button type="button" onclick="openRefinementSidebar('firmware')" class="py-1.5 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 text-[11px] font-bold transition">
-                💻 展开 C99 改码精修 →
+                💻 唤起维吉尔改码 →
               </button>
             </div>
           </div>
@@ -3318,46 +3318,46 @@ GPIOA_ODR |= (1U &lt;&lt; 4);
   <!-- ==================================================================== -->
   <!-- 右侧边缘常驻折叠/展开把手 (#right-sidebar-edge-handle)                     -->
   <!-- ==================================================================== -->
-  <button type="button" id="right-sidebar-edge-handle" onclick="toggleGlobalCopilotSidebar()" class="fixed right-0 top-1/2 -translate-y-1/2 z-50 px-1.5 py-3.5 rounded-l-xl bg-slate-900/95 hover:bg-pink-500/20 border border-r-0 border-pink-500/40 text-pink-300 shadow-xl flex flex-col items-center gap-1.5 transition cursor-pointer select-none" title="展开/收起右侧「✨ AI 设计精修」侧边栏">
+  <button type="button" id="right-sidebar-edge-handle" onclick="toggleGlobalCopilotSidebar()" class="fixed right-0 top-1/2 -translate-y-1/2 z-50 px-1.5 py-3.5 rounded-l-xl bg-slate-900/95 hover:bg-pink-500/20 border border-r-0 border-pink-500/40 text-pink-300 shadow-xl flex flex-col items-center gap-1.5 transition cursor-pointer select-none" title="展开/收起右侧「🧭 维吉尔 · Virgil」软硬件领航边栏">
     <i id="right-sidebar-edge-icon" class="fa-solid fa-chevron-left text-[10px] text-pink-400"></i>
-    <span class="text-[10px] font-extrabold tracking-widest" style="writing-mode: vertical-rl;">✨ AI 设计精修</span>
+    <span class="text-[10px] font-extrabold tracking-widest" style="writing-mode: vertical-rl;">🧭 维吉尔 · Virgil</span>
   </button>
 
   <!-- ==================================================================== -->
-  <!-- 区域 ⑤：右侧可折叠「✨ AI 设计精修」统一侧边栏 (#vscode-copilot-sidebar)     -->
+  <!-- 区域 ⑤：右侧可折叠「🧭 维吉尔 · Virgil」统一侧边栏 (#vscode-copilot-sidebar) -->
   <!-- ==================================================================== -->
   <aside id="vscode-copilot-sidebar" class="hidden w-96 border-l border-slate-800/90 bg-slate-950/95 flex flex-col shrink-0 select-none z-40">
     <!-- 1. 顶部标题栏 + Diff / 清空 / 折叠开关 -->
     <div class="px-3.5 py-2.5 border-b border-slate-800/80 flex items-center justify-between bg-slate-900/60">
       <div class="flex items-center gap-2">
         <span class="w-6 h-6 rounded-lg bg-gradient-to-br from-pink-500/25 to-indigo-500/25 border border-pink-500/40 flex items-center justify-center text-pink-400">
-          <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+          <i class="fa-solid fa-compass text-xs"></i>
         </span>
         <div>
           <div class="text-xs font-extrabold tracking-wide text-slate-100 flex items-center gap-1.5">
-            <span>✨ AI 设计精修</span>
-            <span class="px-1.5 py-0.2 rounded bg-pink-500/15 text-pink-300 text-[9px] font-mono">可折叠边栏</span>
+            <span>🧭 维吉尔 · Virgil</span>
+            <span class="px-1.5 py-0.2 rounded bg-pink-500/15 text-pink-300 text-[9px] font-mono">设计领航</span>
           </div>
-          <p class="text-[10px] text-slate-400 font-mono">PCB 改板 · C99 改码 · 自动 DRC/GCC 验证</p>
+          <p class="text-[10px] text-slate-400 font-mono">理性与技艺 · PCB 改板与 C99 调优闭环</p>
         </div>
       </div>
       <div class="flex items-center gap-1">
         <button type="button" onclick="openMonacoDiffModal()" class="px-2 py-1 rounded bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 text-[10px] font-mono" title="打开 VS Code Side-by-Side Diff 并排对比审查器">
           ⇄ Diff
         </button>
-        <button type="button" onclick="clearGlobalRefinementHistory()" class="w-6 h-6 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-300 flex items-center justify-center" title="清空当前精修对话历史">
+        <button type="button" onclick="clearGlobalRefinementHistory()" class="w-6 h-6 rounded hover:bg-slate-800 text-slate-400 hover:text-rose-300 flex items-center justify-center" title="清空当前维吉尔领航对话历史">
           <i class="fa-regular fa-trash-can text-[11px]"></i>
         </button>
-        <button type="button" onclick="toggleGlobalCopilotSidebar(false)" class="px-2 py-1 rounded bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-[10px] font-bold flex items-center gap-1" title="折叠收起右侧边栏，释放 100% 画布宽度">
+        <button type="button" onclick="toggleGlobalCopilotSidebar(false)" class="px-2 py-1 rounded bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white text-[10px] font-bold flex items-center gap-1" title="折叠收起右侧维吉尔边栏，释放 100% 画布宽度">
           <span>收起</span>
           <i class="fa-solid fa-angles-right text-[10px]"></i>
         </button>
       </div>
     </div>
 
-    <!-- 2. 精修目标模块切换器 (智能识别 / PCB 改板 / C99 改码 / 软硬件联动) -->
+    <!-- 2. 领航目标模块切换器 (智能识别 / PCB 改板 / C99 改码 / 软硬件联动) -->
     <div class="px-3 py-2 border-b border-slate-800/70 bg-slate-950 flex items-center justify-between gap-1 text-[11px]">
-      <span class="text-slate-400 font-mono text-[10px] shrink-0">精修对象:</span>
+      <span class="text-slate-400 font-mono text-[10px] shrink-0">领航对象:</span>
       <div class="grid grid-cols-4 gap-1 bg-slate-900 p-0.5 rounded-lg border border-slate-800 flex-1">
         <button type="button" id="gcop-target-auto" onclick="setGlobalCopilotTarget('auto')" class="px-1.5 py-1 rounded-md bg-pink-500 text-slate-950 font-bold text-[10px] transition text-center">🎯 智能</button>
         <button type="button" id="gcop-target-pcb" onclick="setGlobalCopilotTarget('pcb')" class="px-1.5 py-1 rounded-md text-slate-400 hover:text-white text-[10px] transition text-center">📐 PCB</button>
@@ -3366,7 +3366,7 @@ GPIOA_ODR |= (1U &lt;&lt; 4);
       </div>
     </div>
 
-    <!-- 3. 修改方向标签栏 (点击自动填入精修问题方向) -->
+    <!-- 3. 修改方向标签栏 (点击自动填入问题方向) -->
     <div class="px-3 py-2 border-b border-slate-800/70 bg-slate-900/40 space-y-1.5">
       <div class="flex items-center justify-between text-[10px] text-slate-400">
         <span id="gcop-category-title" class="font-bold">① 点击修改方向标签（快速附加到输入框）：</span>
@@ -3394,15 +3394,15 @@ GPIOA_ODR |= (1U &lt;&lt; 4);
       <span id="gcop-active-pills-count" class="text-[10px] font-mono text-pink-300 font-bold shrink-0">3 已挂载</span>
     </div>
 
-    <!-- 5. 统一精修对话与执行动作流 -->
+    <!-- 5. 统一对话与执行动作流 -->
     <div id="global-copilot-messages" class="flex-1 overflow-y-auto p-3 space-y-2.5 text-xs select-text">
       <div class="p-3 rounded-xl bg-slate-900/90 border border-pink-500/30 text-slate-200 leading-relaxed space-y-1.5">
         <div class="font-bold text-pink-300 flex items-center justify-between">
-          <span><i class="fa-solid fa-wand-magic-sparkles mr-1"></i> ✨ AI 设计精修台已就绪</span>
+          <span><i class="fa-solid fa-compass mr-1"></i> 🧭 维吉尔 (Virgil) · 软硬件领航台</span>
           <span class="text-[10px] font-mono text-slate-400">快照保护 + Diff</span>
         </div>
         <p class="text-[11px] text-slate-300 leading-relaxed">
-          当生成的 <b>PCB 电路板</b> 或 <b>C99 固件程序</b> 不符合要求时，直接在此输入修改需求：<br>
+          我是你的理性与技艺引路人。当生成的 <b>PCB 电路板</b> 或 <b>C99 固件程序</b> 陷入 DRC 冲突或 Bug 迷雾时，直接在此下达修改指令：<br>
           • <b>改 PCB</b>：调板框尺寸、移动器件坐标、自愈 DRC 违规、替换立创基础库；<br>
           • <b>改 C99</b>：修复编译报错、调整报警阈值、补全漏写引脚驱动与消抖逻辑；<br>
           • 每次修改前自动创建快照，支持随时点击 <b>并排 Diff</b> 或 <b>撤销回滚</b>！
@@ -3410,7 +3410,7 @@ GPIOA_ODR |= (1U &lt;&lt; 4);
       </div>
     </div>
 
-    <!-- 6. 快捷精修指令胶囊 -->
+    <!-- 6. 快捷领航指令胶囊 -->
     <div id="gcop-quick-prompts" class="px-3 py-1.5 border-t border-slate-800/80 flex flex-wrap gap-1 bg-slate-950">
       <button type="button" onclick="sendGlobalCopilotQuickPrompt('请将 PCB 板框尺寸调整为 65x45mm，四角倒角 R2.0mm，重新自动布局走线并刷新 3D 渲染', 'pcb')" class="text-[10px] px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-slate-800">
         📐 改板框 65×45mm 并重绘
@@ -3426,13 +3426,13 @@ GPIOA_ODR |= (1U &lt;&lt; 4);
       </button>
     </div>
 
-    <!-- 7. 底部精修需求输入框 -->
+    <!-- 7. 底部输入框 -->
     <div class="p-3 border-t border-slate-800 bg-slate-900/60 space-y-2">
-      <textarea id="global-copilot-input" rows="3" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){sendGlobalCopilotMessage();}" placeholder="输入您的 PCB 或 C99 修改要求（如：把蜂鸣器移到板边、修改报警温度阈值、修复 DRC 报错... 按 ⌘/Ctrl+Enter 执行）" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-pink-500 resize-none"></textarea>
+      <textarea id="global-copilot-input" rows="3" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter'){sendGlobalCopilotMessage();}" placeholder="向维吉尔 (Virgil) 下达 PCB 或 C99 修改要求（如：把蜂鸣器移到板边、修改报警温度阈值、修复 DRC 报错... 按 ⌘/Ctrl+Enter 执行）" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-pink-500 resize-none"></textarea>
       <div class="flex items-center justify-between gap-2">
-        <span id="global-copilot-status" class="text-[10px] font-mono text-slate-400 truncate">Ready · 自动快照保护</span>
+        <span id="global-copilot-status" class="text-[10px] font-mono text-slate-400 truncate">Virgil Ready · 自动快照保护</span>
         <button type="button" id="btn-global-copilot-send" onclick="sendGlobalCopilotMessage()" class="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-400 hover:to-indigo-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-pink-500/20">
-          <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i> 执行设计精修
+          <i class="fa-solid fa-compass text-[10px]"></i> 交由维吉尔执行
         </button>
       </div>
     </div>
