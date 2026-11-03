@@ -870,6 +870,54 @@ def api_save_project_file(data: dict):
     }
 
 
+@app.post("/api/projects/fs/create")
+def api_create_project_fs_item(data: dict, request: Request):
+    from core.project_manager import create_project_fs_item
+    tenant_ctx = resolve_request_tenant(request, require_auth_if_cloud=True)
+    project_dir = data.get("project_dir") or ""
+    if project_dir:
+        assert_tenant_owns_project_path(tenant_ctx, project_dir)
+    item_type = data.get("item_type") or "dir"
+    rel_path = data.get("rel_path") or ""
+    content = data.get("content")
+    return create_project_fs_item(
+        project_dir=project_dir or None,
+        item_type=item_type,
+        rel_path=rel_path,
+        content=content
+    )
+
+
+@app.post("/api/projects/fs/rename")
+def api_rename_project_fs_item(data: dict, request: Request):
+    from core.project_manager import rename_project_fs_item
+    tenant_ctx = resolve_request_tenant(request, require_auth_if_cloud=True)
+    project_dir = data.get("project_dir") or ""
+    if project_dir:
+        assert_tenant_owns_project_path(tenant_ctx, project_dir)
+    old_rel_path = data.get("old_rel_path") or ""
+    new_rel_path = data.get("new_rel_path") or ""
+    return rename_project_fs_item(
+        project_dir=project_dir or None,
+        old_rel_path=old_rel_path,
+        new_rel_path=new_rel_path
+    )
+
+
+@app.post("/api/projects/fs/delete")
+def api_delete_project_fs_item(data: dict, request: Request):
+    from core.project_manager import delete_project_fs_item
+    tenant_ctx = resolve_request_tenant(request, require_auth_if_cloud=True)
+    project_dir = data.get("project_dir") or ""
+    if project_dir:
+        assert_tenant_owns_project_path(tenant_ctx, project_dir)
+    rel_path = data.get("rel_path") or ""
+    return delete_project_fs_item(
+        project_dir=project_dir or None,
+        rel_path=rel_path
+    )
+
+
 @app.get("/api/image/default_top")
 def get_top_img():
     active_dir = load_settings().get("workspace", {}).get("active_project_dir", "")

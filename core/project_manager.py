@@ -1176,7 +1176,7 @@ def _classify_file_preview_kind(filename: str) -> str:
     return "text"
 
 
-def _build_vscode_file_tree(project_dir: str, max_depth: int = 4) -> Dict[str, Any]:
+def _build_vscode_file_tree(project_dir: str, max_depth: int = 6) -> Dict[str, Any]:
     """扫描项目物理目录，生成 VS Code 左上角 Explorer 风格的递归多级目录树"""
     root_abs = os.path.abspath(project_dir)
     skip_names = {".git", "__pycache__", ".DS_Store", ".copilot_snapshots", ".sim_build", "node_modules"}
@@ -1402,5 +1402,204 @@ def save_project_file_content(project_dir: Optional[str], file_path: str, conten
         "rel_path": os.path.relpath(target_abs, root_abs),
         "size_bytes": os.path.getsize(target_abs)
     }
+
+
+def _resolve_active_project_root(project_dir: Optional[str]) -> Optional[str]:
+    settings = load_settings()
+    if not project_dir:
+        project_dir = settings.get("workspace", {}).get("active_project_dir")
+    if not project_dir or not os.path.exists(project_dir):
+        dirs = _load_registry()
+        project_dir = dirs[0] if dirs else ""
+    if not project_dir or not os.path.isdir(project_dir):
+        return None
+    return os.path.abspath(project_dir)
+
+
+def _generate_default_file_template(filename: str) -> str:
+    low = filename.lower()
+    stem = re.sub(r"[^A-Za-z0-9_]", "_", os.path.splitext(filename)[0]).upper() or "MODULE"
+    if low.endswith(".h"):
+        guard = f"__{stem}_H__"
+        return (
+            f"/**\n"
+            f" * @file    {filename}\n"
+            f" * @brief   用户自定义头文件\n"
+            f" */\n\n"
+            f"#ifndef {guard}\n"
+            f"#define {guard}\n\n"
+            f"#include <stdint.h>\n"
+            f"#include <stdbool.h>\n\n"
+            f"#ifdef __cplusplus\n"
+            f'extern "C" {{\n'
+            f"#endif\n\n"
+            f"/* TODO: 在此添加函数声明或宏定义 */\n\n"
+            f"#ifdef __cplusplus\n"
+            f"}}\n"
+            f"#endif\n\n"
+            f"#endif /* {guard} */\n"
+        )
+    if low.endswith(".c"):
+        return (
+            f"/**\n"
+            f" * @file    {filename}\n"
+            f" * @brief   用户自定义 C99 源文件\n"
+            f" */\n\n"
+            f"#include <stdint.h>\n"
+            f"#include <stdbool.h>\n\n"
+            f"/* TODO: 在此编写业务逻辑或驱动代码 */\n"
+        )
+    if low.endswith(".md"):
+        return f"# {os.path.splitext(filename)[0]}\n\n- 创建时间: {time.strftime('%Y-%m-%d %H:%M:%S')}\n"
+    if low.endswith(".json"):
+        return "{\n  \"description\": \"Custom configuration\"\n}\n"
+    return ""
+
+
+def create_project_fs_item(
+    project_dir: Optional[str],
+    item_type: str,
+    rel_path: str,
+    content: Optional[str] = None
+) -> Dict[str, Any]:
+    """在当前工程目录树中新建文件夹 (dir) 或新建文件 (file)"""
+    root_abs = _resolve_active_project_root(project_dir)
+    if not root_abs:
+        return {"success": False, "error": "未找到有效的激活工程目录"}
+
+    clean_rel = (rel_path or "").strip().strip("/\\")
+    if not clean_rel or ".." in clean_rel.replace("\\", "/").split("/"):
+        return {"success": False, "error": "请输入合法的相对路径名称（不能包含 ..）"}
+
+    target_abs = os.path.abspath(os.path.join(root_abs, clean_rel))
+    if not target_abs.startswith(root_abs + os.sep):
+        return {"success": False, "error": "安全拦截：禁止在工程根目录之外创建目录或文件"}
+
+    norm_type = "dir" if item_type in ("dir", "folder", "directory") else "file"
+
+    if norm_type == "dir":
+        if os.path.isfile(target_abs):
+            return {"success": False, "error": f"已存在同名文件: {clean_rel}"}
+        os.makedirs(target_abs, exist_ok=True)
+        return {
+            "success": True,
+            "item_type": "dir",
+            "name": os.path.basename(target_abs),
+            "abs_path": target_abs,
+            "rel_path": os.path.relpath(target_abs, root_abs),
+            "detail": get_project_details(root_abs)
+        }
+    else:
+        if os.path.exists(target_abs):
+            return {"success": False, "error": f"目标路径已存在: {clean_rel}"}
+        parent_dir = os.path.dirname(target_abs)
+        os.makedirs(parent_dir, exist_ok=True)
+        fname = os.path.basename(target_abs)
+        final_content = content if content is not None else _generate_default_file_template(fname)
+
+        if fname.lower().endswith((".c", ".h")) and final_content:
+            from core.tenant_auth import audit_c_source_security
+            sec_audit = audit_c_source_security(final_content, filename=fname)
+            if not sec_audit.get("safe", True):
+                return {
+                    "success": False,
+                    "security_blocked": True,
+                    "error": sec_audit.get("error", "C99 安全沙箱拦截")
+                }
+
+        with open(target_abs, "w", encoding="utf8") as f:
+            f.write(final_content)
+
+        return {
+            "success": True,
+            "item_type": "file",
+            "name": fname,
+            "abs_path": target_abs,
+            "rel_path": os.path.relpath(target_abs, root_abs),
+            "kind": _classify_file_preview_kind(fname),
+            "detail": get_project_details(root_abs)
+        }
+
+
+def rename_project_fs_item(
+    project_dir: Optional[str],
+    old_rel_path: str,
+    new_rel_path: str
+) -> Dict[str, Any]:
+    """在当前工程目录树中重命名或移动文件/文件夹"""
+    root_abs = _resolve_active_project_root(project_dir)
+    if not root_abs:
+        return {"success": False, "error": "未找到有效的激活工程目录"}
+
+    clean_old = (old_rel_path or "").strip().strip("/\\")
+    clean_new = (new_rel_path or "").strip().strip("/\\")
+    if not clean_old or not clean_new:
+        return {"success": False, "error": "原路径和新路径均不能为空"}
+    if ".." in clean_old.replace("\\", "/").split("/") or ".." in clean_new.replace("\\", "/").split("/"):
+        return {"success": False, "error": "路径不合法（禁止包含 ..）"}
+
+    old_abs = os.path.abspath(os.path.join(root_abs, clean_old))
+    new_abs = os.path.abspath(os.path.join(root_abs, clean_new))
+
+    if not old_abs.startswith(root_abs + os.sep) or not new_abs.startswith(root_abs + os.sep):
+        return {"success": False, "error": "安全拦截：仅允许在当前工程目录内部重命名或移动"}
+    if not os.path.exists(old_abs):
+        return {"success": False, "error": f"源路径不存在: {clean_old}"}
+    if old_abs == new_abs:
+        return {
+            "success": True,
+            "old_rel_path": clean_old,
+            "new_rel_path": clean_new,
+            "abs_path": new_abs,
+            "detail": get_project_details(root_abs)
+        }
+    if os.path.exists(new_abs):
+        return {"success": False, "error": f"目标路径已存在: {clean_new}"}
+
+    os.makedirs(os.path.dirname(new_abs), exist_ok=True)
+    shutil.move(old_abs, new_abs)
+
+    return {
+        "success": True,
+        "old_rel_path": clean_old,
+        "new_rel_path": os.path.relpath(new_abs, root_abs),
+        "name": os.path.basename(new_abs),
+        "abs_path": new_abs,
+        "detail": get_project_details(root_abs)
+    }
+
+
+def delete_project_fs_item(
+    project_dir: Optional[str],
+    rel_path: str
+) -> Dict[str, Any]:
+    """在当前工程目录树中删除指定的文件或文件夹"""
+    root_abs = _resolve_active_project_root(project_dir)
+    if not root_abs:
+        return {"success": False, "error": "未找到有效的激活工程目录"}
+
+    clean_rel = (rel_path or "").strip().strip("/\\")
+    if not clean_rel or ".." in clean_rel.replace("\\", "/").split("/"):
+        return {"success": False, "error": "路径不合法"}
+
+    target_abs = os.path.abspath(os.path.join(root_abs, clean_rel))
+    if not target_abs.startswith(root_abs + os.sep) or target_abs == root_abs:
+        return {"success": False, "error": "安全拦截：禁止删除工程根目录或越界路径"}
+    if not os.path.exists(target_abs):
+        return {"success": False, "error": f"目标不存在: {clean_rel}"}
+
+    is_dir = os.path.isdir(target_abs)
+    if is_dir:
+        shutil.rmtree(target_abs)
+    else:
+        os.remove(target_abs)
+
+    return {
+        "success": True,
+        "deleted_rel_path": clean_rel,
+        "was_dir": is_dir,
+        "detail": get_project_details(root_abs)
+    }
+
 
 

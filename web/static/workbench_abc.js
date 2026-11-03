@@ -983,21 +983,39 @@ window.renderWorkbenchExplorerTree = function (detail) {
   function renderNodes(nodes, depth) {
     return (nodes || []).map(node => {
       const indentPx = depth * 11 + 4;
+      const safeRel = (node.rel_path || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const safeName = (node.name || '').replace(/'/g, "\\'");
+
       if (node.type === 'dir') {
         const isCollapsed = explorerCollapsedDirs.has(node.rel_path);
         const chevron = isCollapsed ? 'fa-chevron-right' : 'fa-chevron-down';
         const folderIcon = isCollapsed ? 'fa-folder text-amber-400/80' : 'fa-folder-open text-amber-400';
-        const safeRel = (node.rel_path || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
         const childrenHtml = isCollapsed ? '' : `<div class="border-l border-slate-200 dark:border-slate-800/70 ml-2.5">${renderNodes(node.children, depth + 1)}</div>`;
         return `
           <div>
-            <div onclick="toggleExplorerFolder('${safeRel}', event)" class="vscode-tree-item flex items-center justify-between py-1 pr-2 rounded cursor-pointer text-[11px] text-slate-700 dark:text-slate-300 font-semibold" style="padding-left:${indentPx}px" title="点击展开/收起目录: ${escapeHtml(node.rel_path)}">
+            <div onclick="toggleExplorerFolder('${safeRel}', event)" class="vscode-tree-item group flex items-center justify-between py-1 pr-1.5 rounded cursor-pointer text-[11px] text-slate-700 dark:text-slate-300 font-semibold" style="padding-left:${indentPx}px" title="目录: ${escapeHtml(node.rel_path)} (悬浮右侧可新建子目录/文件、重命名或删除)">
               <span class="flex items-center gap-1.5 truncate">
                 <i class="fa-solid ${chevron} text-[8px] text-slate-500 w-2.5 text-center"></i>
                 <i class="fa-regular ${folderIcon} text-[11px]"></i>
                 <span class="truncate font-mono">${escapeHtml(node.name)}</span>
               </span>
-              <span class="text-[9px] text-slate-500 font-mono">${node.children_count || 0}</span>
+              <span class="flex items-center gap-1 shrink-0 ml-1">
+                <span class="tree-row-actions inline-flex items-center gap-0.5 bg-slate-200/90 dark:bg-slate-800/95 px-1 py-0.5 rounded">
+                  <button type="button" onclick="openExplorerFsModal('newfile', '${safeRel}', event)" class="px-1 hover:text-emerald-500 dark:hover:text-emerald-400 text-slate-500 dark:text-slate-300" title="在此文件夹下新建文件">
+                    <i class="fa-solid fa-file-circle-plus text-[9px]"></i>
+                  </button>
+                  <button type="button" onclick="openExplorerFsModal('mkdir', '${safeRel}', event)" class="px-1 hover:text-sky-500 dark:hover:text-sky-400 text-slate-500 dark:text-slate-300" title="在此文件夹下新建子文件夹">
+                    <i class="fa-solid fa-folder-plus text-[9px]"></i>
+                  </button>
+                  <button type="button" onclick="openExplorerFsModal('rename', '${safeRel}', event, 'dir', '${safeName}')" class="px-1 hover:text-amber-500 dark:hover:text-amber-400 text-slate-500 dark:text-slate-300" title="重命名或移动该文件夹">
+                    <i class="fa-solid fa-pen text-[9px]"></i>
+                  </button>
+                  <button type="button" onclick="openExplorerFsModal('delete', '${safeRel}', event, 'dir', '${safeName}')" class="px-1 hover:text-rose-500 dark:hover:text-rose-400 text-slate-500 dark:text-slate-300" title="删除该文件夹">
+                    <i class="fa-regular fa-trash-can text-[9px]"></i>
+                  </button>
+                </span>
+                <span class="text-[9px] text-slate-500 font-mono">${node.children_count || 0}</span>
+              </span>
             </div>
             ${childrenHtml}
           </div>
@@ -1007,22 +1025,43 @@ window.renderWorkbenchExplorerTree = function (detail) {
                       (typeof currentEditingFwPath !== 'undefined' && node.abs_path === currentEditingFwPath);
         const ic = getVscodeFileIconHtml(node.name, node.kind, node.ext);
         const safePath = (node.abs_path || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-        const safeName = (node.name || '').replace(/'/g, "\\'");
         const sizeLabel = formatCompactSize(node.size_bytes);
         return `
-          <div onclick="openExplorerFileItem('${node.kind}', '${safePath}', '${safeName}')" class="vscode-tree-item ${isAct ? 'active' : ''} flex items-center justify-between py-1 pr-2 rounded cursor-pointer text-[11px]" style="padding-left:${indentPx + 8}px" title="点击预览或编辑文件: ${escapeHtml(node.rel_path)} (${sizeLabel})">
+          <div onclick="openExplorerFileItem('${node.kind}', '${safePath}', '${safeName}')" class="vscode-tree-item group ${isAct ? 'active' : ''} flex items-center justify-between py-1 pr-1.5 rounded cursor-pointer text-[11px]" style="padding-left:${indentPx + 8}px" title="点击预览或编辑文件: ${escapeHtml(node.rel_path)} (${sizeLabel})">
             <span class="flex items-center gap-1.5 truncate">
               ${ic}
               <span class="truncate font-mono">${escapeHtml(node.name)}</span>
             </span>
-            <span class="text-[9px] text-slate-500 font-mono shrink-0 ml-1">${sizeLabel}</span>
+            <span class="flex items-center gap-1 shrink-0 ml-1">
+              <span class="tree-row-actions inline-flex items-center gap-0.5 bg-slate-200/90 dark:bg-slate-800/95 px-1 py-0.5 rounded">
+                <button type="button" onclick="openExplorerFsModal('rename', '${safeRel}', event, 'file', '${safeName}')" class="px-1 hover:text-amber-500 dark:hover:text-amber-400 text-slate-500 dark:text-slate-300" title="重命名或移动该文件">
+                  <i class="fa-solid fa-pen text-[9px]"></i>
+                </button>
+                <button type="button" onclick="openExplorerFsModal('delete', '${safeRel}', event, 'file', '${safeName}')" class="px-1 hover:text-rose-500 dark:hover:text-rose-400 text-slate-500 dark:text-slate-300" title="删除该文件">
+                  <i class="fa-regular fa-trash-can text-[9px]"></i>
+                </button>
+              </span>
+              <span class="text-[9px] text-slate-500 font-mono">${sizeLabel}</span>
+            </span>
           </div>
         `;
       }
     }).join('');
   }
 
-  treeBox.innerHTML = renderNodes(fileTree.children, 0);
+  const quickBarHtml = `
+    <div class="flex items-center justify-between gap-1 px-1.5 py-1 mb-1 rounded-lg bg-slate-100 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 text-[10px]">
+      <button type="button" onclick="openExplorerFsModal('mkdir', '')" class="flex-1 py-0.5 px-1.5 rounded hover:bg-sky-500/15 text-sky-600 dark:text-sky-400 font-bold flex items-center justify-center gap-1 transition" title="在当前工程内新建文件夹">
+        <i class="fa-solid fa-folder-plus text-[9px]"></i> 新建文件夹
+      </button>
+      <span class="text-slate-300 dark:text-slate-700">|</span>
+      <button type="button" onclick="openExplorerFsModal('newfile', '')" class="flex-1 py-0.5 px-1.5 rounded hover:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold flex items-center justify-center gap-1 transition" title="在当前工程内新建文件">
+        <i class="fa-solid fa-file-circle-plus text-[9px]"></i> 新建文件
+      </button>
+    </div>
+  `;
+
+  treeBox.innerHTML = quickBarHtml + renderNodes(fileTree.children, 0);
 };
 
 // 点击左上角文件树中的任意文件：弹出 VS Code 工程文件预览器（同时支持一键在对应工坊打开）
@@ -1488,6 +1527,334 @@ window.clearGlobalRefinementHistory = async function () {
     await clearCopilotChat('firmware');
   }
 };
+
+// ============================================================================
+// 11. VS Code Explorer 工程文件与目录树自定义管理控制器
+//     支持：新建文件夹 (mkdir) / 新建文件 (newfile) / 重命名移动 (rename) / 删除 (delete)
+// ============================================================================
+let efsCurrentState = {
+  mode: 'mkdir', // 'mkdir' | 'newfile' | 'rename' | 'delete'
+  baseRelPath: '',
+  itemType: 'dir',
+  itemName: ''
+};
+
+function collectAllProjectDirectories(detail) {
+  const dirs = [''];
+  const walk = (nodes) => {
+    (nodes || []).forEach(n => {
+      if (n.type === 'dir' && n.rel_path) {
+        dirs.push(n.rel_path);
+        walk(n.children);
+      }
+    });
+  };
+  if (detail && detail.file_tree && Array.isArray(detail.file_tree.children)) {
+    walk(detail.file_tree.children);
+  }
+  // 补充标准工程子目录快捷项
+  ['hardware', 'firmware', 'firmware/App', 'firmware/Inc', 'firmware/Drivers', 'docs'].forEach(std => {
+    if (!dirs.includes(std)) dirs.push(std);
+  });
+  return dirs;
+}
+
+window.openNewProjectModal = function () {
+  window.openExplorerFsModal('mkdir', '');
+};
+
+window.openExplorerFsModal = function (mode = 'mkdir', baseRelPath = '', evt = null, itemType = 'dir', itemName = '') {
+  if (evt && typeof evt.stopPropagation === 'function') {
+    evt.stopPropagation();
+  }
+  const modal = document.getElementById('explorer-fs-modal');
+  if (!modal) return;
+
+  efsCurrentState = {
+    mode: mode || 'mkdir',
+    baseRelPath: baseRelPath || '',
+    itemType: itemType || 'dir',
+    itemName: itemName || ''
+  };
+
+  // 填充父目录选择器
+  const parentSel = document.getElementById('efs-parent-dir-select');
+  const pillsBox = document.getElementById('efs-quick-parent-pills');
+  const allDirs = collectAllProjectDirectories(typeof activeProjectDetail !== 'undefined' ? activeProjectDetail : null);
+
+  if (parentSel) {
+    parentSel.innerHTML = allDirs.map(d => {
+      const label = d ? `📁 /${d}` : '📂 / (当前工程根目录)';
+      const sel = d === efsCurrentState.baseRelPath ? 'selected' : '';
+      return `<option value="${escapeHtml(d)}" ${sel}>${escapeHtml(label)}</option>`;
+    }).join('');
+  }
+
+  if (pillsBox) {
+    const quickDirs = ['', 'hardware', 'firmware/App', 'firmware/Inc', 'firmware/Drivers', 'docs'];
+    pillsBox.innerHTML = quickDirs.map(d => {
+      const safeD = d.replace(/'/g, "\\'");
+      const label = d ? d : '/ 根目录';
+      return `<button type="button" onclick="document.getElementById('efs-parent-dir-select').value='${safeD}'; updateEfsPathPreview();" class="px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 text-[10px] font-mono">${escapeHtml(label)}</button>`;
+    }).join('');
+  }
+
+  window.switchExplorerFsModalMode(efsCurrentState.mode, true);
+  modal.classList.remove('hidden');
+};
+
+window.switchExplorerFsModalMode = function (mode, keepState = false) {
+  efsCurrentState.mode = mode;
+  const iconEl = document.getElementById('efs-modal-icon');
+  const titleEl = document.getElementById('efs-modal-title');
+  const subEl = document.getElementById('efs-modal-subtitle');
+  const modeTabs = document.getElementById('efs-mode-tabs');
+  const tabMkdir = document.getElementById('efs-tab-mkdir');
+  const tabNewfile = document.getElementById('efs-tab-newfile');
+  const parentGroup = document.getElementById('efs-parent-dir-group');
+  const nameGroup = document.getElementById('efs-name-input-group');
+  const nameLabel = document.getElementById('efs-name-label');
+  const nameInput = document.getElementById('efs-name-input');
+  const tplGroup = document.getElementById('efs-file-templates-group');
+  const delBox = document.getElementById('efs-delete-confirm-box');
+  const delDesc = document.getElementById('efs-delete-target-desc');
+  const submitBtn = document.getElementById('btn-efs-submit');
+  const submitText = document.getElementById('btn-efs-submit-text');
+
+  if (tabMkdir && tabNewfile) {
+    tabMkdir.className = mode === 'mkdir'
+      ? 'flex-1 py-1.5 px-3 rounded-xl bg-sky-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition'
+      : 'flex-1 py-1.5 px-3 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition';
+    tabNewfile.className = mode === 'newfile'
+      ? 'flex-1 py-1.5 px-3 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition'
+      : 'flex-1 py-1.5 px-3 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition';
+  }
+
+  if (mode === 'mkdir') {
+    if (iconEl) iconEl.className = 'fa-solid fa-folder-plus text-sky-400';
+    if (titleEl) titleEl.textContent = '📁 新建工程子文件夹 (New Folder)';
+    if (subEl) subEl.textContent = '在当前工程目录树中创建新的文件夹（支持多级嵌套路径）';
+    if (modeTabs) modeTabs.classList.remove('hidden');
+    if (parentGroup) parentGroup.classList.remove('hidden');
+    if (nameGroup) nameGroup.classList.remove('hidden');
+    if (tplGroup) tplGroup.classList.add('hidden');
+    if (delBox) delBox.classList.add('hidden');
+    if (nameLabel) nameLabel.innerHTML = '新建文件夹名称（支持多级路径如 <code class="text-sky-400">Drivers/Sensor</code>）：';
+    if (nameInput) {
+      nameInput.value = '';
+      nameInput.placeholder = '例如: Middlewares 或 Drivers/Sensor';
+      setTimeout(() => nameInput.focus(), 60);
+    }
+    if (submitBtn) submitBtn.className = 'px-4 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold text-xs shadow transition flex items-center gap-1.5';
+    if (submitText) submitText.textContent = '立即创建文件夹';
+  } else if (mode === 'newfile') {
+    if (iconEl) iconEl.className = 'fa-solid fa-file-circle-plus text-emerald-400';
+    if (titleEl) titleEl.textContent = '📄 新建工程文件 (New File)';
+    if (subEl) subEl.textContent = '支持创建 .c / .h / .md / .json / .txt 等文件并自动生成模板';
+    if (modeTabs) modeTabs.classList.remove('hidden');
+    if (parentGroup) parentGroup.classList.remove('hidden');
+    if (nameGroup) nameGroup.classList.remove('hidden');
+    if (tplGroup) tplGroup.classList.remove('hidden');
+    if (delBox) delBox.classList.add('hidden');
+    if (nameLabel) nameLabel.innerHTML = '新建文件名称（含后缀，如 <code class="text-emerald-400">sensor_drv.c</code>）：';
+    if (nameInput) {
+      nameInput.value = '';
+      nameInput.placeholder = '例如: sensor_drv.c / sensor_drv.h / notes.md';
+      setTimeout(() => nameInput.focus(), 60);
+    }
+    if (submitBtn) submitBtn.className = 'px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow transition flex items-center gap-1.5';
+    if (submitText) submitText.textContent = '立即创建文件';
+  } else if (mode === 'rename') {
+    if (iconEl) iconEl.className = 'fa-solid fa-pen-to-square text-amber-400';
+    if (titleEl) titleEl.textContent = `✏️ 重命名或移动${efsCurrentState.itemType === 'dir' ? '文件夹' : '文件'}`;
+    if (subEl) subEl.textContent = `原路径: /${efsCurrentState.baseRelPath}`;
+    if (modeTabs) modeTabs.classList.add('hidden');
+    if (parentGroup) parentGroup.classList.add('hidden');
+    if (nameGroup) nameGroup.classList.remove('hidden');
+    if (tplGroup) tplGroup.classList.add('hidden');
+    if (delBox) delBox.classList.add('hidden');
+    if (nameLabel) nameLabel.innerHTML = '输入新的相对路径或名称（可直接修改目录前缀以移动位置）：';
+    if (nameInput) {
+      nameInput.value = efsCurrentState.baseRelPath;
+      setTimeout(() => {
+        nameInput.focus();
+        const lastSlash = nameInput.value.lastIndexOf('/');
+        nameInput.setSelectionRange(lastSlash + 1, nameInput.value.length);
+      }, 60);
+    }
+    if (submitBtn) submitBtn.className = 'px-4 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow transition flex items-center gap-1.5';
+    if (submitText) submitText.textContent = '保存修改';
+  } else if (mode === 'delete') {
+    if (iconEl) iconEl.className = 'fa-regular fa-trash-can text-rose-400';
+    if (titleEl) titleEl.textContent = `🗑️ 删除${efsCurrentState.itemType === 'dir' ? '文件夹' : '文件'}确认`;
+    if (subEl) subEl.textContent = `目标路径: /${efsCurrentState.baseRelPath}`;
+    if (modeTabs) modeTabs.classList.add('hidden');
+    if (parentGroup) parentGroup.classList.add('hidden');
+    if (nameGroup) nameGroup.classList.add('hidden');
+    if (tplGroup) tplGroup.classList.add('hidden');
+    if (delBox) delBox.classList.remove('hidden');
+    if (delDesc) {
+      delDesc.textContent = `${efsCurrentState.itemType === 'dir' ? '📁 文件夹（含内部全部子文件）' : '📄 文件'}: /${efsCurrentState.baseRelPath}`;
+    }
+    if (submitBtn) submitBtn.className = 'px-4 py-1.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-extrabold text-xs shadow transition flex items-center gap-1.5';
+    if (submitText) submitText.textContent = '确认永久删除';
+  }
+
+  window.updateEfsPathPreview();
+};
+
+window.applyEfsFileQuickName = function (parentRel, fileName) {
+  const parentSel = document.getElementById('efs-parent-dir-select');
+  const nameInput = document.getElementById('efs-name-input');
+  if (parentSel) parentSel.value = parentRel;
+  if (nameInput) {
+    nameInput.value = fileName;
+    nameInput.focus();
+  }
+  window.updateEfsPathPreview();
+};
+
+window.updateEfsPathPreview = function () {
+  const previewEl = document.getElementById('efs-path-preview-text');
+  if (!previewEl) return;
+  const parentSel = document.getElementById('efs-parent-dir-select');
+  const nameInput = document.getElementById('efs-name-input');
+  const mode = efsCurrentState.mode;
+
+  if (mode === 'delete') {
+    previewEl.textContent = `/${efsCurrentState.baseRelPath}`;
+    return;
+  }
+  if (mode === 'rename') {
+    const val = (nameInput ? nameInput.value : '').trim().replace(/^\/+/, '');
+    previewEl.textContent = val ? `/${val}` : '/';
+    return;
+  }
+
+  const parentVal = (parentSel ? parentSel.value : '').trim().replace(/^\/+|\/+$/g, '');
+  const nameVal = (nameInput ? nameInput.value : '').trim().replace(/^\/+|\/+$/g, '');
+  const combined = [parentVal, nameVal].filter(Boolean).join('/');
+  previewEl.textContent = combined ? `/${combined}` : '/';
+};
+
+window.closeExplorerFsModal = function () {
+  const modal = document.getElementById('explorer-fs-modal');
+  if (modal) modal.classList.add('hidden');
+};
+
+window.submitExplorerFsModal = async function () {
+  const mode = efsCurrentState.mode;
+  const projectDir = (typeof activeProjectDetail !== 'undefined' && activeProjectDetail?.project_dir) ||
+                     (typeof activeProjectDir !== 'undefined' ? activeProjectDir : '');
+  const parentSel = document.getElementById('efs-parent-dir-select');
+  const nameInput = document.getElementById('efs-name-input');
+  const openAfter = document.getElementById('efs-open-after-create');
+  const submitBtn = document.getElementById('btn-efs-submit');
+
+  if (submitBtn) submitBtn.disabled = true;
+
+  try {
+    if (mode === 'mkdir' || mode === 'newfile') {
+      const parentVal = (parentSel ? parentSel.value : '').trim().replace(/^\/+|\/+$/g, '');
+      const nameVal = (nameInput ? nameInput.value : '').trim().replace(/^\/+|\/+$/g, '');
+      if (!nameVal) {
+        if (typeof showToast === 'function') showToast(mode === 'mkdir' ? '请输入要新建的文件夹名称' : '请输入要新建的文件名称', 'warn');
+        if (nameInput) nameInput.focus();
+        return;
+      }
+      const targetRel = [parentVal, nameVal].filter(Boolean).join('/');
+      const res = await fetch('/api/projects/fs/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project_dir: projectDir,
+          item_type: mode === 'mkdir' ? 'dir' : 'file',
+          rel_path: targetRel
+        })
+      });
+      const out = await res.json();
+      if (!out.success) {
+        if (typeof showToast === 'function') showToast(out.error || '创建失败', 'error');
+        return;
+      }
+      // 确保父目录与新建目录在树中自动展开
+      if (parentVal) explorerCollapsedDirs.delete(parentVal);
+      if (out.rel_path) explorerCollapsedDirs.delete(out.rel_path);
+      if (out.detail) {
+        activeProjectDetail = out.detail;
+        if (typeof renderReviewPane === 'function') renderReviewPane();
+        window.renderWorkbenchExplorerTree(out.detail);
+      }
+      window.closeExplorerFsModal();
+      if (typeof window.focusFullExplorerTree === 'function') {
+        window.focusFullExplorerTree();
+      }
+      if (typeof showToast === 'function') {
+        showToast(mode === 'mkdir' ? `📁 已成功新建文件夹: /${out.rel_path}` : `📄 已成功新建文件: /${out.rel_path}`, 'success');
+      }
+      if (mode === 'newfile' && openAfter && openAfter.checked && out.abs_path) {
+        await window.openExplorerFileItem(out.kind || 'text', out.abs_path, out.name);
+      }
+    } else if (mode === 'rename') {
+      const newRel = (nameInput ? nameInput.value : '').trim().replace(/^\/+|\/+$/g, '');
+      if (!newRel) {
+        if (typeof showToast === 'function') showToast('请输入新的名称或相对路径', 'warn');
+        return;
+      }
+      const res = await fetch('/api/projects/fs/rename', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project_dir: projectDir,
+          old_rel_path: efsCurrentState.baseRelPath,
+          new_rel_path: newRel
+        })
+      });
+      const out = await res.json();
+      if (!out.success) {
+        if (typeof showToast === 'function') showToast(out.error || '重命名失败', 'error');
+        return;
+      }
+      if (out.detail) {
+        activeProjectDetail = out.detail;
+        if (typeof renderReviewPane === 'function') renderReviewPane();
+        window.renderWorkbenchExplorerTree(out.detail);
+      }
+      window.closeExplorerFsModal();
+      if (typeof showToast === 'function') {
+        showToast(`✏️ 已更新路径为: /${out.new_rel_path}`, 'success');
+      }
+    } else if (mode === 'delete') {
+      const res = await fetch('/api/projects/fs/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project_dir: projectDir,
+          rel_path: efsCurrentState.baseRelPath
+        })
+      });
+      const out = await res.json();
+      if (!out.success) {
+        if (typeof showToast === 'function') showToast(out.error || '删除失败', 'error');
+        return;
+      }
+      if (out.detail) {
+        activeProjectDetail = out.detail;
+        if (typeof renderReviewPane === 'function') renderReviewPane();
+        window.renderWorkbenchExplorerTree(out.detail);
+      }
+      window.closeExplorerFsModal();
+      if (typeof showToast === 'function') {
+        showToast(`🗑️ 已删除: /${out.deleted_rel_path}`, 'info');
+      }
+    }
+  } catch (err) {
+    if (typeof showToast === 'function') showToast('操作异常: ' + (err.message || err), 'error');
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
+};
+
 
 
 

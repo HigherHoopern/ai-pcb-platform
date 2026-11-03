@@ -389,6 +389,19 @@
       color: #0f172a !important;
       box-shadow: -2px 0 12px rgba(15, 23, 42, 0.08);
     }
+    /* Explorer 文件树行内悬浮操作按钮组 */
+    .vscode-tree-item .tree-row-actions {
+      opacity: 0;
+      transition: opacity 0.12s ease;
+    }
+    .vscode-tree-item:hover .tree-row-actions {
+      opacity: 1;
+    }
+    html:not(.dark) #explorer-fs-modal-card {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
     /* 固件水平文件标签栏样式 */
     #rev-fw-file-list > button {
       width: auto !important;
@@ -584,14 +597,17 @@
             <i id="explorer-chevron-icon" class="fa-solid fa-chevron-down text-[9px] text-sky-400"></i>
             <span>EXPLORER · 工程文件目录</span>
           </button>
-          <div class="flex items-center gap-1">
-            <button type="button" onclick="openNewProjectModal()" class="px-1.5 py-0.5 rounded hover:bg-slate-800 text-sky-400" title="新建软硬件协同工程">
+          <div class="flex items-center gap-0.5">
+            <button type="button" onclick="openExplorerFsModal('newfile', '')" class="px-1.5 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-emerald-500 dark:text-emerald-400" title="在工程目录中新建文件 (.c / .h / .md / .json 等)">
+              <i class="fa-solid fa-file-circle-plus text-[10px]"></i>
+            </button>
+            <button type="button" onclick="openExplorerFsModal('mkdir', '')" class="px-1.5 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-sky-500 dark:text-sky-400" title="在工程目录中新建文件夹（或新建独立工程）">
               <i class="fa-solid fa-folder-plus text-[10px]"></i>
             </button>
-            <button type="button" onclick="toggleAllExplorerFolders()" class="px-1.5 py-0.5 rounded hover:bg-slate-800 text-slate-400 hover:text-slate-200" title="展开/折叠全部子文件夹">
+            <button type="button" onclick="toggleAllExplorerFolders()" class="px-1.5 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200" title="展开/折叠全部子文件夹">
               <i class="fa-regular fa-folder-open text-[10px]"></i>
             </button>
-            <button type="button" onclick="loadProjectWorkspace()" class="px-1.5 py-0.5 rounded hover:bg-slate-800 text-slate-400 hover:text-sky-400" title="刷新工程目录文件树">
+            <button type="button" onclick="loadProjectWorkspace()" class="px-1.5 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-sky-500 dark:hover:text-sky-400" title="刷新工程目录文件树">
               <i class="fa-solid fa-rotate text-[10px]"></i>
             </button>
           </div>
@@ -3813,6 +3829,109 @@ GPIOA_ODR |= (1U &lt;&lt; 4);
         <div class="flex items-center gap-2">
           <button type="button" onclick="closeCloudLicenseModal()" class="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold">
             关闭窗口
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================================================================== -->
+  <!-- VS Code Explorer 工程文件与目录树管理弹窗 (#explorer-fs-modal)            -->
+  <!-- 支持：新建文件夹 (mkdir) / 新建文件 (newfile) / 重命名移动 (rename) / 删除 (delete) / 新建顶层工程 -->
+  <!-- ==================================================================== -->
+  <div id="explorer-fs-modal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div id="explorer-fs-modal-card" class="w-full max-w-lg rounded-2xl bg-slate-900 border border-sky-500/40 shadow-2xl overflow-hidden flex flex-col">
+      <!-- 顶部标题与模式切换 -->
+      <div class="px-5 py-3.5 border-b border-slate-800 flex items-center justify-between bg-slate-950/70">
+        <div class="flex items-center gap-2.5">
+          <span class="w-8 h-8 rounded-xl bg-sky-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400">
+            <i id="efs-modal-icon" class="fa-solid fa-folder-plus"></i>
+          </span>
+          <div>
+            <h3 id="efs-modal-title" class="text-sm font-extrabold text-slate-100">📁 工程目录与文件管理</h3>
+            <p id="efs-modal-subtitle" class="text-[11px] text-slate-400 font-mono">在当前工程目录树中自定义新增、重命名或删除文件夹与文件</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeExplorerFsModal()" class="w-7 h-7 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- 模式切换标签栏 (仅在 mkdir / newfile 模式下显示) -->
+      <div id="efs-mode-tabs" class="px-5 pt-3 flex items-center gap-2">
+        <button type="button" id="efs-tab-mkdir" onclick="switchExplorerFsModalMode('mkdir')" class="flex-1 py-1.5 px-3 rounded-xl bg-sky-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-folder-plus"></i> 新建文件夹
+        </button>
+        <button type="button" id="efs-tab-newfile" onclick="switchExplorerFsModalMode('newfile')" class="flex-1 py-1.5 px-3 rounded-xl bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-file-circle-plus"></i> 新建文件
+        </button>
+        <button type="button" onclick="closeExplorerFsModal(); if(typeof promptCreateNewProject==='function') promptCreateNewProject();" class="py-1.5 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-semibold text-xs flex items-center justify-center gap-1.5 transition" title="打开新建独立顶层软硬件工程向导">
+          <i class="fa-solid fa-rocket"></i> 新建独立工程
+        </button>
+      </div>
+
+      <!-- 主表单区 -->
+      <div class="p-5 space-y-4 text-xs">
+        <!-- 1. 父级目录选择 (mkdir / newfile 共用) -->
+        <div id="efs-parent-dir-group" class="space-y-1.5">
+          <label class="block text-[11px] font-bold text-slate-300">
+            所在父目录 (Parent Folder)：
+          </label>
+          <select id="efs-parent-dir-select" onchange="updateEfsPathPreview()" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-amber-300 font-mono text-xs focus:outline-none focus:border-sky-500">
+            <option value="">/ (当前工程根目录)</option>
+          </select>
+          <div class="flex flex-wrap gap-1 pt-0.5" id="efs-quick-parent-pills"></div>
+        </div>
+
+        <!-- 2. 名称或目标路径输入 -->
+        <div id="efs-name-input-group" class="space-y-1.5">
+          <label id="efs-name-label" class="block text-[11px] font-bold text-slate-300">
+            新建文件夹名称（支持多级路径如 <code class="text-sky-400">Drivers/Sensor</code>）：
+          </label>
+          <input type="text" id="efs-name-input" oninput="updateEfsPathPreview()" onkeydown="if(event.key==='Enter'){submitExplorerFsModal();}" placeholder="例如: Middlewares 或 Drivers/Sensor" class="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-700 text-slate-100 font-mono text-xs focus:outline-none focus:border-sky-500">
+        </div>
+
+        <!-- 3. 新建文件专属：快捷文件后缀与模板选择 -->
+        <div id="efs-file-templates-group" class="hidden space-y-1.5">
+          <div class="text-[11px] text-slate-400">⚡ 一键填入常用工程文件模板：</div>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" onclick="applyEfsFileQuickName('firmware/App', 'user_sensor.c')" class="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 text-sky-300 border border-slate-800 font-mono text-[11px]">📄 C99 源码 (.c)</button>
+            <button type="button" onclick="applyEfsFileQuickName('firmware/Inc', 'user_sensor.h')" class="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 text-purple-300 border border-slate-800 font-mono text-[11px]">📄 C99 头文件 (.h)</button>
+            <button type="button" onclick="applyEfsFileQuickName('docs', 'DESIGN_NOTES.md')" class="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 text-indigo-300 border border-slate-800 font-mono text-[11px]">📝 设计笔记 (.md)</button>
+            <button type="button" onclick="applyEfsFileQuickName('hardware', 'custom_rules.json')" class="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-800 text-amber-300 border border-slate-800 font-mono text-[11px]">⚙️ JSON 配置 (.json)</button>
+          </div>
+          <label class="flex items-center gap-2 pt-1 text-[11px] text-slate-300 cursor-pointer">
+            <input type="checkbox" id="efs-open-after-create" checked class="rounded border-slate-700 bg-slate-900 text-sky-500">
+            <span>创建文件后立即打开在线编辑器</span>
+          </label>
+        </div>
+
+        <!-- 4. 删除确认提示框 (仅在 delete 模式下显示) -->
+        <div id="efs-delete-confirm-box" class="hidden p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 space-y-1">
+          <div class="font-bold flex items-center gap-1.5">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>确认要永久删除该目录或文件吗？</span>
+          </div>
+          <p id="efs-delete-target-desc" class="text-[11px] text-slate-300 font-mono break-all"></p>
+        </div>
+
+        <!-- 实时完整相对路径预览 -->
+        <div id="efs-path-preview-bar" class="px-3 py-2 rounded-xl bg-slate-950/90 border border-slate-800 flex items-center justify-between text-[11px] font-mono">
+          <span class="text-slate-400">目标路径预览:</span>
+          <span id="efs-path-preview-text" class="text-emerald-400 font-bold truncate max-w-[320px]">/</span>
+        </div>
+      </div>
+
+      <!-- 底部操作按钮 -->
+      <div class="px-5 py-3 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between">
+        <span class="text-[10px] text-slate-500 font-mono">提示: 悬浮目录树任意节点也可直接新增/重命名/删除</span>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="closeExplorerFsModal()" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold">
+            取消
+          </button>
+          <button type="button" id="btn-efs-submit" onclick="submitExplorerFsModal()" class="px-4 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-extrabold text-xs shadow transition flex items-center gap-1.5">
+            <i class="fa-solid fa-check"></i>
+            <span id="btn-efs-submit-text">立即创建</span>
           </button>
         </div>
       </div>
