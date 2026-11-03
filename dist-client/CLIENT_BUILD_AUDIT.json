@@ -1,8 +1,8 @@
 {
-  "build_timestamp": "2026-11-03 18:04:52",
+  "build_timestamp": "2026-11-03 18:13:02",
   "dist_dir": "/Users/zhenxian/Documents/XXG/Xter/projects/ai-pcb-platform/dist-client",
   "default_cloud_url": "same-origin / user-configurable",
-  "files_count": 5,
+  "files_count": 6,
   "security_audit": {
     "passed": true,
     "python_backend_files_count": 0,
